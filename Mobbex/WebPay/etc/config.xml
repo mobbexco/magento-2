@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <default>
+        <payment>
+            <webpay>
+                <payment_action>capture</payment_action>
+                <model>Mobbex\Webpay\Model\Mobbex</model>
+                <active>1</active>
+                <title>Mobbex</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <group>online</group>
+            </webpay>
+        </payment>
+    </default>
+</config>

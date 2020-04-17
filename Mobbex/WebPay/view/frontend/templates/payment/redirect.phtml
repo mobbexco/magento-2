@@ -1,0 +1,9 @@
+<?php $checkout = $this->getCheckoutUrl(); ?>
+
+<form id="redirect_form" action="<?php echo $checkout; ?>" method="GET">
+    <p><?php echo __("We are redirecting you to our secure payment site in Mobbex..."); ?>
+</form>
+
+<script type="text/javascript">
+document.getElementById("redirect_form").submit();
+</script>
