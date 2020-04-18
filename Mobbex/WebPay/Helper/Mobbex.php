@@ -6,6 +6,8 @@ use Magento\Sales\Model\Order;
 
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    const VERSION = '1.0.0-RC2';
+
     public $scopeConfig;
     public $order;
     public $modelOrder;
@@ -35,6 +37,34 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $this->log = $logger;
         $this->urlBuilder = $urlBuilder;
         $this->imageHelper = $imageHelper;
+    }
+
+    private function getPlatform()
+    {
+        return [
+            "name" => "magento_2",
+            "version" => Mobbex::VERSION
+        ];
+    }
+
+    private function getTheme()
+    {
+        return [
+            "type" => $this->scopeConfig->getValue(
+                'payment/webpay/theme',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ),
+            "background" => $this->scopeConfig->getValue(
+                'payment/webpay/background_color',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ),
+            "colors" => [
+                "primary" => $this->scopeConfig->getValue(
+                    'payment/webpay/primary_color',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                ),
+            ],
+        ];
     }
 
     private function getHeaders()
@@ -129,7 +159,10 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             'return_url' => $returnUrl,
             'items' => $items,
             'webhook' => $webhook,
-            // 'options' => MobbexHelper::getOptions(),
+            "options" => [
+                "theme" => $this->getTheme(),
+                "platform" => $this->getPlatform(),
+            ],
             'redirect' => 0,
             'total' => (float) $orderAmount,
         );

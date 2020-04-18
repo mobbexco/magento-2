@@ -10,6 +10,11 @@
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>online</group>
+                <!-- Default Settings -->
+                <test_mode>0</test_mode>
+                <theme>light</theme>
+                <background_color>#ECF2F6</background_color>
+                <primary_color>#6f00ff</primary_color>
             </webpay>
         </payment>
     </default>

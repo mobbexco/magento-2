@@ -38,12 +38,12 @@
 
                     <field id="background_color" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Color de Fondo</label>
-                        <comment>Sólo valores hexadecimales. Ej. #FFF o # AFAFAF</comment>
+                        <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>
 
                     <field id="primary_color" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Color Primario</label>
-                        <comment>Sólo valores hexadecimales. Ej. #FFF o # AFAFAF</comment>
+                        <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>
                 </group>
 
