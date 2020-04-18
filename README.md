@@ -3,7 +3,7 @@
 ### Manually: Create Folder and Copy the Files
 
 ```
-app/code/Mobbex/WebPay
+app/code/Mobbex/Webpay
 ```
 
 Changelog:
