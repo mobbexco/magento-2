@@ -33,7 +33,7 @@
 
                     <field id="theme" translate="label comment" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Tema</label>
-                        <source_model>Mobbex\WebPay\Model\Themes</source_model>
+                        <source_model>Mobbex\Webpay\Model\Themes</source_model>
                     </field>
 
                     <field id="background_color" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="0">

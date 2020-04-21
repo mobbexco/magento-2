@@ -14,7 +14,7 @@ class Mobbex extends \Magento\Payment\Model\Method\AbstractMethod
 
     protected $_isGateway = true;
 
-    protected $_infoBlockType = 'Mobbex\WebPay\Block\Info';
+    protected $_infoBlockType = 'Mobbex\Webpay\Block\Info';
 
     protected $_supportedCurrencyCodes = array('ARS');
 

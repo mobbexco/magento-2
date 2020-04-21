@@ -1,10 +1,10 @@
 <?php
-namespace Mobbex\WebPay\Block;
+namespace Mobbex\Webpay\Block;
 
 /**
  * Class Info
  *
- * @package Mobbex\WebPay\Block
+ * @package Mobbex\Webpay\Block
  */
 class Info extends \Magento\Payment\Block\Info
 {

@@ -1,5 +1,5 @@
 <?php
-namespace Mobbex\WebPay\Model;
+namespace Mobbex\Webpay\Model;
 
 class Themes implements \Magento\Framework\Option\ArrayInterface
 {
