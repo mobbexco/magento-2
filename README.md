@@ -22,3 +22,9 @@ Changelog:
 - Adding missing options on Checkout
 - Adding Plugin Version.
 - Adding theme settings
+
+2020-04-23 1.0.0-RC3
+- Several fixes
+- Improved State/Status flow
+- Invoice handling
+- Fix Support for Magento 2.1, 2.2

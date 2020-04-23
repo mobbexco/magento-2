@@ -3,7 +3,7 @@
 namespace Mobbex\Webpay\Controller\Payment;
 
 use \Magento\Framework\App\ObjectManager;
-use Magento\Sales\Model\Order;
+use \Magento\Sales\Model\Order;
 
 class PaymentReturn extends \Magento\Framework\App\Action\Action
 {
@@ -64,7 +64,7 @@ class PaymentReturn extends \Magento\Framework\App\Action\Action
                 if ($status == "2" || $status == "200") {
                     $this->_redirect('checkout/onepage/success');
                 } else {
-                    $this->_order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
+                    $this->_order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW)->save();
                     $this->_order->addStatusToHistory($this->_order->getStatus(), __("Customer was redirected back. Cancelled payment."));
                     $this->_order->save();
 

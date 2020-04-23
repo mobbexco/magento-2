@@ -29,8 +29,8 @@ class Mobbex extends \Magento\Payment\Model\Method\AbstractMethod
         $order->setCanSendNewEmailFlag(false);
 
         // set default payment status
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
+        $stateObject->setStatus(\Magento\Sales\Model\Order::STATE_NEW);
 
         // mark customer as not notified
         $stateObject->setIsNotified(false);

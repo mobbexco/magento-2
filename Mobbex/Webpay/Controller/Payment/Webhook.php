@@ -2,21 +2,27 @@
 
 namespace Mobbex\Webpay\Controller\Payment;
 
-use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\Request\InvalidRequestException;
-use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Payment\Transaction;
+use \Magento\Framework\App\ObjectManager;
+use \Magento\Sales\Model\Order;
+use \Magento\Sales\Model\Order\Payment\Transaction;
+use \Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use \Magento\Framework\DB\TransactionFactory;
+
 use \Mobbex\Webpay\Model\Mobbex;
 
-class Webhook extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\CsrfAwareActionInterface
+class Webhook extends WebhookBase
 {
     public $context;
+
     protected $_invoiceService;
     protected $_order;
     protected $_transaction;
 
     protected $transactionBuilder;
+
+    protected $transactionFactory;
+    protected $invoiceSender;
+
     protected $resultJsonFactory;
 
     protected $log;
@@ -27,6 +33,8 @@ class Webhook extends \Magento\Framework\App\Action\Action implements \Magento\F
         \Magento\Sales\Model\Order $_order,
         \Magento\Framework\DB\Transaction $_transaction,
         \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
+        TransactionFactory $transactionFactory,
+        InvoiceSender $invoiceSender,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
         \Psr\Log\LoggerInterface $logger
     ) {
@@ -36,6 +44,9 @@ class Webhook extends \Magento\Framework\App\Action\Action implements \Magento\F
         $this->context = $context;
 
         $this->transactionBuilder = $transactionBuilder;
+
+        $this->transactionFactory = $transactionFactory;
+        $this->invoiceSender = $invoiceSender;
 
         $this->resultJsonFactory = $resultJsonFactory;
 
@@ -74,7 +85,15 @@ class Webhook extends \Magento\Framework\App\Action\Action implements \Magento\F
 
             // if data looks fine
             if (isset($orderId) && !empty($status)) {
+                // Get Payment ID from Mobbex
                 $paymentId = $data['payment']['id'];
+                // Get Method name from Mobbex
+                $paymentMethod = $data['payment']['source']['name'];
+
+                // Just a check ;)
+                if(!isset($paymentMethod)) {
+                    $paymentMethod = '';
+                }
 
                 // get object manager
                 $objectManager = ObjectManager::getInstance();
@@ -82,20 +101,32 @@ class Webhook extends \Magento\Framework\App\Action\Action implements \Magento\F
                 // set order status
                 $this->_order->loadByIncrementId($orderId);
 
-                if ($status == "2" || $status == "200") {
+                // Formatted price
+                $formatedPrice = $this->_order->getBaseCurrency()->formatTxt($this->_order->getGrandTotal());
+
+                if ($status == "200") { // Paid State handling
+                    $message = __('Transacción aprobada por %1. Medio de Pago: %2', $formatedPrice, $paymentMethod);
+
                     // Set State
-                    $this->_order->setState(Order::STATE_PAYMENT_REVIEW)->setStatus(Order::STATE_PAYMENT_REVIEW)->save();
+                    $this->_order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING)->save();
                     // Add History Data
-                    $this->_order->addStatusToHistory($this->_order->getStatus(), __('Transacción autorizada bajo ID %1.', $paymentId))->save();
+                    $this->_order->addStatusToHistory($this->_order->getStatus(), $message)->save();
 
                     $this->addPaymentInformation($this->_order, $data);
 
                     // send order email
                     $emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
                     $emailSender->send($this->_order);
-                } else {
+
+                    $this->createInvoice($this->_order, $message);
+                } else if($status == "2") { // In progress for Cash Payments only
+                    // Set State
                     $this->_order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
-                    $this->_order->addStatusToHistory($this->_order->getStatus(), __("Customer was redirected back. Cancelled payment."));
+                    // Add History Data
+                    $this->_order->addStatusToHistory($this->_order->getStatus(), ___('Transacción En Progreso por %1. Medio de Pago: %2', $formatedPrice, $paymentMethod))->save();
+                } else { // All the other states
+                    $this->_order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW)->save();
+                    $this->_order->addStatusToHistory($this->_order->getStatus(), __('Transacción denegada por %1. Medio de Pago: %2', $formatedPrice, $paymentMethod));
                     $this->_order->save();
                 }
 
@@ -183,15 +214,23 @@ class Webhook extends \Magento\Framework\App\Action\Action implements \Magento\F
         }
     }
 
-    /** * @inheritDoc */
-    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    private function createInvoice($order, $message = '')
     {
-        return null;
-    }
+        if (!$order->hasInvoices()) {
+            $invoice = $order->prepareInvoice();
+            $invoice->register();
+            $invoice->pay();
+            $invoice->addComment(str_replace("<br/>", "", $message), false, true);
 
-    /** * @inheritDoc */
-    public function validateForCsrf(RequestInterface $request): ?bool
-    {
-        return true;
+            $transaction = $this->transactionFactory->create();
+            $transaction->addObject($invoice);
+            $transaction->addObject($invoice->getOrder());
+            $transaction->save();
+            $this->invoiceSender->send($invoice, true, $message);
+
+            return true;
+        }
+
+        return false;
     }
 }
