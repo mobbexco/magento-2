@@ -1,7 +1,14 @@
 <?php
+
 namespace Mobbex\Webpay\Model;
 
-class Themes implements \Magento\Framework\Option\ArrayInterface
+use Magento\Framework\Option\ArrayInterface;
+
+/**
+ * Class Themes
+ * @package Mobbex\Webpay\Model
+ */
+class Themes implements ArrayInterface
 {
     /**
      * @return array

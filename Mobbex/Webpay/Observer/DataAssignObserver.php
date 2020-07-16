@@ -2,17 +2,19 @@
 
 namespace Mobbex\Webpay\Observer;
 
-
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Observer\AbstractDataAssignObserver;
 use Magento\Quote\Api\Data\PaymentInterface;
 
+/**
+ * Class DataAssignObserver
+ * @package Mobbex\Webpay\Observer
+ */
 class DataAssignObserver extends AbstractDataAssignObserver
 {
     /**
      * @param Observer $observer
-     * @throws LocalizedException
      */
     public function execute(Observer $observer)
     {

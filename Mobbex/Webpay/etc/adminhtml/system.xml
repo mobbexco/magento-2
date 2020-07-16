@@ -1,47 +1,70 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
             <group id="webpay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
 
                 <label>Mobbex WebPay</label>
 
-                <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="title" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="title" translate="label comment" sortOrder="2" type="text" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
                     <label>Título</label>
                 </field>
 
-                <field id="api_key" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="api_key" translate="label comment" sortOrder="3" type="text" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
                     <label>API Key</label>
                 </field>
 
-                <field id="access_token" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="access_token" translate="label comment" sortOrder="4" type="text" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
                     <label>Access Token</label>
                 </field>
 
-                <field id="test_mode" translate="label comment" sortOrder="5" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="min_amount" translate="label comment" sortOrder="5" type="text" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Monto minimo de compra</label>
+                    <comment>Monto de compra a partir del cual se podrá habilitar el módulo de pagos en el checkout</comment>
+                </field>
+
+                <field id="debug_mode" translate="label comment" sortOrder="10" type="select" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Habilitar debug</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Solo para pruebas de desarrollo y verficiar eventuales errores</comment>
+                </field>
+
+                <field id="test_mode" translate="label comment" sortOrder="10" type="select" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
                     <label>Modo de Pruebas</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <group id="checkout" translate="label" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+                <group id="checkout" translate="label" sortOrder="6" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
                     <label>Checkout</label>
 
-                    <field id="theme" translate="label comment" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="theme" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                           showInWebsite="1" showInStore="1">
                         <label>Tema</label>
                         <source_model>Mobbex\Webpay\Model\Themes</source_model>
                     </field>
 
-                    <field id="background_color" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="background_color" translate="label comment" sortOrder="2" type="text" showInDefault="1"
+                           showInWebsite="1" showInStore="1">
                         <label>Color de Fondo</label>
                         <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>
 
-                    <field id="primary_color" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="primary_color" translate="label comment" sortOrder="3" type="text" showInDefault="1"
+                           showInWebsite="1" showInStore="1">
                         <label>Color Primario</label>
                         <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>

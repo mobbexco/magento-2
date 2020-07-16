@@ -2,34 +2,93 @@
 
 namespace Mobbex\Webpay\Controller\Payment;
 
-use \Magento\Framework\App\ObjectManager;
-use \Magento\Sales\Model\Order;
+use Exception;
+use Magento\Checkout\Model\Cart;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\DB\Transaction;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Service\InvoiceService;
+use Mobbex\Webpay\Helper\Data;
+use Mobbex\Webpay\Model\OrderUpdate;
+use Psr\Log\LoggerInterface;
 
-class PaymentReturn extends \Magento\Framework\App\Action\Action
+/**
+ * Class PaymentReturn
+ * @package Mobbex\Webpay\Controller\Payment
+ */
+class PaymentReturn extends Action
 {
+    /**
+     * @var Context
+     */
     public $context;
+
+    /**
+     * @var InvoiceService
+     */
     protected $_invoiceService;
+
+    /**
+     * @var Order
+     */
     protected $_order;
+
+    /**
+     * @var Transaction
+     */
     protected $_transaction;
 
+    /**
+     * @var Cart
+     */
     protected $cart;
+
+    /**
+     * @var Session
+     */
     protected $checkoutSession;
 
+    /**
+     * @var LoggerInterface
+     */
     protected $log;
 
+    /**
+     * @var OrderUpdate
+     */
+    protected $_orderUpdate;
+
+    /**
+     * PaymentReturn constructor.
+     * @param Context $context
+     * @param InvoiceService $_invoiceService
+     * @param Order $_order
+     * @param Transaction $_transaction
+     * @param Cart $cart
+     * @param Session $checkoutSession
+     * @param LoggerInterface $logger
+     * @param OrderUpdate $orderUpdate
+     */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
-        \Magento\Sales\Model\Order $_order,
-        \Magento\Framework\DB\Transaction $_transaction,
-        \Magento\Checkout\Model\Cart $cart,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Psr\Log\LoggerInterface $logger
+        Context $context,
+        InvoiceService $_invoiceService,
+        Order $_order,
+        Transaction $_transaction,
+        Cart $cart,
+        Session $checkoutSession,
+        LoggerInterface $logger,
+        OrderUpdate $orderUpdate
     ) {
         $this->_invoiceService = $_invoiceService;
         $this->_transaction = $_transaction;
         $this->_order = $_order;
         $this->context = $context;
+        $this->_orderUpdate = $orderUpdate;
 
         $this->cart = $cart;
         $this->checkoutSession = $checkoutSession;
@@ -39,9 +98,12 @@ class PaymentReturn extends \Magento\Framework\App\Action\Action
         parent::__construct($context);
     }
 
+    /**
+     * @return ResponseInterface|ResultInterface|void
+     * @throws Exception
+     */
     public function execute()
     {
-
         try {
             // get post data
             $orderId = $this->getRequest()->getParam('order_id');
@@ -57,29 +119,41 @@ class PaymentReturn extends \Magento\Framework\App\Action\Action
             // if data looks fine
             if (isset($orderId)) {
                 // set order status
-                $this->_order->loadByIncrementId($orderId);
+                $order = $this->_order->loadByIncrementId($orderId);
 
                 $this->log->debug('Return Controller > Order', $this->_order->debug());
 
                 if ($status == "2" || $status == "200") {
+                    if ($type == 'card') {
+                        $this->_orderUpdate->approvePayment($order, __("Order generated with credit card."));
+                    }
+                    if ($type == 'cash') {
+                        $order->addStatusToHistory($this->_order->getStatus(), __("Order generated with payment receipt."))
+                            ->save();
+                    }
+
                     $this->_redirect('checkout/onepage/success');
                 } else {
-                    $this->_order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW)->save();
-                    $this->_order->addStatusToHistory($this->_order->getStatus(), __("Customer was redirected back. Cancelled payment."));
-                    $this->_order->save();
+                    if ($type == 'none') {
+                        $this->_orderUpdate->cancelPayment($order, __("The customer did not finish the payment process"));
+                    } else {
+                        $this->_orderUpdate->cancelPayment($order, __("Customer was redirected back. Cancelled payment."));
+                    }
 
-                    $this->restoreCart($this->_order);
-
+                    $this->restoreCart($order);
                     $this->_redirect('checkout/cart');
                 }
             } else {
                 $this->_redirect('/');
             }
         } catch (Exception $e) {
-            echo $e;
+            Data::log($e->getMessage(), "mobbex_error_" . date('m_Y') . ".log");
         }
     }
 
+    /**
+     * @param $order
+     */
     private function restoreCart($order)
     {
         //Get Object Manager Instance
@@ -94,13 +168,9 @@ class PaymentReturn extends \Magento\Framework\App\Action\Action
         $quote->removePayment();
         $quote->save();
 
-        // Replace the quote to the checkout session
         $this->checkoutSession->replaceQuote($quote);
-
-        //OR add quote to cart
         $this->cart->setQuote($quote);
 
-        //if your last order is still in the session (getLastRealOrder() returns order data) you can achieve what you need with this one line without loading the order:
         $this->checkoutSession->restoreQuote();
     }
 }

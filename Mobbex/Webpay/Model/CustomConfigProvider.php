@@ -3,19 +3,32 @@
 namespace Mobbex\Webpay\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
+use Mobbex\Webpay\Helper\Data;
 
+/**
+ * Class CustomConfigProvider
+ * @package Mobbex\Webpay\Model
+ */
 class CustomConfigProvider implements ConfigProviderInterface
 {
-
+    /**
+     * @var Data
+     */
     protected $_helper;
 
+    /**
+     * CustomConfigProvider constructor.
+     * @param Data $helper
+     */
     public function __construct(
-        \Mobbex\Webpay\Helper\Data $helper
+        Data $helper
     ) {
         $this->_helper = $helper;
     }
 
-    // get configuration
+    /**
+     * @return array
+     */
     public function getConfig()
     {
         // TODO: For Future Use. Keep It

@@ -1,5 +1,10 @@
 <?php
+
 namespace Mobbex\Webpay\Block;
+
+use Magento\Framework\DataObject;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Sales\Model\OrderFactory;
 
 /**
  * Class Info
@@ -10,19 +15,19 @@ class Info extends \Magento\Payment\Block\Info
 {
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderFactory
      */
     protected $_orderFactory;
 
     /**
      * Constructor
      *
-     * @param \Magento\Framework\View\Element\Template\Context $context
+     * @param Context $context
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
+        Context $context,
+        OrderFactory $orderFactory,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -33,7 +38,7 @@ class Info extends \Magento\Payment\Block\Info
      * Prepare information specific to current payment method
      *
      * @param null | array $transport
-     * @return \Magento\Framework\DataObject
+     * @return DataObject
      */
     protected function _prepareSpecificInformation($transport = null)
     {
@@ -62,5 +67,4 @@ class Info extends \Magento\Payment\Block\Info
 
         return $transport->setData(array_merge($data, $transport->getData()));
     }
-
 }

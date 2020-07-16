@@ -2,235 +2,146 @@
 
 namespace Mobbex\Webpay\Controller\Payment;
 
-use \Magento\Framework\App\ObjectManager;
-use \Magento\Sales\Model\Order;
-use \Magento\Sales\Model\Order\Payment\Transaction;
-use \Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
-use \Magento\Framework\DB\TransactionFactory;
+use Exception;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Sales\Model\Order;
+use Mobbex\Webpay\Helper\Data;
+use Mobbex\Webpay\Model\Mobbex;
+use Mobbex\Webpay\Model\OrderUpdate;
+use Psr\Log\LoggerInterface;
 
-use \Mobbex\Webpay\Model\Mobbex;
-
+/**
+ * Class Webhook
+ * @package Mobbex\Webpay\Controller\Payment
+ */
 class Webhook extends WebhookBase
 {
+    /**
+     * @var Context
+     */
     public $context;
 
-    protected $_invoiceService;
+    /**
+     * @var Order
+     */
     protected $_order;
-    protected $_transaction;
 
-    protected $transactionBuilder;
-
-    protected $transactionFactory;
-    protected $invoiceSender;
-
+    /**
+     * @var JsonFactory
+     */
     protected $resultJsonFactory;
 
+    /**
+     * @var LoggerInterface
+     */
     protected $log;
 
+    /**
+     * @var OrderUpdate
+     */
+    protected $_orderUpdate;
+
+    /**
+     * Webhook constructor.
+     * @param Context $context
+     * @param Order $_order
+     * @param OrderUpdate $orderUpdate
+     * @param JsonFactory $resultJsonFactory
+     * @param LoggerInterface $logger
+     */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
-        \Magento\Sales\Model\Order $_order,
-        \Magento\Framework\DB\Transaction $_transaction,
-        \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
-        TransactionFactory $transactionFactory,
-        InvoiceSender $invoiceSender,
-        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-        \Psr\Log\LoggerInterface $logger
+        Context $context,
+        Order $_order,
+        OrderUpdate $orderUpdate,
+        JsonFactory $resultJsonFactory,
+        LoggerInterface $logger
     ) {
-        $this->_invoiceService = $_invoiceService;
-        $this->_transaction = $_transaction;
         $this->_order = $_order;
         $this->context = $context;
-
-        $this->transactionBuilder = $transactionBuilder;
-
-        $this->transactionFactory = $transactionFactory;
-        $this->invoiceSender = $invoiceSender;
-
         $this->resultJsonFactory = $resultJsonFactory;
-
+        $this->_orderUpdate = $orderUpdate;
         $this->log = $logger;
 
         parent::__construct($context);
     }
 
+    /**
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
+     */
     public function execute()
     {
         $response = [
             "result" => false,
         ];
+        $resultJson = $this->resultJsonFactory->create();
 
         try {
             // get post data
             $postData = $this->getRequest()->getPostValue();
             $orderId = $this->getRequest()->getParam('order_id');
 
-            $this->log->debug('WebHook Controller > Data', [
-                "id" => $orderId,
-                "data" => $postData,
-            ]);
-
             $data = $postData['data'];
 
+            Data::log(
+                "WebHook Controller > Data:" . print_r([
+                    "id" => $orderId,
+                    "data" => $data,
+                ], true),
+                "mobbex_" . date('m_Y') . ".log"
+            );
+
             $status = $data['payment']['status']['code'];
-
-            $this->log->debug('WebHook Controller > Data', [
-                "id" => $orderId,
-                "status" => $status,
-                "data" => $data,
-            ]);
-
-            $resultJson = $this->resultJsonFactory->create();
 
             // if data looks fine
             if (isset($orderId) && !empty($status)) {
                 // Get Payment ID from Mobbex
-                $paymentId = $data['payment']['id'];
+                $paymentIdMobbex = $data['payment']['id'];
                 // Get Method name from Mobbex
                 $paymentMethod = $data['payment']['source']['name'];
 
                 // Just a check ;)
-                if(!isset($paymentMethod)) {
+                if (!isset($paymentMethod)) {
                     $paymentMethod = '';
                 }
 
-                // get object manager
-                $objectManager = ObjectManager::getInstance();
+                $order = $this->_order->loadByIncrementId($orderId);
+                $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
 
-                // set order status
-                $this->_order->loadByIncrementId($orderId);
+                switch ($status) {
+                    case '200':
+                        $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $paymentIdMobbex);
+                        $this->_orderUpdate->approvePayment($order, $message);
+                        break;
+                    case '2':
+                        // Add History Data
+                        $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $paymentIdMobbex))
+                            ->save();
+                        break;
+                    case '401':
+                        $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $paymentIdMobbex);
 
-                // Formatted price
-                $formatedPrice = $this->_order->getBaseCurrency()->formatTxt($this->_order->getGrandTotal());
+                        if ($order->getStatus() == 'pending') {
+                            $this->_orderUpdate->cancelPayment($order, $message);
+                        } else {
+                            $this->_orderUpdate->refundPayment($order, $message);
+                        }
+                        break;
+                    default:
 
-                if ($status == "200") { // Paid State handling
-                    $message = __('Transacción aprobada por %1. Medio de Pago: %2', $formatedPrice, $paymentMethod);
+                        break;
 
-                    // Set State
-                    $this->_order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING)->save();
-                    // Add History Data
-                    $this->_order->addStatusToHistory($this->_order->getStatus(), $message)->save();
-
-                    $this->addPaymentInformation($this->_order, $data);
-
-                    // send order email
-                    $emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
-                    $emailSender->send($this->_order);
-
-                    $this->createInvoice($this->_order, $message);
-                } else if($status == "2") { // In progress for Cash Payments only
-                    // Set State
-                    $this->_order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
-                    // Add History Data
-                    $this->_order->addStatusToHistory($this->_order->getStatus(), ___('Transacción En Progreso por %1. Medio de Pago: %2', $formatedPrice, $paymentMethod))->save();
-                } else { // All the other states
-                    $this->_order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW)->save();
-                    $this->_order->addStatusToHistory($this->_order->getStatus(), __('Transacción denegada por %1. Medio de Pago: %2', $formatedPrice, $paymentMethod));
-                    $this->_order->save();
                 }
-
                 // redirect to success page
                 $response['result'] = true;
             }
-
         } catch (Exception $e) {
-            $this->log->debug('WebHook Controller > Error Paynment Data', [
-                "message" => $e->getMessage(),
-            ]);
+            Data::log('WebHook Controller > Error Paynment Data: ' . $e->getMessage(), "mobbex_error_" . date('m_Y') . ".log");
         }
 
         // Reply with json
         $resultJson->setData($response);
 
         return $resultJson;
-    }
-
-    private function addPaymentInformation($order, $data)
-    {
-        try {
-            // Grab some info from the WebHook information
-            $paymentId = $data['payment']['id'];
-            $paymentMethod = $data['payment']['source']['name'];
-            $status = $data['payment']['status']['code'];
-            $statusText = $data['payment']['status']['text'];
-            $paymentRef = $data['payment']['reference'];
-
-            // Prepare payment object
-            $payment = $order->getPayment();
-
-            $payment->setMethod(Mobbex::CODE);
-
-            $payment->setLastTransId($paymentId);
-            $payment->setTransactionId($paymentId);
-
-            // Info in the Transaction
-            $additionalInfo = [
-                "ID Transacción" => $paymentId,
-                "Método de Pago" => $paymentMethod,
-                "Estado Actual" => $statusText,
-                "Referencia de Pago" => $paymentRef,
-            ];
-
-            // Custom Data to Show on Info
-            $payment->setAdditionalInformation([
-                "id" => $paymentId,
-                "paymentMethod" => $paymentMethod,
-                "status" => $status,
-                "statusText" => $statusText,
-                "reference" => $paymentRef,
-                Transaction::RAW_DETAILS => (array) $data,
-            ]);
-
-            // Formatted price
-            $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
-
-            // Prepare transaction
-            $transaction = $this->transactionBuilder->setPayment($payment)
-                ->setOrder($order)
-                ->setTransactionId($paymentId)
-                ->setAdditionalInformation([
-                    Transaction::RAW_DETAILS => (array) $additionalInfo,
-                ])
-                ->setFailSafe(true)
-                ->build(Transaction::TYPE_CAPTURE);
-
-            // Add transaction to payment
-            $payment->addTransactionCommentsToOrder($transaction, __('Transacción autorizada por %1. Medio de Pago: %2', $formatedPrice, $paymentMethod));
-            $payment->setParentTransactionId(null);
-
-            // Save payment, transaction and order
-            $payment->save();
-            $order->save();
-            $transaction->save();
-
-            return $transaction->getTransactionId();
-        } catch (Exception $e) {
-            $this->log->debug('WebHook Controller > Error Paynment Data', [
-                "message" => $e->getMessage(),
-            ]);
-
-            return false;
-        }
-    }
-
-    private function createInvoice($order, $message = '')
-    {
-        if (!$order->hasInvoices()) {
-            $invoice = $order->prepareInvoice();
-            $invoice->register();
-            $invoice->pay();
-            $invoice->addComment(str_replace("<br/>", "", $message), false, true);
-
-            $transaction = $this->transactionFactory->create();
-            $transaction->addObject($invoice);
-            $transaction->addObject($invoice->getOrder());
-            $transaction->save();
-            $this->invoiceSender->send($invoice, true, $message);
-
-            return true;
-        }
-
-        return false;
     }
 }
