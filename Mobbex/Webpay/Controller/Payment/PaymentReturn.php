@@ -123,7 +123,14 @@ class PaymentReturn extends Action
 
                 $this->log->debug('Return Controller > Order', $this->_order->debug());
 
-                if ($status == "2" || $status == "200") {
+                if($status < 2) {
+                    // ignore everything here
+
+                } else if ($status == 2 || $status == 3) {
+                    // Cash Payments!
+
+                } else if ($status == 4 || $status >= 200 && $status < 400)
+                {
                     if ($type == 'card') {
                         $this->_orderUpdate->approvePayment($order, __("Order generated with credit card."));
                     }
