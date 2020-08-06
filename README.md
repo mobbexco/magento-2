@@ -28,3 +28,8 @@ Changelog:
 - Improved State/Status flow
 - Invoice handling
 - Fix Support for Magento 2.1, 2.2
+
+2020-06-16 1.0.0
+- Several improvements made by Improntus
+- Fixes.
+- Moving to stable version

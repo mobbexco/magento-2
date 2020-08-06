@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.0.0-RC2';
+    const VERSION = '1.0.0';
 
     /**
      * @var ScopeConfigInterface
