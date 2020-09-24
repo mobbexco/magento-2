@@ -162,14 +162,13 @@ class Mobbex extends AbstractHelper
             'email' => $customerEmail,
             'description' => $description,
             // Test Mode
-            'test' => $this->scopeConfig->getValue(
-                'payment/webpay/test_mode',
-                ScopeInterface::SCOPE_STORE
-            ),
+            'test' => $this->getTestMode(),
             'return_url' => $returnUrl,
             'items' => $items,
             'webhook' => $webhook,
             "options" => [
+                "button" => $this->getEmbedPayment(),
+                "domain" => $this->urlBuilder->getUrl('/'),
                 "theme" => $this->getTheme(),
                 "platform" => $this->getPlatform(),
             ],
@@ -209,7 +208,9 @@ class Mobbex extends AbstractHelper
             $res = json_decode($response, true);
             Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
 
-            return $res['data']['url'];
+            $res['data']['return_url'] = $returnUrl; 
+
+            return $res['data'];
         }
     }
 
@@ -353,6 +354,17 @@ class Mobbex extends AbstractHelper
     {
         return (bool)$this->scopeConfig->getValue(
             'payment/webpay/debug_mode',
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEmbedPayment()
+    {
+        return (bool)$this->scopeConfig->getValue(
+            'payment/webpay/embed_payment',
             ScopeInterface::SCOPE_STORE
         );
     }

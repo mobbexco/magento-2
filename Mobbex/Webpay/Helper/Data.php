@@ -102,7 +102,7 @@ class Data extends AbstractHelper
         // get checkout object
         $checkout = $this->mobbex->createCheckout();
 
-        $this->log->debug("Checkout => " . $checkout);
+        $this->log->debug("Checkout => " . $checkout['url']);
 
         if ($checkout != false) {
             return $checkout;

@@ -64,6 +64,6 @@ class Redirect extends Template
      */
     public function getCheckoutUrl()
     {
-        return $this->_helper->getCheckout();
+        return $this->_helper->getCheckout()['url'];
     }
 }
