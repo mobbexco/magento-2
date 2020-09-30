@@ -34,6 +34,12 @@
                     <comment>Monto de compra a partir del cual se podrá habilitar el módulo de pagos en el checkout</comment>
                 </field>
 
+                <field id="embed_payment" translate="label comment" sortOrder="6" type="select" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Pago desde el sitio</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
                 <field id="debug_mode" translate="label comment" sortOrder="10" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Habilitar debug</label>

@@ -31,11 +31,12 @@ class CustomConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-        // TODO: For Future Use. Keep It
         $config = [
             'payment' => [
                 'webpay' => [
-                    'config' => false
+                    'config' => [
+                        'embed' => $this->_helper->mobbex->getEmbedPayment()
+                    ]
                 ]
             ]
         ];

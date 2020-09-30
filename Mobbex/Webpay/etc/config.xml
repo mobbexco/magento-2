@@ -13,6 +13,7 @@
                 <group>online</group>
                 <!-- Default Settings -->
                 <test_mode>0</test_mode>
+                <embed_payment>0</embed_payment>
                 <theme>light</theme>
                 <background_color>#ECF2F6</background_color>
                 <primary_color>#6f00ff</primary_color>
