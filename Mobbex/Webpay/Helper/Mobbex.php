@@ -118,8 +118,14 @@ class Mobbex extends AbstractHelper
         // get order amount
         $orderAmount = round($this->order->getData('base_grand_total'), 2);
 
-        // get customer's email
-        $customerEmail = $orderData->getCustomerEmail();
+        // get customer data
+        $customer = [
+            'email' => $orderData->getCustomerEmail(), 
+            'name' => $orderData->getCustomerName(),
+        ];
+        if (!empty($orderData->getBillingAddress()->getTelephone())) {
+            $customer['phone'] = $orderData->getBillingAddress()->getTelephone();
+        }
 
         // ------------------------------
 
@@ -134,6 +140,13 @@ class Mobbex extends AbstractHelper
                 "description" => $product->getName(),
                 "quantity" => $item->getQtyOrdered(),
                 "total" => round($product->getPrice(), 2),
+            ];
+        }
+
+        if (!empty($this->order->getShippingDescription())) {
+            $items[] = [
+                'description' => __('Shipping') . ': ' . $this->order->getShippingDescription(),
+                'total' => $this->order->getShippingAmount(),
             ];
         }
 
@@ -159,7 +172,6 @@ class Mobbex extends AbstractHelper
         $data = [
             'reference' => $orderId,
             'currency' => 'ARS',
-            'email' => $customerEmail,
             'description' => $description,
             // Test Mode
             'test' => $this->getTestMode(),
@@ -174,6 +186,7 @@ class Mobbex extends AbstractHelper
             ],
             'redirect' => 0,
             'total' => (float)$orderAmount,
+            'customer' => $customer,
         ];
 
         $headers = $this->getHeaders();

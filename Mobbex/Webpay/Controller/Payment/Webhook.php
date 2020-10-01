@@ -95,31 +95,61 @@ class Webhook extends WebhookBase
 
             // if data looks fine
             if (isset($orderId) && !empty($status)) {
-                // Get Payment ID from Mobbex
-                $paymentIdMobbex = $data['payment']['id'];
-                // Get Method name from Mobbex
-                $paymentMethod = $data['payment']['source']['name'];
-
-                // Just a check ;)
-                if (!isset($paymentMethod)) {
-                    $paymentMethod = '';
-                }
 
                 $order = $this->_order->loadByIncrementId($orderId);
-                $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
+                $paymentOrder = $order->getPayment();
+                
+                $mobbexPaymentId    = $data['payment']['id'];
+                $paymentMethod      = isset($data['payment']['source']['name']) ? $data['payment']['source']['name'] : '';
+                $mobbexRiskAnalysis = $data['payment']['riskAnalysis']['level'];
+                $formatedPrice      = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
+                
+                $source         = $data['payment']['source'];
+                $mainMobbexNote = 'ID de Operación Mobbex: ' . $mobbexPaymentId . '. ';
+            
+                // Save order url
+                if (!empty($data['entity']['uid'])) {
+                    $mobbexOrderUrl = 'https://mobbex.com/console/' . $data['entity']['uid'] . '/operations/?oid=' . $mobbexPaymentId;
+        
+                    $paymentOrder->setAdditionalInformation('mobbex_order_url', $mobbexOrderUrl);
+                    $order->addStatusHistoryComment('URL al Cupón: ' . $mobbexOrderUrl);
+                }
+                
+                // Save payment info
+                if ($source['type'] == 'card') {
+                    $mobbexCardPaymentInfo = $paymentMethod . ' ( ' . $source['number'] . ' )';
+                    $mobbexCardPlan = $source['installment']['description'] . '. ' . $source['installment']['count'] . ' Cuota/s' . ' de ' . $source['installment']['amount'];
+                    
+                    $paymentOrder->setAdditionalInformation('mobbex_card_info', $mobbexCardPaymentInfo);
+                    $paymentOrder->setAdditionalInformation('mobbex_card_plan', $mobbexCardPlan);
+                    
+                    $mainMobbexNote .= 'Pago realizado con ' . $mobbexCardPaymentInfo . '. ' . $mobbexCardPlan . '. ';
+                } else {
+                    $mainMobbexNote .= 'Pago realizado con ' . $paymentMethod . '. ';
+                }
+                
+                // Save risk analysis
+                if (!empty($mobbexRiskAnalysis)) {
+                    $order->addStatusHistoryComment('El riesgo de la operación fue evaluado en: ' . $mobbexRiskAnalysis);
+                }
+
+                $order->addStatusHistoryComment($mainMobbexNote);
+                $order->save();
+                $paymentOrder->setAdditionalInformation('mobbex_data', $data);
+                $paymentOrder->save();
 
                 switch ($status) {
                     case '200':
-                        $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $paymentIdMobbex);
+                        $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
                         $this->_orderUpdate->approvePayment($order, $message);
                         break;
                     case '2':
                         // Add History Data
-                        $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $paymentIdMobbex))
+                        $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId))
                             ->save();
                         break;
                     case '401':
-                        $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $paymentIdMobbex);
+                        $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
 
                         if ($order->getStatus() == 'pending') {
                             $this->_orderUpdate->cancelPayment($order, $message);
