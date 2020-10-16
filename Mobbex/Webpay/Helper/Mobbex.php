@@ -10,7 +10,6 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
@@ -48,11 +47,6 @@ class Mobbex extends AbstractHelper
     protected $_objectManager;
 
     /**
-     * @var StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
      * @var LoggerInterface
      */
     protected $log;
@@ -74,7 +68,6 @@ class Mobbex extends AbstractHelper
      * @param Order $modelOrder
      * @param Cart $cart
      * @param ObjectManagerInterface $_objectManager
-     * @param StoreManagerInterface $_storeManager
      * @param LoggerInterface $logger
      * @param UrlInterface $urlBuilder
      * @param Image $imageHelper
@@ -85,7 +78,6 @@ class Mobbex extends AbstractHelper
         Order $modelOrder,
         Cart $cart,
         ObjectManagerInterface $_objectManager,
-        StoreManagerInterface $_storeManager,
         LoggerInterface $logger,
         UrlInterface $urlBuilder,
         Image $imageHelper
@@ -95,7 +87,6 @@ class Mobbex extends AbstractHelper
         $this->cart = $cart;
         $this->scopeConfig = $scopeConfig;
 
-        $this->_storeManager = $_storeManager;
         $this->_objectManager = $_objectManager;
         $this->log = $logger;
         $this->urlBuilder = $urlBuilder;
@@ -148,7 +139,7 @@ class Mobbex extends AbstractHelper
                 "image" => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
                 "description" => $product->getName(),
                 "quantity" => $item->getQtyOrdered(),
-                "total" => round($product->getFinalPrice(), 2),
+                "total" => round($product->getPrice(), 2),
             ];
         }
 
@@ -196,8 +187,6 @@ class Mobbex extends AbstractHelper
             'redirect' => 0,
             'total' => (float)$orderAmount,
             'customer' => $customer,
-            'installments' => $this->get_installments(),
-            'timeout' => 5,
         ];
 
         $headers = $this->getHeaders();
@@ -391,35 +380,5 @@ class Mobbex extends AbstractHelper
             'payment/webpay/embed_payment',
             ScopeInterface::SCOPE_STORE
         );
-    }
-
-    /**
-     * @return bool
-     */
-    public function get_installments()
-    {
-        $installments = [];
-
-        $ahora = array(
-            'ahora_3'  => 'Ahora 3',
-            'ahora_6'  => 'Ahora 6',
-            'ahora_12' => 'Ahora 12',
-            'ahora_18' => 'Ahora 18',
-        );
-
-        foreach ($this->order->getAllVisibleItems() as $item) {
-            
-            foreach ($ahora as $key => $value) {
-                
-                if ($item->getProduct()->getResource()->getAttributeRawValue($item->getProduct()->getId(), $key, $this->_storeManager->getStore()->getId()) === '1') {
-                    $installments[] = '-' . $key;
-                    unset($ahora[$key]);
-                }
-    
-            }
-
-        }
-
-        return $installments;
     }
 }
