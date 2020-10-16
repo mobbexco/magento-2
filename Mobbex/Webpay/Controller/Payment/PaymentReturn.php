@@ -140,6 +140,9 @@ class PaymentReturn extends Action
                     }
 
                     $this->_redirect('checkout/onepage/success');
+                } else if ($status >= 400 && $status <= 500 && $status != 401 && $status != 402) {
+                    $this->restoreCart($order);
+                    $this->_redirect('checkout/cart');
                 } else {
                     if ($type == 'none') {
                         $this->_orderUpdate->cancelPayment($order, __("The customer did not finish the payment process"));

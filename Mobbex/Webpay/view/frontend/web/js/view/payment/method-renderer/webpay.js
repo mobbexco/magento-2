@@ -18,11 +18,11 @@ if (embed) {
     // Get type from status 
     function getType(status)
     {
-      if(status < 2) {
+      if(status < 2 || status > 400) {
         return "none";
-      } else if (status == 2 || status == 3) {
+      } else if (status == 2) {
         return "cash";
-      } else if (status == 4 || status >= 200 && status < 400) {
+      } else if (status == 3 || status == 4 || status >= 200 && status < 400) {
         return "card";
       }
     }
@@ -41,8 +41,17 @@ if (embed) {
                     id: checkoutId,
                     type: 'checkout',
                     onResult: (data) => {
+                        var status = data.status.code;
                         jQuery("body").trigger('processStop');
-                        window.MobbexEmbed.close();
+                        
+                        // Redirect using POST form
+                        var form = jQuery('<form action="' + returnUrl + '" method="post">' +
+                        '<input type="text" name="order_id" value="' + data.id + '" />' +
+                        '<input type="text" name="status" value="' + status + '" />' +
+                        '<input type="text" name="type" value="' + getType(status) + '" />' +
+                        '</form>');
+                        jQuery('body').append(form);
+                        form.submit();
                     },
                     onPayment: (data) => {
                         var status = data.data.status.code;
@@ -55,10 +64,14 @@ if (embed) {
                         '</form>');
                         jQuery('body').append(form);
                         
-                        setTimeout(function () {
-                            jQuery("body").trigger('processStop');
-                            form.submit();
-                        }, 5000)
+                        // If order status is not recoverable
+                        if (! ((status >= 400 && status <= 500 && status != 401 && status != 402) || status == 0) ) {
+                            // Redirect
+                            setTimeout(function () {
+                                jQuery("body").trigger('processStop');
+                                form.submit();
+                            }, 5000)
+                        }
                     },
                     onOpen: () => {
                         // Do nothing
