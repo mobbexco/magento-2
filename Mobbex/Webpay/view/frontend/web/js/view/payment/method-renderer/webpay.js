@@ -33,9 +33,8 @@ if (embed) {
         jQuery.ajax({
             url: url,
             success: function(response) {
-                var checkout = JSON.parse(response);
-                var checkoutId = checkout.checkoutId;
-                var returnUrl = htmlDecode(checkout.returnUrl);
+                var checkoutId = response.checkoutId;
+                var returnUrl = response.returnUrl;
     
                 var options = {
                     id: checkoutId,
