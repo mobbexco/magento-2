@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.0.0';
+    const VERSION = '1.1.4';
 
     /**
      * @var ScopeConfigInterface
@@ -209,7 +209,7 @@ class Mobbex extends AbstractHelper
         }
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://mobbex.com/p/checkout",
+            CURLOPT_URL => "https://api.mobbex.com/p/checkout",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -235,59 +235,6 @@ class Mobbex extends AbstractHelper
             $res['data']['return_url'] = $returnUrl; 
 
             return $res['data'];
-        }
-    }
-
-    /**
-     * @param $incrementId
-     * @return bool|mixed
-     */
-    public function getTransaction($incrementId)
-    {
-        $curl = curl_init();
-
-        $data = [
-            'reference' => $incrementId
-        ];
-
-        $headers = $this->getHeaders();
-
-        if($this->getDebugMode())
-        {
-            Data::log("getTransaction Cron Headers:" . print_r($headers, true), "mobbex_debug_" . date('m_Y') . ".log");
-            Data::log("getTransaction incrementId:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
-        }
-
-        curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.mobbex.com/p/operations",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => $headers,
-        ]);
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($err) {
-            Data::log("getTransaction Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
-            return false;
-        } else {
-            $res = json_decode($response, true);
-
-
-            if($this->getDebugMode())
-            {
-                Data::log("getTransaction Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
-            }
-
-            return $res;
         }
     }
 
