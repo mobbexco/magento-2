@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.1.4';
+    const VERSION = '1.1.5';
 
     /**
      * @var ScopeConfigInterface
@@ -179,7 +179,7 @@ class Mobbex extends AbstractHelper
 
         // Create data
         $data = [
-            'reference' => $orderId,
+            'reference' => $this->getReference($orderId),
             'currency' => 'ARS',
             'description' => $description,
             // Test Mode
@@ -369,4 +369,12 @@ class Mobbex extends AbstractHelper
 
         return $installments;
     }
+
+    /**
+     * @return string
+     */
+    public function getReference($orderId)
+    {
+        return 'mag2_order_'.$orderId.'_time_'.time();
+	}
 }
