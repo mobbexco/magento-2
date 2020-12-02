@@ -8,6 +8,9 @@ app/code/Mobbex/Webpay
 
 Changelog:
 
+2020-12-01: 1.1.6
+- Update Mobbex Embed version to 1.0.17
+
 2020-12-01: 1.1.5
 - Uniqueness improvement for reference id
 

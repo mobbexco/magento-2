@@ -4,7 +4,7 @@ if (embed) {
     
     // Add Mobbex script
     var script = document.createElement('script');
-    script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.8.js?t=${Date.now()}`;
+    script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.17.js`;
     script.async = true;
     document.body.appendChild(script);
     
