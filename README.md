@@ -1,14 +1,26 @@
 # Magento 2 Mobbex Payment Gateway
 
-### Manually: Create Folder and Copy the Files
+## Installation
 
-```
-app/code/Mobbex/Webpay
-```
+### Manually: 
+1. Create the following directory in the Magento installation folder
 
-Changelog:
+    ```
+    app/code/Mobbex/Webpay
+    ```
+2. Copy all files in that directory
+
+### Using Composer: 
+1. Run the following commands in the Magento installation folder
+    ```
+    > composer config repositories.mobbexco/magento-2 vcs https://github.com/mobbexco/magento-2
+    > composer require mobbexco/magento-2:dev-master
+    ```
+
+## Changelog:
 
 2020-12-09: 1.1.7
+- Restructure repository to allow composer installation
 - Fix composer.json
 
 2020-12-01: 1.1.6
