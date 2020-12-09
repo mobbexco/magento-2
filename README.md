@@ -8,6 +8,9 @@ app/code/Mobbex/Webpay
 
 Changelog:
 
+2020-12-09: 1.1.7
+- Fix composer.json
+
 2020-12-01: 1.1.6
 - Update Mobbex Embed version to 1.0.17
 
