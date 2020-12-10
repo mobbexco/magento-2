@@ -9,18 +9,27 @@
     app/code/Mobbex/Webpay
     ```
 2. Copy all files in that directory
+3. Run the following  commands in the Magento installation folder
+    ```
+    php bin/magento module:enable Mobbex_Webpay
+    php bin/magento setup:di:compile
+    php bin/magento setup:upgrade
+    php bin/magento setup:static-content:deploy -f
+    ```
 
 ### Using Composer: 
 1. Run the following commands in the Magento installation folder
     ```
-    > composer config repositories.mobbexco/magento-2 vcs https://github.com/mobbexco/magento-2
-    > composer require mobbexco/magento-2:dev-master
+    composer require mobbexco/magento-2
+    php bin/magento setup:di:compile
+    php bin/magento setup:upgrade
+    php bin/magento setup:static-content:deploy -f
     ```
 
 ## Changelog:
 
-2020-12-09: 1.1.7
-- Restructure repository to allow composer installation
+2020-12-10: 1.1.7
+- Add option to install using composer
 - Fix composer.json
 
 2020-12-01: 1.1.6
