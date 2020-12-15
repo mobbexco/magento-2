@@ -27,7 +27,7 @@
 
 ## Changelog:
 
-2020-12-10: 1.1.8
+2020-12-15: 1.1.8
 - Improvements in handling of order states
 - Remove redundancies
 - Fixes
