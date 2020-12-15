@@ -21,12 +21,16 @@
 1. Run the following commands in the Magento installation folder
     ```
     composer require mobbexco/magento-2
-    php bin/magento setup:di:compile
     php bin/magento setup:upgrade
     php bin/magento setup:static-content:deploy -f
     ```
 
 ## Changelog:
+
+2020-12-10: 1.1.8
+- Improvements in handling of order states
+- Remove redundancies
+- Fixes
 
 2020-12-10: 1.1.7
 - Add option to install using composer

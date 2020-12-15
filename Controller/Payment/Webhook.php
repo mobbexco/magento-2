@@ -144,6 +144,8 @@ class Webhook extends WebhookBase
                         $this->_orderUpdate->approvePayment($order, $message);
                         break;
                     case '2':
+                        // Set payment status
+                        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
                         // Add History Data
                         $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId))
                             ->save();
