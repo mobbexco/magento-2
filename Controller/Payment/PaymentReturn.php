@@ -105,56 +105,32 @@ class PaymentReturn extends Action
     public function execute()
     {
         try {
-            // get post data
+            // Get data
             $orderId = $this->getRequest()->getParam('order_id');
             $status = $this->getRequest()->getParam('status');
-            $type = $this->getRequest()->getParam('type');
 
             $this->log->debug('Return Controller > Data', [
                 "id" => $orderId,
                 "status" => $status,
-                "type" => $type,
             ]);
 
             // if data looks fine
             if (isset($orderId)) {
-                // set order status
+                // Get Order
                 $order = $this->_order->loadByIncrementId($orderId);
 
                 $this->log->debug('Return Controller > Order', $this->_order->debug());
 
-                if($status < 2) {
-                    // ignore everything here
-
-                } else if ($status == 2 || $status == 3) {
-                    // Cash Payments!
-
-                } else if ($status == 4 || $status >= 200 && $status < 400)
-                {
-                    if ($type == 'card') {
-                        $this->_orderUpdate->approvePayment($order, __("Order generated with credit card."));
-                    }
-                    if ($type == 'cash') {
-                        $order->addStatusToHistory($this->_order->getStatus(), __("Order generated with payment receipt."))
-                            ->save();
-                    }
-
+                if ($status == 2 || $status == 3 || $status == 4 || $status == 100 || $status >= 200 && $status < 400) {
                     $this->_redirect('checkout/onepage/success');
-                } else if ($status >= 400 && $status <= 500 && $status != 401 && $status != 402) {
-                    $this->restoreCart($order);
-                    $this->_redirect('checkout/cart');
                 } else {
-                    if ($type == 'none') {
-                        $this->_orderUpdate->cancelPayment($order, __("The customer did not finish the payment process"));
-                    } else {
-                        $this->_orderUpdate->cancelPayment($order, __("Customer was redirected back. Cancelled payment."));
-                    }
-
                     $this->restoreCart($order);
                     $this->_redirect('checkout/cart');
                 }
+
             } else {
-                $this->_redirect('/');
+                $this->_redirect('home');
+                Data::log('Payment Return called without order id', "mobbex_error_" . date('m_Y') . ".log");
             }
         } catch (Exception $e) {
             Data::log($e->getMessage(), "mobbex_error_" . date('m_Y') . ".log");
