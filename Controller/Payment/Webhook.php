@@ -138,32 +138,25 @@ class Webhook extends WebhookBase
                 $paymentOrder->setAdditionalInformation('mobbex_data', $data);
                 $paymentOrder->save();
 
-                switch ($status) {
-                    case '200':
-                        $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
-                        $this->_orderUpdate->approvePayment($order, $message);
-                        break;
-                    case '2':
-                        // Set payment status
-                        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
-                        // Add History Data
-                        $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId))
-                            ->save();
-                        break;
-                    case '401':
-                        $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
+                if ($status == 2 || $status == 3 || $status == 100) {
+                    // Set payment status
+                    $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
+                    // Add History Data
+                    $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId))
+                        ->save();
+                } else if ($status == 4 || $status >= 200 && $status < 400) {
+                    $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
+                    $this->_orderUpdate->approvePayment($order, $message);
+                } else {
+                    $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
 
-                        if ($order->getStatus() == 'pending') {
-                            $this->_orderUpdate->cancelPayment($order, $message);
-                        } else {
-                            $this->_orderUpdate->refundPayment($order, $message);
-                        }
-                        break;
-                    default:
-
-                        break;
-
+                    if ($order->getStatus() == 'pending') {
+                        $this->_orderUpdate->cancelPayment($order, $message);
+                    } else {
+                        $this->_orderUpdate->refundPayment($order, $message);
+                    }
                 }
+
                 // redirect to success page
                 $response['result'] = true;
             }
