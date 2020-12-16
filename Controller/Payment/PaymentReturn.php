@@ -121,7 +121,7 @@ class PaymentReturn extends Action
 
                 $this->log->debug('Return Controller > Order', $this->_order->debug());
 
-                if ($status == 2 || $status == 3 || $status == 4 || $status == 100 || $status >= 200 && $status < 400) {
+                if ($status > 1 && $status < 400) {
                     $this->_redirect('checkout/onepage/success');
                 } else {
                     $this->restoreCart($order);

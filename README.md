@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2020-12-16: 1.1.9
+- Fix handling of order hold states
+
 2020-12-15: 1.1.8
 - Improvements in handling of order states
 - Remove redundancies
