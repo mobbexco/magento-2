@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2020-12-18: 1.1.10
+- Fix obtaining price for order items
+
 2020-12-16: 1.1.9
 - Fix handling of order hold states
 
