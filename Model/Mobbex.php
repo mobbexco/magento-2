@@ -56,6 +56,13 @@ class Mobbex extends AbstractMethod
     protected $_canRefund = true;
 
     /**
+     * Payment Method feature
+     *
+     * @var bool
+     */
+    protected $_canRefundInvoicePartial = true;
+
+    /**
      * @var string
      */
     protected $_infoBlockType = 'Mobbex\Webpay\Block\Info';

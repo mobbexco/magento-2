@@ -276,7 +276,7 @@ class Mobbex extends AbstractHelper
     /**
      * @return array
      */
-    private function getHeaders()
+    public function getHeaders()
     {
         return [
             'cache-control: no-cache',
