@@ -39,7 +39,10 @@
                     <label>Pago desde el sitio</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-
+                <field id="checkout_banner" translate="label" sortOrder="7" type="text" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Banner Checkout</label>
+                </field>
                 <field id="debug_mode" translate="label comment" sortOrder="10" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Habilitar debug</label>

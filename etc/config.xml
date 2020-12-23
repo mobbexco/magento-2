@@ -17,6 +17,7 @@
                 <theme>light</theme>
                 <background_color>#ECF2F6</background_color>
                 <primary_color>#6f00ff</primary_color>
+                <checkout_banner>https://res.mobbex.com/images/isologo.png</checkout_banner>
             </webpay>
         </payment>
     </default>

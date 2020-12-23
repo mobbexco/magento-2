@@ -16,6 +16,7 @@ use Magento\Sales\Model\Service\InvoiceService;
 use Mobbex\Webpay\Helper\Data;
 use Mobbex\Webpay\Model\OrderUpdate;
 use Psr\Log\LoggerInterface;
+use \Magento\Framework\Message\ManagerInterface;
 
 /**
  * Class PaymentReturn
@@ -82,13 +83,15 @@ class PaymentReturn extends Action
         Cart $cart,
         Session $checkoutSession,
         LoggerInterface $logger,
-        OrderUpdate $orderUpdate
+        OrderUpdate $orderUpdate,
+        ManagerInterface $messageManager
     ) {
         $this->_invoiceService = $_invoiceService;
         $this->_transaction = $_transaction;
         $this->_order = $_order;
         $this->context = $context;
         $this->_orderUpdate = $orderUpdate;
+        $this->messageManager = $messageManager;
 
         $this->cart = $cart;
         $this->checkoutSession = $checkoutSession;
@@ -125,10 +128,11 @@ class PaymentReturn extends Action
                     $this->_redirect('checkout/onepage/success');
                 } else {
                     $this->restoreCart($order);
-                    $this->_redirect('checkout/cart');
+                    $this->_redirect('checkout',['_fragment' => 'payment']);
                 }
 
             } else {
+                $this->messageManager->addError(__("Invalid order number"));
                 $this->_redirect('home');
                 Data::log('Payment Return called without order id', "mobbex_error_" . date('m_Y') . ".log");
             }
