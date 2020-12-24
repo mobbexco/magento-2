@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Sales:etc/sales.xsd">
+	<section name="order_invoice">
+		<group name="totals">
+			<item name="fee" instance="Mobbex\Webpay\Model\Invoice\Fee" sort_order="160"/>
+		</group>
+		</section>
+	<section name="order_creditmemo">
+		<group name="totals">
+			<item name="fee" instance="Mobbex\Webpay\Model\Creditmemo\Fee" sort_order="160"/>
+		</group>
+	</section>
+</config>
