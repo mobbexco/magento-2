@@ -6,3 +6,4 @@
 "Your order was not successful.","La orden fue cancelada"
 "We are redirecting you to our secure payment site in Mobbex...","Estamos iniciando el proceso de pago, por favor aguardá mientras cargamos Mobbex..."
 "Customer was redirected back. Cancelled payment.","El cliente fue redireccionado, pago cancelado"
+"Invalid order number","Número de orden no válida"
