@@ -1,29 +1,29 @@
 var embed = window.checkoutConfig.payment.webpay.config.embed;
 
 if (embed) {
-    
+
     // Add Mobbex script
     var script = document.createElement('script');
     script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.17.js`;
     script.async = true;
     document.body.appendChild(script);
-    
-    // Remove HTML entities 
-    function htmlDecode(input) 
+
+    // Remove HTML entities
+    function htmlDecode(input)
     {
       var doc = new DOMParser().parseFromString(input, "text/html");
       return doc.documentElement.textContent;
     }
 
     // Create checkout and init Mobbex Embed
-    function createCheckout(url) 
+    function createCheckout(url)
     {
         jQuery.ajax({
             url: url,
             success: function(response) {
                 var checkoutId = response.checkoutId;
                 var returnUrl = response.returnUrl;
-    
+
                 var options = {
                     id: checkoutId,
                     type: 'checkout',
@@ -31,12 +31,12 @@ if (embed) {
                     onResult: (data) => {
                         location.href = returnUrl + '&status=' + data.status.code
                     },
-            
+
                     onClose: () => {
                         jQuery("body").trigger('processStop');
                         location.href = returnUrl
                     },
-            
+
                     onError: (error) => {
                         console.log(error)
                         jQuery("body").trigger('processStop');
@@ -90,6 +90,13 @@ define(
                     'method': this.item.method,
                     'additional_data': {}
                 };
+            },
+            getBanner: function () {
+                let mobbexConfig = window.checkoutConfig.payment.webpay;
+                if (mobbexConfig !== undefined) {
+                    return mobbexConfig['banner'];
+                }
+                return '';
             }
         });
     }

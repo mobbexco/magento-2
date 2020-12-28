@@ -4,6 +4,7 @@ namespace Mobbex\Webpay\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Mobbex\Webpay\Helper\Data;
+use Mobbex\Webpay\Helper\Config;
 
 /**
  * Class CustomConfigProvider
@@ -17,13 +18,19 @@ class CustomConfigProvider implements ConfigProviderInterface
     protected $_helper;
 
     /**
+     * @var Config
+     */
+    protected $config;
+    /**
      * CustomConfigProvider constructor.
      * @param Data $helper
      */
     public function __construct(
-        Data $helper
+        Data $helper,
+        Config $config
     ) {
         $this->_helper = $helper;
+        $this->config = $config;
     }
 
     /**
@@ -36,7 +43,8 @@ class CustomConfigProvider implements ConfigProviderInterface
                 'webpay' => [
                     'config' => [
                         'embed' => $this->_helper->mobbex->getEmbedPayment()
-                    ]
+                    ],
+                    'banner' => $this->config->getBannerCheckout()
                 ]
             ]
         ];

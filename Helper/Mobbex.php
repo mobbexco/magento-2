@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.1.10';
+    const VERSION = '1.2.0';
 
     /**
      * @var ScopeConfigInterface
@@ -276,7 +276,7 @@ class Mobbex extends AbstractHelper
     /**
      * @return array
      */
-    private function getHeaders()
+    public function getHeaders()
     {
         return [
             'cache-control: no-cache',

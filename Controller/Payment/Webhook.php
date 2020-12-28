@@ -43,25 +43,34 @@ class Webhook extends WebhookBase
     protected $_orderUpdate;
 
     /**
+     *
+     * @var \Magento\Quote\Model\QuoteFactory
+     */
+    protected $quoteFactory;
+
+    /**
      * Webhook constructor.
      * @param Context $context
      * @param Order $_order
      * @param OrderUpdate $orderUpdate
      * @param JsonFactory $resultJsonFactory
      * @param LoggerInterface $logger
+     * @param CartRepositoryInterface $quoteRepository,
      */
     public function __construct(
         Context $context,
         Order $_order,
         OrderUpdate $orderUpdate,
         JsonFactory $resultJsonFactory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     ) {
         $this->_order = $_order;
         $this->context = $context;
         $this->resultJsonFactory = $resultJsonFactory;
         $this->_orderUpdate = $orderUpdate;
         $this->log = $logger;
+        $this->quoteFactory = $quoteFactory;
 
         parent::__construct($context);
     }
@@ -102,7 +111,10 @@ class Webhook extends WebhookBase
                 $mobbexPaymentId    = $data['payment']['id'];
                 $paymentMethod      = isset($data['payment']['source']['name']) ? $data['payment']['source']['name'] : '';
                 $mobbexRiskAnalysis = $data['payment']['riskAnalysis']['level'];
-                $formatedPrice      = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
+
+                $totalPaid = $data['payment']['total'];
+                $this->addFeeOrDiscount($totalPaid, $order);
+                $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
                 
                 $source         = $data['payment']['source'];
                 $mainMobbexNote = 'ID de Operación Mobbex: ' . $mobbexPaymentId . '. ';
@@ -139,11 +151,8 @@ class Webhook extends WebhookBase
                 $paymentOrder->save();
 
                 if ($status == 2 || $status == 3 || $status == 100) {
-                    // Set payment status
-                    $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
-                    // Add History Data
-                    $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId))
-                        ->save();
+                    $message = __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
+                    $this->_orderUpdate->holdPayment($order, $message);
                 } else if ($status == 4 || $status >= 200 && $status < 400) {
                     $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
                     $this->_orderUpdate->approvePayment($order, $message);
@@ -168,5 +177,33 @@ class Webhook extends WebhookBase
         $resultJson->setData($response);
 
         return $resultJson;
+    }
+
+    /**
+     * Add fee or discount to order & quote
+     * 
+     * @param int $totalPaid
+     * @param Order $order
+     * 
+     * @return bool
+     */
+    public function addFeeOrDiscount($totalPaid, $order)
+    {
+        $orderTotal = $order->getGrandTotal();
+        $quote = $this->quoteFactory->create()->load($order->getQuoteId());
+
+        if ($orderTotal == $totalPaid) {
+            return false;
+        }
+
+        $fee = $totalPaid - $orderTotal;
+
+        $quote->setFee($fee);
+        $order->setFee($fee);
+
+        $order->setGrandTotal($totalPaid);
+        $quote->setGrandTotal($totalPaid);
+
+        $quote->save();
     }
 }
