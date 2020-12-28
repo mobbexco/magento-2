@@ -151,11 +151,8 @@ class Webhook extends WebhookBase
                 $paymentOrder->save();
 
                 if ($status == 2 || $status == 3 || $status == 100) {
-                    // Set payment status
-                    $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT)->save();
-                    // Add History Data
-                    $order->addStatusToHistory($order->getStatus(), __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId))
-                        ->save();
+                    $message = __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
+                    $this->_orderUpdate->holdPayment($order, $message);
                 } else if ($status == 4 || $status >= 200 && $status < 400) {
                     $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
                     $this->_orderUpdate->approvePayment($order, $message);

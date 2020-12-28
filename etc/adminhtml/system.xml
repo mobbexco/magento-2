@@ -13,11 +13,6 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="title" translate="label comment" sortOrder="2" type="text" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Título</label>
-                </field>
-
                 <field id="api_key" translate="label comment" sortOrder="3" type="text" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>API Key</label>
@@ -34,51 +29,116 @@
                     <comment>Monto de compra a partir del cual se podrá habilitar el módulo de pagos en el checkout</comment>
                 </field>
 
-                <field id="embed_payment" translate="label comment" sortOrder="6" type="select" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Pago desde el sitio</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="checkout_banner" translate="label" sortOrder="7" type="text" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Banner Checkout</label>
-                </field>
-                <field id="debug_mode" translate="label comment" sortOrder="10" type="select" showInDefault="1"
+                <field id="debug_mode" translate="label comment" sortOrder="6" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Habilitar debug</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Solo para pruebas de desarrollo y verficiar eventuales errores</comment>
                 </field>
 
-                <field id="test_mode" translate="label comment" sortOrder="10" type="select" showInDefault="1"
+                <field id="test_mode" translate="label comment" sortOrder="7" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Modo de Pruebas</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <group id="checkout" translate="label" sortOrder="6" showInDefault="1" showInWebsite="1"
+                <group id="checkout" translate="label" sortOrder="8" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Checkout</label>
 
-                    <field id="theme" translate="label comment" sortOrder="1" type="select" showInDefault="1"
-                           showInWebsite="1" showInStore="1">
+                    <field id="title" translate="label comment" sortOrder="9" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Título</label>
+                    </field>
+
+                    <field id="embed_payment" translate="label comment" sortOrder="10" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Pago desde el sitio</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
+                    <field id="checkout_banner" translate="label comment" sortOrder="11" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Banner Checkout</label>
+                        <comment>
+                            <![CDATA[
+                                Otros ejemplos:<br/>
+                                https://res.mobbex.com/ecommerce/mobbex_2.png<br/>
+                                https://res.mobbex.com/ecommerce/mobbex_3.png
+                            ]]>
+                        </comment>
+                    </field>
+
+                    <field id="theme" translate="label comment" sortOrder="12" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="0">
                         <label>Tema</label>
                         <source_model>Mobbex\Webpay\Model\Themes</source_model>
                     </field>
 
-                    <field id="background_color" translate="label comment" sortOrder="2" type="text" showInDefault="1"
-                           showInWebsite="1" showInStore="1">
+                    <field id="background_color" translate="label comment" sortOrder="13" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="0">
                         <label>Color de Fondo</label>
                         <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>
 
-                    <field id="primary_color" translate="label comment" sortOrder="3" type="text" showInDefault="1"
-                           showInWebsite="1" showInStore="1">
+                    <field id="primary_color" translate="label comment" sortOrder="14" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="0">
                         <label>Color Primario</label>
                         <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>
-                </group>
 
+                    <group id="order_status_settings" translate="label" sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                        <label>Order Status Settings</label>
+                        
+                        <field id="order_status_approved" translate="label" type="select" sortOrder="15" showInDefault="1"
+                            showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido cuando se aprueba el pago</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
+                        <field id="order_status_in_process" translate="label" type="select" sortOrder="16" showInDefault="1"
+                            showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido cuando el pago está en curso</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
+                        <field id="order_status_cancelled" translate="label" type="select" sortOrder="17" showInDefault="1"
+                            showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido cuando el pago es cancelado</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
+                        <field id="order_status_refunded" translate="label" type="select" sortOrder="18" showInDefault="1"
+                            showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido cuando se reembolsa el pago</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+                    </group>
+
+                    <group id="email_settings" translate="label" sortOrder="19" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                        <label>Email Settings</label>
+
+                        <field id="create_order_email" translate="label comment" sortOrder="19" type="select" showInDefault="1"
+                            showInWebsite="1" showInStore="1">
+                            <label>Email al crear orden</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
+
+                        <field id="update_order_email" translate="label comment" sortOrder="20" type="select" showInDefault="1"
+                            showInWebsite="1" showInStore="1">
+                            <label>Email al actualizar orden</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
+
+                        <field id="create_invoice_email" translate="label comment" sortOrder="21" type="select" showInDefault="1"
+                            showInWebsite="1" showInStore="1">
+                            <label>Email al crear factura</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
+                    </group>
+                </group>
             </group>
         </section>
     </system>
