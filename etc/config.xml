@@ -7,17 +7,28 @@
                 <payment_action>capture</payment_action>
                 <model>Mobbex\Webpay\Model\Mobbex</model>
                 <active>1</active>
-                <title>Mobbex</title>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
                 <group>online</group>
                 <!-- Default Settings -->
                 <test_mode>0</test_mode>
-                <embed_payment>0</embed_payment>
-                <theme>light</theme>
-                <background_color>#ECF2F6</background_color>
-                <primary_color>#6f00ff</primary_color>
-                <checkout_banner>https://res.mobbex.com/images/isologo.png</checkout_banner>
+                <checkout>
+                    <title>Mobbex</title>
+                    <embed_payment>0</embed_payment>
+                    <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
+                    <theme>light</theme>
+                    <background_color>#ECF2F6</background_color>
+                    <primary_color>#6f00ff</primary_color>
+                    <order_status_settings>
+                        <order_status_approved>processing</order_status_approved>
+                        <order_status_in_process>pending</order_status_in_process>
+                        <order_status_cancelled>canceled</order_status_cancelled>
+                        <order_status_refunded>closed</order_status_refunded>
+                    </order_status_settings>
+                    <email_settings>
+                        <create_order_email>1</create_order_email>
+                    </email_settings>
+                </checkout>
             </webpay>
         </payment>
     </default>
