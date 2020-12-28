@@ -27,6 +27,16 @@
 
 ## Changelog:
 
+2020-12-28: 1.2.0
+- Save and show financial cost in store
+- Add support for online refunds
+- Add error messages
+- Mobbex returns to checkout when payment fails
+- Add option to show banner on checkout
+- Add helper for config
+- Add translation file
+- Add email and order status settings
+
 2020-12-18: 1.1.10
 - Fix obtaining price for order items
 
