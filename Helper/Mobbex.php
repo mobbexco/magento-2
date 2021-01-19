@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.2.0';
+    const VERSION = '1.2.1';
 
     /**
      * @var ScopeConfigInterface
@@ -143,7 +143,7 @@ class Mobbex extends AbstractHelper
 
         foreach ($orderedItems as $item) {
             $product = $item->getProduct();
-            $price = $item->getPrice() ? : $product->getFinalPrice();
+            $price = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
 
             $items[] = [
                 "image" => $this->imageHelper->init($product, 'product_small_image')->getUrl(),

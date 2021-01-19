@@ -27,6 +27,10 @@
 
 ## Changelog:
 
+2021-01-19: 1.2.1
+- Fix items total obtaining
+- Cancel order to return stock when payment is not attempted
+
 2020-12-28: 1.2.0
 - Save and show financial cost in store
 - Add support for online refunds
