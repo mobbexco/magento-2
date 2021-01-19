@@ -143,7 +143,7 @@ class Mobbex extends AbstractHelper
 
         foreach ($orderedItems as $item) {
             $product = $item->getProduct();
-            $price = $item->getPrice() ? : $product->getFinalPrice();
+            $price = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
 
             $items[] = [
                 "image" => $this->imageHelper->init($product, 'product_small_image')->getUrl(),

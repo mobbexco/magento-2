@@ -131,6 +131,11 @@ class PaymentReturn extends Action
                     $this->_redirect('checkout',['_fragment' => 'payment']);
                 }
 
+                // Cancel order to return stock when payment is not attempted
+                if (empty($status)) {
+                    $order->cancel();
+                    $order->save();
+                }
             } else {
                 $this->messageManager->addError(__("Invalid order number"));
                 $this->_redirect('home');
