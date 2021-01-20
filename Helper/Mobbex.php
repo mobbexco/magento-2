@@ -2,6 +2,7 @@
 
 namespace Mobbex\Webpay\Helper;
 
+use Mobbex\Webpay\Helper\Config;
 use Magento\Catalog\Helper\Image;
 use Magento\Checkout\Model\Cart;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -21,6 +22,11 @@ use Psr\Log\LoggerInterface;
 class Mobbex extends AbstractHelper
 {
     const VERSION = '1.2.1';
+
+    /**
+     * @var Config
+     */
+    public $config;
 
     /**
      * @var ScopeConfigInterface
@@ -69,6 +75,7 @@ class Mobbex extends AbstractHelper
 
     /**
      * Mobbex constructor.
+     * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
      * @param OrderInterface $order
      * @param Order $modelOrder
@@ -80,6 +87,7 @@ class Mobbex extends AbstractHelper
      * @param Image $imageHelper
      */
     public function __construct(
+        Config $config,
         ScopeConfigInterface $scopeConfig,
         OrderInterface $order,
         Order $modelOrder,
@@ -90,6 +98,7 @@ class Mobbex extends AbstractHelper
         UrlInterface $urlBuilder,
         Image $imageHelper
     ) {
+        $this->config = $config;
         $this->order = $order;
         $this->modelOrder = $modelOrder;
         $this->cart = $cart;
@@ -184,12 +193,12 @@ class Mobbex extends AbstractHelper
             'currency' => 'ARS',
             'description' => $description,
             // Test Mode
-            'test' => $this->getTestMode(),
+            'test' => $this->config->getTestMode(),
             'return_url' => $returnUrl,
             'items' => $items,
             'webhook' => $webhook,
             "options" => [
-                "button" => $this->getEmbedPayment(),
+                "button" => $this->config->getEmbedPayment(),
                 "domain" => $this->urlBuilder->getUrl('/'),
                 "theme" => $this->getTheme(),
                 "platform" => $this->getPlatform(),
@@ -203,7 +212,7 @@ class Mobbex extends AbstractHelper
 
         $headers = $this->getHeaders();
 
-        if($this->getDebugMode())
+        if($this->config->getDebugMode())
         {
             Data::log("Checkout Headers:" . print_r($headers, true), "mobbex_debug_" . date('m_Y') . ".log");
             Data::log("Checkout Headers:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
@@ -245,19 +254,10 @@ class Mobbex extends AbstractHelper
     private function getTheme()
     {
         return [
-            "type" => $this->scopeConfig->getValue(
-                'payment/webpay/theme',
-                ScopeInterface::SCOPE_STORE
-            ),
-            "background" => $this->scopeConfig->getValue(
-                'payment/webpay/background_color',
-                ScopeInterface::SCOPE_STORE
-            ),
+            "type" => $this->config->getThemeType(),
+            "background" => $this->config->getBackgroundColor(),
             "colors" => [
-                "primary" => $this->scopeConfig->getValue(
-                    'payment/webpay/primary_color',
-                    ScopeInterface::SCOPE_STORE
-                ),
+                "primary" => $this->config->getPrimaryColor(),
             ],
         ];
     }
@@ -281,64 +281,9 @@ class Mobbex extends AbstractHelper
         return [
             'cache-control: no-cache',
             'content-type: application/json',
-            'x-api-key: ' . $this->getApiKey(),
-            'x-access-token: ' . $this->getAccessToken(),
+            'x-api-key: ' . $this->config->getApiKey(),
+            'x-access-token: ' . $this->config->getAccessToken(),
         ];
-    }
-
-    /**
-     * @return string
-     */
-    public function getApiKey()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/webpay/api_key',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return string
-     */
-    public function getAccessToken()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/webpay/access_token',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return int
-     */
-    public function getTestMode()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/webpay/test_mode',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return bool
-     */
-    public function getDebugMode()
-    {
-        return (bool)$this->scopeConfig->getValue(
-            'payment/webpay/debug_mode',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return bool
-     */
-    public function getEmbedPayment()
-    {
-        return (bool)$this->scopeConfig->getValue(
-            'payment/webpay/embed_payment',
-            ScopeInterface::SCOPE_STORE
-        );
     }
 
     /**
