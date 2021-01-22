@@ -173,7 +173,7 @@ class Mobbex extends AbstractHelper
         if (!empty($this->order->getShippingDescription())) {
             $items[] = [
                 'description' => __('Shipping') . ': ' . $this->order->getShippingDescription(),
-                'total' => $this->order->getShippingAmount(),
+                'total' => $this->order->getShippingInclTax(),
             ];
         }
 
