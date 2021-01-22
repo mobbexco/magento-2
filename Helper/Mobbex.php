@@ -74,6 +74,11 @@ class Mobbex extends AbstractHelper
     protected $imageHelper;
 
     /**
+     * @var CustomFieldFactory
+     */
+    protected $_customFieldFactory;
+
+    /**
      * Mobbex constructor.
      * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
@@ -85,6 +90,7 @@ class Mobbex extends AbstractHelper
      * @param LoggerInterface $logger
      * @param UrlInterface $urlBuilder
      * @param Image $imageHelper
+     * @param CustomFieldFactory $_customFieldFactory
      */
     public function __construct(
         Config $config,
@@ -96,7 +102,8 @@ class Mobbex extends AbstractHelper
         StoreManagerInterface $_storeManager,
         LoggerInterface $logger,
         UrlInterface $urlBuilder,
-        Image $imageHelper
+        Image $imageHelper,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         $this->config = $config;
         $this->order = $order;
@@ -109,6 +116,7 @@ class Mobbex extends AbstractHelper
         $this->log = $logger;
         $this->urlBuilder = $urlBuilder;
         $this->imageHelper = $imageHelper;
+        $this->_customFieldFactory = $customFieldFactory;
     }
 
     /**
@@ -302,13 +310,29 @@ class Mobbex extends AbstractHelper
 
         foreach ($this->order->getAllVisibleItems() as $item) {
             
+            $productId = $item->getProduct()->getId();
+            
             foreach ($ahora as $key => $value) {
                 
-                if ($item->getProduct()->getResource()->getAttributeRawValue($item->getProduct()->getId(), $key, $this->_storeManager->getStore()->getId()) === '1') {
+                if ($item->getProduct()->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
                 }
     
+            }
+
+            $customField = $this->_customFieldFactory->create();
+            $checkedCommonPlans = unserialize($customField->getCustomField($productId, 'product', 'common_plans'));
+            $checkedAdvancedPlans = unserialize($customField->getCustomField($productId, 'product', 'advanced_plans'));
+
+            foreach ($checkedCommonPlans as $key => $commonPlan) {
+                $installments[] = '-' . $commonPlan;
+                unset($checkedCommonPlans[$key]);
+            }
+
+            foreach ($checkedAdvancedPlans as $key => $advancedPlan) {
+                $installments[] = '+uid:' . $advancedPlan;
+                unset($checkedAdvancedPlans[$key]);
             }
 
         }
