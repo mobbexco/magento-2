@@ -2,4 +2,7 @@
     <event name="payment_method_assign_data_webpay">
         <observer name="mobbex_custom_gateway_data_assign" instance="Mobbex\Webpay\Observer\DataAssignObserver"/>
     </event>
+    <event name="catalog_product_save_after">
+        <observer name="mobbex_product_config_save" instance="Mobbex\Webpay\Observer\ProductSaveObserver"/>
+    </event>
 </config>

@@ -4,6 +4,16 @@ namespace Mobbex\Webpay\Helper;
 
 class Config extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    const PATH_API_KEY = 'payment/webpay/api_key';
+    const PATH_ACCESS_TOKEN = 'payment/webpay/access_token';
+
+    const PATH_TEST_MODE = 'payment/webpay/test_mode';
+    const PATH_DEBUG_MODE = 'payment/webpay/debug_mode';
+    const PATH_EMBED_PAYMENT = 'payment/webpay/checkout/embed_payment';
+
+    const PATH_THEME_TYPE = 'payment/webpay/checkout/theme';
+    const PATH_BACKGROUND_COLOR = 'payment/webpay/checkout/background_color';
+    const PATH_PRIMARY_COLOR = 'payment/webpay/checkout/primary_color';
     const PATH_BANNER_CHECKOUT = 'payment/webpay/checkout/checkout_banner';
 
     const PATH_CREATE_ORDER_EMAIL = 'payment/webpay/checkout/email_settings/create_order_email';
@@ -82,6 +92,78 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_ORDER_STATUS_REFUNDED,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getThemeType($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_THEME_TYPE,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getBackgroundColor($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_BACKGROUND_COLOR,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getPrimaryColor($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_PRIMARY_COLOR,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getEmbedPayment($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_EMBED_PAYMENT,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getApiKey($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_API_KEY,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getAccessToken($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_ACCESS_TOKEN,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getTestMode($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_TEST_MODE,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getDebugMode($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_DEBUG_MODE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );

@@ -2,6 +2,7 @@
 
 namespace Mobbex\Webpay\Helper;
 
+use Mobbex\Webpay\Helper\Config;
 use Magento\Catalog\Helper\Image;
 use Magento\Checkout\Model\Cart;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -20,7 +21,12 @@ use Psr\Log\LoggerInterface;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.2.1';
+    const VERSION = '1.3.0';
+
+    /**
+     * @var Config
+     */
+    public $config;
 
     /**
      * @var ScopeConfigInterface
@@ -68,7 +74,13 @@ class Mobbex extends AbstractHelper
     protected $imageHelper;
 
     /**
+     * @var CustomFieldFactory
+     */
+    protected $_customFieldFactory;
+
+    /**
      * Mobbex constructor.
+     * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
      * @param OrderInterface $order
      * @param Order $modelOrder
@@ -78,8 +90,10 @@ class Mobbex extends AbstractHelper
      * @param LoggerInterface $logger
      * @param UrlInterface $urlBuilder
      * @param Image $imageHelper
+     * @param CustomFieldFactory $_customFieldFactory
      */
     public function __construct(
+        Config $config,
         ScopeConfigInterface $scopeConfig,
         OrderInterface $order,
         Order $modelOrder,
@@ -88,8 +102,10 @@ class Mobbex extends AbstractHelper
         StoreManagerInterface $_storeManager,
         LoggerInterface $logger,
         UrlInterface $urlBuilder,
-        Image $imageHelper
+        Image $imageHelper,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
+        $this->config = $config;
         $this->order = $order;
         $this->modelOrder = $modelOrder;
         $this->cart = $cart;
@@ -100,6 +116,7 @@ class Mobbex extends AbstractHelper
         $this->log = $logger;
         $this->urlBuilder = $urlBuilder;
         $this->imageHelper = $imageHelper;
+        $this->_customFieldFactory = $customFieldFactory;
     }
 
     /**
@@ -156,7 +173,7 @@ class Mobbex extends AbstractHelper
         if (!empty($this->order->getShippingDescription())) {
             $items[] = [
                 'description' => __('Shipping') . ': ' . $this->order->getShippingDescription(),
-                'total' => $this->order->getShippingAmount(),
+                'total' => $this->order->getShippingInclTax(),
             ];
         }
 
@@ -184,12 +201,12 @@ class Mobbex extends AbstractHelper
             'currency' => 'ARS',
             'description' => $description,
             // Test Mode
-            'test' => $this->getTestMode(),
+            'test' => $this->config->getTestMode(),
             'return_url' => $returnUrl,
             'items' => $items,
             'webhook' => $webhook,
             "options" => [
-                "button" => $this->getEmbedPayment(),
+                "button" => $this->config->getEmbedPayment(),
                 "domain" => $this->urlBuilder->getUrl('/'),
                 "theme" => $this->getTheme(),
                 "platform" => $this->getPlatform(),
@@ -203,7 +220,7 @@ class Mobbex extends AbstractHelper
 
         $headers = $this->getHeaders();
 
-        if($this->getDebugMode())
+        if($this->config->getDebugMode())
         {
             Data::log("Checkout Headers:" . print_r($headers, true), "mobbex_debug_" . date('m_Y') . ".log");
             Data::log("Checkout Headers:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
@@ -245,19 +262,10 @@ class Mobbex extends AbstractHelper
     private function getTheme()
     {
         return [
-            "type" => $this->scopeConfig->getValue(
-                'payment/webpay/theme',
-                ScopeInterface::SCOPE_STORE
-            ),
-            "background" => $this->scopeConfig->getValue(
-                'payment/webpay/background_color',
-                ScopeInterface::SCOPE_STORE
-            ),
+            "type" => $this->config->getThemeType(),
+            "background" => $this->config->getBackgroundColor(),
             "colors" => [
-                "primary" => $this->scopeConfig->getValue(
-                    'payment/webpay/primary_color',
-                    ScopeInterface::SCOPE_STORE
-                ),
+                "primary" => $this->config->getPrimaryColor(),
             ],
         ];
     }
@@ -281,64 +289,9 @@ class Mobbex extends AbstractHelper
         return [
             'cache-control: no-cache',
             'content-type: application/json',
-            'x-api-key: ' . $this->getApiKey(),
-            'x-access-token: ' . $this->getAccessToken(),
+            'x-api-key: ' . $this->config->getApiKey(),
+            'x-access-token: ' . $this->config->getAccessToken(),
         ];
-    }
-
-    /**
-     * @return string
-     */
-    public function getApiKey()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/webpay/api_key',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return string
-     */
-    public function getAccessToken()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/webpay/access_token',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return int
-     */
-    public function getTestMode()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/webpay/test_mode',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return bool
-     */
-    public function getDebugMode()
-    {
-        return (bool)$this->scopeConfig->getValue(
-            'payment/webpay/debug_mode',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * @return bool
-     */
-    public function getEmbedPayment()
-    {
-        return (bool)$this->scopeConfig->getValue(
-            'payment/webpay/embed_payment',
-            ScopeInterface::SCOPE_STORE
-        );
     }
 
     /**
@@ -357,13 +310,29 @@ class Mobbex extends AbstractHelper
 
         foreach ($this->order->getAllVisibleItems() as $item) {
             
+            $productId = $item->getProduct()->getId();
+            
             foreach ($ahora as $key => $value) {
                 
-                if ($item->getProduct()->getResource()->getAttributeRawValue($item->getProduct()->getId(), $key, $this->_storeManager->getStore()->getId()) === '1') {
+                if ($item->getProduct()->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
                 }
     
+            }
+
+            $customField = $this->_customFieldFactory->create();
+            $checkedCommonPlans = unserialize($customField->getCustomField($productId, 'product', 'common_plans'));
+            $checkedAdvancedPlans = unserialize($customField->getCustomField($productId, 'product', 'advanced_plans'));
+
+            foreach ($checkedCommonPlans as $key => $commonPlan) {
+                $installments[] = '-' . $commonPlan;
+                unset($checkedCommonPlans[$key]);
+            }
+
+            foreach ($checkedAdvancedPlans as $key => $advancedPlan) {
+                $installments[] = '+uid:' . $advancedPlan;
+                unset($checkedAdvancedPlans[$key]);
             }
 
         }

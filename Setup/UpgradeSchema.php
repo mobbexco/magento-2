@@ -2,6 +2,7 @@
 
 namespace Mobbex\Webpay\Setup;
 
+use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\Setup\UpgradeSchemaInterface;
@@ -13,10 +14,38 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $setup->startSetup();
         $connection = $setup->getConnection();
 
+        /* Add mobbex custom field table */
+
+        if (version_compare($context->getVersion(), '1.3.0', '<=')) {
+            if (!$setup->tableExists('mobbex_customfield')) {
+                $table = $connection
+                ->newTable($setup->getTable('mobbex_customfield'))
+                ->addColumn('customfield_id', Table::TYPE_INTEGER, null, array(
+                    'identity'  => true,
+                    'unsigned'  => true,
+                    'nullable'  => false,
+                    'primary'   => true,
+                    ), 'Id')
+                ->addColumn('row_id', Table::TYPE_INTEGER, null, array(
+                    'nullable'  => false,
+                    ), 'Row id')
+                ->addColumn('object', Table::TYPE_TEXT, null, array(
+                    'nullable'  => false,
+                    ), 'Object')
+                ->addColumn('field_name', Table::TYPE_TEXT, null, array(
+                    'nullable'  => false,
+                    ), 'Field name')
+                ->addColumn('data', Table::TYPE_TEXT, null, array(
+                    'nullable'  => false,
+                    ), 'Data');
+            
+                $connection->createTable($table);
+            }
+        }
+
         /* Add payment fee columns */
 
         if (version_compare($context->getVersion(), '1.2.0', '<=')) {
-
             $quoteAddressTable = $setup->getTable('quote_address');
             $quoteTable = $setup->getTable('quote');
             $orderTable = $setup->getTable('sales_order');
@@ -24,7 +53,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $creditmemoTable = $setup->getTable('sales_creditmemo');
 
             $feeColumn = [
-                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                'type' => Table::TYPE_DECIMAL,
                 'length' =>'10,2',
                 'default' => 0.00,
                 'nullable' => true,
@@ -36,7 +65,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->addColumn($orderTable, 'fee', $feeColumn);
             $connection->addColumn($invoiceTable, 'fee', $feeColumn);
             $connection->addColumn($creditmemoTable, 'fee', $feeColumn);
-
         }
 
         $setup->endSetup();

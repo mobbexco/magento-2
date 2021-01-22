@@ -27,6 +27,12 @@
 
 ## Changelog:
 
+2021-01-22: 1.3.0
+- Add financing widget to product view
+- Add common/advanced plans filter by product
+- Add Custom Field model to improve database management
+- Fix shipping tax obtaining
+
 2021-01-19: 1.2.1
 - Fix items total obtaining
 - Cancel order to return stock when payment is not attempted
