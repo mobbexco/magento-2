@@ -42,7 +42,7 @@ class CustomConfigProvider implements ConfigProviderInterface
             'payment' => [
                 'webpay' => [
                     'config' => [
-                        'embed' => $this->_helper->mobbex->getEmbedPayment()
+                        'embed' => $this->config->getEmbedPayment()
                     ],
                     'banner' => $this->config->getBannerCheckout()
                 ]
