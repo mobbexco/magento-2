@@ -7,6 +7,9 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_API_KEY = 'payment/webpay/api_key';
     const PATH_ACCESS_TOKEN = 'payment/webpay/access_token';
 
+    const PATH_TAX_ID = 'payment/webpay/tax_id';
+    const PATH_FINANCIAL_ACTIVE = 'payment/webpay/financial_active';
+
     const PATH_TEST_MODE = 'payment/webpay/test_mode';
     const PATH_DEBUG_MODE = 'payment/webpay/debug_mode';
     const PATH_EMBED_PAYMENT = 'payment/webpay/checkout/embed_payment';
@@ -164,6 +167,24 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_DEBUG_MODE,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getCuit($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_TAX_ID,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getFinancialactive($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_FINANCIAL_ACTIVE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
