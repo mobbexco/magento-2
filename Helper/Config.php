@@ -168,4 +168,22 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
             $store
         );
     }
+
+    public function getCuit($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_TAX_ID,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getFinancialactive($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_FINANCIAL_ACTIVE,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
 }
