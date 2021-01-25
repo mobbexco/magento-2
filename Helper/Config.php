@@ -7,6 +7,9 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_API_KEY = 'payment/webpay/api_key';
     const PATH_ACCESS_TOKEN = 'payment/webpay/access_token';
 
+    const PATH_TAX_ID = 'payment/webpay/tax_id';
+    const PATH_FINANCIAL_ACTIVE = 'payment/webpay/financial_active';
+
     const PATH_TEST_MODE = 'payment/webpay/test_mode';
     const PATH_DEBUG_MODE = 'payment/webpay/debug_mode';
     const PATH_EMBED_PAYMENT = 'payment/webpay/checkout/embed_payment';
