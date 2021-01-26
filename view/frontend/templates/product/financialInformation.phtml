@@ -3,7 +3,7 @@
     $product = $block->getProduct();
     $buttonTitle = __('Ver Financiación'); 
     $price = $product->getPrice() ? : $product->getFinalPrice();
-    $isActiveFinancialInfo = $block->getFinancialactive();
+    $isActiveFinancialInfo = $block->getFinancialActive();
     $cuit =  $block->getCuit();// or tax_id
     //stablish the initial url with only one product selected
     $url_information = "https://mobbex.com/p/sources/widget/arg/".$cuit."/?total=".$price;

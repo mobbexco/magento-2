@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2021-01-26: 1.3.1
+- Fix financial widget configs getters
+
 2021-01-22: 1.3.0
 - Add financing widget to product view
 - Add common/advanced plans filter by product

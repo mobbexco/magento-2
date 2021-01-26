@@ -124,8 +124,8 @@ class Financial extends \Magento\Framework\View\Element\Template
      * Return true if the "Activar Info. Financiación" is set to "Si" or false if it's "No"
      * @return array
      */
-    public function getFinancialactive(){
-        return $this->config->getFinancialactive();
+    public function getFinancialActive(){
+        return $this->config->getFinancialActive();
     }
 
 
