@@ -181,7 +181,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-    public function getFinancialactive($store = null)
+    public function getFinancialActive($store = null)
     {
         return $this->scopeConfig->getValue(
             self::PATH_FINANCIAL_ACTIVE,

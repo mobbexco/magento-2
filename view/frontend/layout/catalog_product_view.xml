@@ -1,11 +1,11 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
-                <body>
-                    <referenceContainer name="page.wrapper">
-                        <block class="Mobbex\Webpay\Block\Product\Financial" 
-                            name="product.info.financialinfo" 
-                            cacheable="false"
-                            template="Mobbex_Webpay::product/financialInformation.phtml" />   
-                    </referenceContainer>
-                    <move element="product.info.financialinfo" destination="product.info.addtocart" after="product.info.addtocart"/>
-                </body>
+    <body>
+        <referenceContainer name="page.wrapper">
+            <block class="Mobbex\Webpay\Block\Product\Financial"
+                name="product.info.financialinfo"
+                cacheable="false"
+                template="Mobbex_Webpay::product/financialInformation.phtml"/>
+        </referenceContainer>
+        <move element="product.info.financialinfo" destination="product.info.addtocart" after="product.info.addtocart"/>
+    </body>
 </page>
