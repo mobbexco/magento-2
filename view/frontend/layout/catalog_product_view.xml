@@ -1,4 +1,8 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Mobbex_Webpay::css/product_view.css"/>
+        <script  src="Mobbex_Webpay::js/view/product_view.js"/>
+    </head>
     <body>
         <referenceContainer name="page.wrapper">
             <block class="Mobbex\Webpay\Block\Product\Financial"
