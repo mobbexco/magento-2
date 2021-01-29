@@ -59,8 +59,11 @@
                     showInWebsite="1" showInStore="1">
                     <label>Título en el checkout</label>
                 </field>
-
-                <group id="checkout" translate="label" sortOrder="11" showInDefault="1" showInWebsite="1"
+                <field id="version" translate="label" type="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Version</label>
+                    <backend_model>Mobbex\Webpay\Model\Config\Version</backend_model>
+                </field>
+                <group id="checkout" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                     <label>Checkout</label>
 
@@ -103,7 +106,7 @@
                     <group id="order_status_settings" translate="label" sortOrder="17" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>
-                        
+
                         <field id="order_status_approved" translate="label" type="select" sortOrder="18" showInDefault="1"
                             showInWebsite="1" showInStore="0">
                             <label>Estado del pedido cuando se aprueba el pago</label>
