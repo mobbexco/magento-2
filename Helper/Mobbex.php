@@ -325,16 +325,19 @@ class Mobbex extends AbstractHelper
             $checkedCommonPlans = unserialize($customField->getCustomField($productId, 'product', 'common_plans'));
             $checkedAdvancedPlans = unserialize($customField->getCustomField($productId, 'product', 'advanced_plans'));
 
-            foreach ($checkedCommonPlans as $key => $commonPlan) {
-                $installments[] = '-' . $commonPlan;
-                unset($checkedCommonPlans[$key]);
+            if (is_array($checkedCommonPlans)) {
+                foreach ($checkedCommonPlans as $key => $commonPlan) {
+                    $installments[] = '-' . $commonPlan;
+                    unset($checkedCommonPlans[$key]);
+                }
             }
 
-            foreach ($checkedAdvancedPlans as $key => $advancedPlan) {
-                $installments[] = '+uid:' . $advancedPlan;
-                unset($checkedAdvancedPlans[$key]);
+            if (is_array($checkedAdvancedPlans)) {
+                foreach ($checkedAdvancedPlans as $key => $advancedPlan) {
+                    $installments[] = '+uid:' . $advancedPlan;
+                    unset($checkedAdvancedPlans[$key]);
+                }
             }
-
         }
 
         return $installments;

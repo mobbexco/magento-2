@@ -12,8 +12,8 @@
                 <group>online</group>
                 <!-- Default Settings -->
                 <test_mode>0</test_mode>
+                <title>Mobbex</title>
                 <checkout>
-                    <title>Mobbex</title>
                     <embed_payment>0</embed_payment>
                     <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
                     <theme>light</theme>
