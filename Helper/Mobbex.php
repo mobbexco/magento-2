@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.3.1';
+    const VERSION = '1.3.2';
 
     /**
      * @var Config

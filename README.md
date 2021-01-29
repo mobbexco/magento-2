@@ -27,6 +27,11 @@
 
 ## Changelog:
 
+2021-01-29: 1.3.2
+- Show version in plugin settings
+- Fix checkout title config get
+- Fix checkout custom fields error
+
 2021-01-26: 1.3.1
 - Fix financial widget configs getters
 
