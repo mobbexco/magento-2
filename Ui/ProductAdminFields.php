@@ -46,6 +46,11 @@ class ProductAdminFields extends AbstractModifier
 
     public function modifyMeta(array $meta)
     {
+        // Exit if module is not ready
+        if (!$this->_helper->mobbex->isReady()) {
+            return $meta;
+        }
+
         $meta = array_replace_recursive(
             $meta,
             [
