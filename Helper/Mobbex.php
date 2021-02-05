@@ -350,4 +350,12 @@ class Mobbex extends AbstractHelper
     {
         return 'mag2_order_'.$orderId.'_time_'.time();
 	}
+
+    /**
+     * Check if plugin is configured.
+     */
+    public function isReady()
+    {
+        return (!empty($this->config->getApiKey()) && !empty($this->config->getAccessToken()));
+    }
 }
