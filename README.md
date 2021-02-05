@@ -27,6 +27,10 @@
 
 ## Changelog:
 
+2021-02-05: 1.3.3
+- Supports to refunds created by api
+- Fix admin save product when plugin is not configured
+
 2021-01-29: 1.3.2
 - Show version in plugin settings
 - Fix checkout title config get
