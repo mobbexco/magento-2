@@ -41,6 +41,9 @@ class ProductSaveObserver implements ObserverInterface
         $productId = $observer->getProduct()->getId();
         // Get post data
         $params = $this->_request->getParams();
+        if(!isset($params['mobbex'])){
+            return;
+        }
         $postFields = $params['mobbex'];
 
         $commonPlans = [];

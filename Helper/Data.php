@@ -141,9 +141,9 @@ class Data extends AbstractHelper
             d("cURL Error #:" . $err);
         } else {
             $response = json_decode($response, true);
-            $data = $response['data'];
+            $data = (isset($response['data'])?$response['data']:'');
 
-            if ($data) {
+            if (!empty($data)) {
                 return $data;
             }
         }
@@ -179,9 +179,9 @@ class Data extends AbstractHelper
             d("cURL Error #:" . $err);
         } else {
             $response = json_decode($response, true);
-            $data = $response['data'];
+            $data = (isset($response['data'])?$response['data']:'');
 
-            if ($data) {
+            if (!empty($data)) {
                 return $data;
             }
         }
