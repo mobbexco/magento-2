@@ -8,4 +8,7 @@
     <event name="sales_order_creditmemo_save_before">
         <observer name="mobbex_creditmemo_before_save_observer" instance="Mobbex\Webpay\Observer\RefundObserverBeforeSave"/>
     </event>
+    <event name="catalog_category_save_after">
+        <observer name="mobbex_category_config_save" instance="Mobbex\Webpay\Observer\CategorySaveObserver" />
+    </event>
 </config>
