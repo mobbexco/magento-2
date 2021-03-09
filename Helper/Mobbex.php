@@ -294,7 +294,9 @@ class Mobbex extends AbstractHelper
         ];
     }
 
+    
     /**
+     * Get Financing plans
      * @return bool
      */
     public function get_installments()
@@ -308,10 +310,10 @@ class Mobbex extends AbstractHelper
             'ahora_18' => 'Ahora 18',
         );
 
+        $array_categories_id = array();
         foreach ($this->order->getAllVisibleItems() as $item) {
             
             $productId = $item->getProduct()->getId();
-            
             foreach ($ahora as $key => $value) {
                 
                 if ($item->getProduct()->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
@@ -320,8 +322,31 @@ class Mobbex extends AbstractHelper
                 }
     
             }
-
             $customField = $this->_customFieldFactory->create();
+
+            //Categories Plans - One product can have many categories
+            $array_categories_id = $item->getProduct()->getCategoryIds();
+            foreach($array_categories_id as $cat_id) {
+                $checkedCommonPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'common_plans'));
+                $checkedAdvancedPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'advanced_plans'));
+                
+                if (is_array($checkedCommonPlansCat)) {
+                    foreach ($checkedCommonPlansCat as $key => $commonPlan) {
+                        $installments[] = '-' . $commonPlan;
+                        unset($checkedCommonPlansCat[$key]);
+                    }
+                }
+    
+                if (is_array($checkedAdvancedPlansCat)) {
+                    foreach ($checkedAdvancedPlansCat as $key => $advancedPlan) {
+                        $installments[] = '+uid:' . $advancedPlan;
+                        unset($checkedAdvancedPlansCat[$key]);
+                    }
+                }
+            }
+
+
+            //Product Plans
             $checkedCommonPlans = unserialize($customField->getCustomField($productId, 'product', 'common_plans'));
             $checkedAdvancedPlans = unserialize($customField->getCustomField($productId, 'product', 'advanced_plans'));
 
@@ -338,6 +363,9 @@ class Mobbex extends AbstractHelper
                     unset($checkedAdvancedPlans[$key]);
                 }
             }
+
+            
+            
         }
 
         return $installments;

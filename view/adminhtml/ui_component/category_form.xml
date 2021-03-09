@@ -3,14 +3,14 @@
     <fieldset name="custom_category_tab" sortOrder="80">
         <settings>
             <collapsible>true</collapsible>
-            <label translate="true">Custom Category Tab</label>
+            <label translate="true">Mobbex Payment</label>
         </settings>
         <container name="custom_tab" sortOrder="180">
             <htmlContent name="html_content">
                 <block  name="custom_category_block"
                         class="Mobbex\Webpay\Block\Category\Tab" 
                         cacheable="false"
-                        template="catalog/category/tab.phtml"/>
+                        template="Mobbex_Webpay::catalog/category/tab.phtml"/>
             </htmlContent>
         </container>
     </fieldset>
