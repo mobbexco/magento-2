@@ -7,6 +7,7 @@ use Magento\Catalog\Helper\Image;
 use Magento\Checkout\Model\Cart;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
+use \Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -79,6 +80,11 @@ class Mobbex extends AbstractHelper
     protected $_customFieldFactory;
 
     /**
+     * @var ProductMetadataInterface
+     */
+    protected $productMetadata;
+
+    /**
      * Mobbex constructor.
      * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
@@ -91,6 +97,7 @@ class Mobbex extends AbstractHelper
      * @param UrlInterface $urlBuilder
      * @param Image $imageHelper
      * @param CustomFieldFactory $_customFieldFactory
+     * @param ProductMetadataInterface $productMetadata
      */
     public function __construct(
         Config $config,
@@ -103,7 +110,8 @@ class Mobbex extends AbstractHelper
         LoggerInterface $logger,
         UrlInterface $urlBuilder,
         Image $imageHelper,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        ProductMetadataInterface $productMetadata
     ) {
         $this->config = $config;
         $this->order = $order;
@@ -117,6 +125,7 @@ class Mobbex extends AbstractHelper
         $this->urlBuilder = $urlBuilder;
         $this->imageHelper = $imageHelper;
         $this->_customFieldFactory = $customFieldFactory;
+        $this->productMetadata = $productMetadata;
     }
 
     /**
@@ -201,28 +210,29 @@ class Mobbex extends AbstractHelper
             'currency' => 'ARS',
             'description' => $description,
             // Test Mode
-            'test' => $this->config->getTestMode(),
+            'test' => (bool) ($this->config->getTestMode()),
             'return_url' => $returnUrl,
             'items' => $items,
             'webhook' => $webhook,
             "options" => [
-                "button" => $this->config->getEmbedPayment(),
+                "button" => (bool) ($this->config->getEmbedPayment()),
                 "domain" => $this->urlBuilder->getUrl('/'),
                 "theme" => $this->getTheme(),
+                "redirect" => [
+                    "success" => true,
+                    "failure" => false,
+                ],
                 "platform" => $this->getPlatform(),
             ],
-            'redirect' => 0,
-            'total' => (float)$orderAmount,
+            'total' => (float) $orderAmount,
             'customer' => $customer,
             'installments' => $this->get_installments(),
             'timeout' => 5,
         ];
 
-        $headers = $this->getHeaders();
-
         if($this->config->getDebugMode())
         {
-            Data::log("Checkout Headers:" . print_r($headers, true), "mobbex_debug_" . date('m_Y') . ".log");
+            Data::log("Checkout Headers:" . print_r($this->getHeaders(), true), "mobbex_debug_" . date('m_Y') . ".log");
             Data::log("Checkout Headers:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
         }
 
@@ -235,7 +245,7 @@ class Mobbex extends AbstractHelper
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_HTTPHEADER => $this->getHeaders(),
         ]);
 
         $response = curl_exec($curl);
@@ -277,7 +287,8 @@ class Mobbex extends AbstractHelper
     {
         return [
             "name" => "magento_2",
-            "version" => Mobbex::VERSION
+            "version" => Mobbex::VERSION,
+            "platform_version" => $this->productMetadata->getVersion() // TODO: test this
         ];
     }
 

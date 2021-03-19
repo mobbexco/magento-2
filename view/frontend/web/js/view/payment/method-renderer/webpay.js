@@ -1,4 +1,4 @@
-var embed = window.checkoutConfig.payment.webpay.config.embed;
+var embed = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
 
 if (embed) {
 
