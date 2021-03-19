@@ -5,6 +5,7 @@ namespace Mobbex\Webpay\Block;
 use Magento\Framework\DataObject;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Sales\Model\OrderFactory;
+use \Magento\Framework\App\State;
 
 /**
  * Class Info
@@ -20,6 +21,11 @@ class Info extends \Magento\Payment\Block\Info
     protected $_orderFactory;
 
     /**
+     * @var State
+     */
+    protected $_state;
+
+    /**
      * Constructor
      *
      * @param Context $context
@@ -28,10 +34,12 @@ class Info extends \Magento\Payment\Block\Info
     public function __construct(
         Context $context,
         OrderFactory $orderFactory,
+        State $state,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->_orderFactory = $orderFactory;
+        $this->_state = $state;
     }
 
     /**
@@ -46,33 +54,36 @@ class Info extends \Magento\Payment\Block\Info
         $data = [];
 
         $info = $this->getInfo();
-        
+
         $mobbexData   = $info->getAdditionalInformation("mobbex_data");
         $paymentId    = $mobbexData['payment']['id'];
         $orderUrl     = $info->getAdditionalInformation('mobbex_order_url');
         $cardInfo     = $info->getAdditionalInformation('mobbex_card_info');
         $cardPlan     = $info->getAdditionalInformation('mobbex_card_plan');
-        
-        if (isset($paymentId) && !empty($paymentId)) {
+
+        if (!empty($paymentId)) {
             $data[_("Transaction ID")] = $paymentId;
         }
-        
-        if (isset($orderUrl) && !empty($orderUrl)) {
-            $data[_("Order URL")] = $orderUrl;
-        }
-        
-        if (isset($cardInfo) && !empty($cardInfo)) {
+
+        if (!empty($cardInfo)) {
             $data[_("Card Information")] = $cardInfo;
         }
-        
-        if (isset($cardPlan) && !empty($cardPlan)) {
+
+        if (!empty($cardPlan)) {
             $data[_("Card Plan")] = $cardPlan;
         }
-        
-        if (isset($mobbexData['payment']['riskAnalysis']['level']) && !empty($mobbexData['payment']['riskAnalysis']['level'])) {
-            $data[_("Risk Analysis")] = $mobbexData['payment']['riskAnalysis']['level'];
+
+        // Only show in admin panel
+        // It may be necessary to verify 'webapi_rest' also
+        if ($this->_state->getAreaCode() === 'adminhtml') {
+            if (!empty($orderUrl)) {
+                $data[_("Order URL")] = $orderUrl;
+            }
+            if (!empty($mobbexData['payment']['riskAnalysis']['level'])) {
+                $data[_("Risk Analysis")] = $mobbexData['payment']['riskAnalysis']['level'];
+            }
         }
-        
+
         return $transport->setData(array_merge($data, $transport->getData()));
     }
 }
