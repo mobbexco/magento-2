@@ -41,34 +41,39 @@ class CategorySaveObserver implements \Magento\Framework\Event\ObserverInterface
     {
         // Get category id
         $category = $this->registry->registry('current_category');//get current category
-        $categoryId = $category->getId();
-        // Get post data
-        $params = $this->_request->getParams();
-
-        if(!isset($params['mobbex'])){
-            return;
-        }
-        $postFields = $params['mobbex'];
-
-        $commonPlans = [];
-        $advancedPlans = [];
-
-        // Get plans selected and save data
-        foreach ($postFields as $id => $value) {
-            if (strpos($id, 'common_plan_') !== false && $value === '1') {
-                $uid = explode('common_plan_', $id)[1];
-                $commonPlans[] = $uid;
-            } else if (strpos($id, 'advanced_plan_') !== false && $value === '1') {
-                $uid = explode('advanced_plan_', $id)[1];
-                $advancedPlans[] = $uid;
-            } else {
-                unset($postFields[$id]);
-            }
-        }
         
+        if($category){
+            
+            $categoryId = $category->getId();
+            // Get post data
+            $params = $this->_request->getParams();
+            
+            if(!isset($params['mobbex'])){
+                return;
+            }
+            $postFields = $params['mobbex'];
 
-        $customField = $this->_customFieldFactory->create();
-        $customField->saveCustomField($categoryId, 'category', 'common_plans', serialize($commonPlans));
-        $customField->saveCustomField($categoryId, 'category', 'advanced_plans', serialize($advancedPlans));
+            $commonPlans = [];
+            $advancedPlans = [];
+            
+            // Get plans selected and save data
+            foreach ($postFields as $id => $value) {
+                if (strpos($id, 'common_plan_') !== false && $value === '1') {
+                    $uid = explode('common_plan_', $id)[1];
+                    $commonPlans[] = $uid;
+                } else if (strpos($id, 'advanced_plan_') !== false && $value === '1') {
+                    $uid = explode('advanced_plan_', $id)[1];
+                    $advancedPlans[] = $uid;
+                } else {
+                    unset($postFields[$id]);
+                }
+            }
+
+            $customFieldCommon = $this->_customFieldFactory->create();
+            $customFieldCommon->saveCustomField($categoryId, 'category', 'common_plans', serialize($commonPlans));
+            $customFieldAdvanced = $this->_customFieldFactory->create();
+            $customFieldAdvanced->saveCustomField($categoryId, 'category', 'advanced_plans', serialize($advancedPlans));
+
+        }
     }
 }

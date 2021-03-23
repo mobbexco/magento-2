@@ -113,13 +113,12 @@ class Tab extends \Magento\Backend\Block\Template
 
         // Create form fields from received data
         $formFields = [];
-        //$formFields['title_field'] = $this->getTitle();
 
         // Skip these plans for backward support
         $skippedPlans = [];
         $asd = [];
-        $html = '<div class="admin__field-complex-content" data-bind="html: $data.content">Los planes habilitados aparecerán en el checkout de este producto. Deshabilítelos para que no aparezcan.</div>';
-        
+        $html = '<div class="admin__field-complex-content" data-bind="html: $data.content"><h3><b>Los planes habilitados aparecerán en el checkout de este producto. Deshabilítelos para que no aparezcan.</b></h3></div>';
+        $html =$html. '<label style="font-size: 16px;padding-left: 10px;padding-top: 45px;"><b> Planes Básicos  </b></label>';
         foreach ($sources as $source) {
             // If source has plans
             if (!empty($source['installments']['list'])) {
@@ -133,7 +132,9 @@ class Tab extends \Magento\Backend\Block\Template
                         !in_array($reference, $skippedPlans)
                     ) {
                         $isChecked = is_array($checkedCommonPlans) ? in_array($reference, $checkedCommonPlans) : false;
-                        $tag = $isChecked ? 'checked=true' : ' ';
+                        //if the category is new, then check = true in all common plans
+                        $tag =  ($isChecked || $categoryId == 0 ) ? 'checked=true' : ' ';
+                        
                         $formFields['common_plan_' . $reference] = true;//added
 
                         // Create form fields data
@@ -141,7 +142,7 @@ class Tab extends \Magento\Backend\Block\Template
                                 <div class="row" style="margin-left: 5%;">
                                     <div class="col-md-8 form-group">
                                         <div class="checkbox">                          
-                                        <label style="font-size: 16px;padding-left: 10px;">
+                                        <label style="font-size: 16px;padding-left: 50px;">
                                             <input data-form-part="category_form" type="checkbox" id="'.$installment['name'].'" name="mobbex[common_plan_'.$installment['reference'].']" '.$tag.' >
                                             <label style="margin-left: 2%;"> <b>'.$installment['name'].' </b></label>
                                         </label>
@@ -155,6 +156,8 @@ class Tab extends \Magento\Backend\Block\Template
             }
         }
 
+        $html =$html. '<br><br>';
+        $html =$html. ' <label style="font-size: 16px;padding-left: 10px;padding-top: 45px;"><b> Planes Avanzados </b></label>';
         // Get sources with advanced rule plans
         $sourcesAdvanced = $this->_helper->getSourcesAdvanced();
         // Get saved values from database
@@ -176,7 +179,7 @@ class Tab extends \Magento\Backend\Block\Template
                             <div class="row" style="margin-left: 5%;">
                                 <div class="col-md-8 form-group">
                                     <div class="checkbox">                          
-                                    <label style="font-size: 16px;padding-left: 10px;">
+                                    <label style="font-size: 16px;padding-left: 50px;">
                                         <input data-form-part="category_form" type="checkbox" id="'.$installment['name'].'" name="mobbex[advanced_plan_'.$installment['uid'].']" '.$tag.' >
                                         <label style="margin-left: 2%;"> <b>'.$label.'</b></label>
                                     </label>
