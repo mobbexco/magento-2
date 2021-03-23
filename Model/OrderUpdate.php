@@ -84,11 +84,12 @@ class OrderUpdate
             ->setTransactionId($orderPayment->getTransactionId())
             ->build(Transaction::TYPE_AUTH);
 
-        $statusMessage  = __('Payment status') . ': ' . __($statusDetail);
+        $orderStatus = $this->config->getOrderStatusApproved();
+        $statusMessage = __('Payment status') . ': ' . __($statusDetail);
 
         $orderPayment->addTransactionCommentsToOrder($transaction, $statusMessage);
-        $order->setState($this->config->getOrderStatusApproved());
-        $order->addStatusToHistory($this->config->getOrderStatusApproved(), $statusDetail);
+        $order->setState($orderStatus);
+        $order->addStatusToHistory($orderStatus, $statusDetail);
         $order->save();
 
         $this->sendOrderEmail($order, $statusMessage);
@@ -102,9 +103,10 @@ class OrderUpdate
      */
     public function holdPayment($order, $statusDetail)
     {
-        $order->setState($this->config->getOrderStatusInProcess());
-        $order->setStatus(Order::STATE_PENDING_PAYMENT);
-        $order->addStatusToHistory($this->config->getOrderStatusInProcess(), $statusDetail);
+        $orderStatus = $this->config->getOrderStatusInProcess();
+
+        $order->setState($orderStatus);
+        $order->addStatusToHistory($orderStatus, $statusDetail);
         $order->save();
 
         $this->sendOrderEmail($order, $statusDetail);
@@ -117,10 +119,14 @@ class OrderUpdate
      */
     public function cancelPayment($order, $statusMessage)
     {
-        $order->setStatus('cancelled');
-        $order->setState($this->config->getOrderStatusCancelled());
-        $order->addStatusToHistory($this->config->getOrderStatusCancelled(), $statusMessage, true);
-        $order->cancel();
+        $orderStatus = $this->config->getOrderStatusCancelled();
+
+        $order->setState($orderStatus);
+        $order->addStatusToHistory($orderStatus, $statusMessage, true);
+
+        if ($orderStatus === 'canceled') {
+            $order->cancel();
+        }
         $order->save();
 
         $this->sendOrderEmail($order, $statusMessage);
@@ -135,13 +141,17 @@ class OrderUpdate
     {
         $statusDescription = __($statusDetail)->render();
         $orderPayment = $order->getPayment();
+        $orderStatus = $this->config->getOrderStatusRefunded();
+
 
         $orderPayment->setAdditionalInformation('error_card', $statusDescription);
 
-        $order->setStatus('cancelled');
-        $order->setState($this->config->getOrderStatusRefunded());
-        $order->addStatusToHistory($this->config->getOrderStatusRefunded(), $statusDescription, true);
-        $order->cancel();
+        $order->setState($orderStatus);
+        $order->addStatusToHistory($orderStatus, $statusDescription, true);
+
+        if ($orderStatus === 'canceled') {
+            $order->cancel();
+        }
         $order->save();
 
         $this->sendOrderEmail($order, $statusDescription);
