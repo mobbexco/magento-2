@@ -56,12 +56,12 @@ class Info extends \Magento\Payment\Block\Info
         $info = $this->getInfo();
 
         $mobbexData   = $info->getAdditionalInformation("mobbex_data");
-        $paymentId    = $mobbexData['payment']['id'];
         $orderUrl     = $info->getAdditionalInformation('mobbex_order_url');
         $cardInfo     = $info->getAdditionalInformation('mobbex_card_info');
         $cardPlan     = $info->getAdditionalInformation('mobbex_card_plan');
 
-        if (!empty($paymentId)) {
+        if (!empty($mobbexData['payment']['id'])) {
+            $paymentId = $mobbexData['payment']['id'];
             $data[_("Transaction ID")] = $paymentId;
         }
 
