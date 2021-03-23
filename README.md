@@ -27,6 +27,12 @@
 
 ## Changelog:
 
+2021-03-23: 1.3.4
+- Hide order URL (Mobbex console) from frontend
+- Fix js error on product view
+- Fix order status config on payment fail
+- Fix checkout boolean options (Test and Embed modes)
+
 2021-02-05: 1.3.3
 - Supports to refunds created by api
 - Fix admin save product when plugin is not configured
