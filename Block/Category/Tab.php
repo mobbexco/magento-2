@@ -116,7 +116,6 @@ class Tab extends \Magento\Backend\Block\Template
 
         // Skip these plans for backward support
         $skippedPlans = [];
-        $asd = [];
         $html = '<div class="admin__field-complex-content" data-bind="html: $data.content"><h3><b>Los planes habilitados aparecerán en el checkout de este producto. Deshabilítelos para que no aparezcan.</b></h3></div>';
         $html =$html. '<label style="font-size: 16px;padding-left: 10px;padding-top: 45px;"><b> Planes Básicos  </b></label>';
         foreach ($sources as $source) {
@@ -133,7 +132,7 @@ class Tab extends \Magento\Backend\Block\Template
                     ) {
                         $isChecked = is_array($checkedCommonPlans) ? in_array($reference, $checkedCommonPlans) : false;
                         //if the category is new, then check = true in all common plans
-                        $tag =  ($isChecked || $categoryId == 0 ) ? 'checked=true' : ' ';
+                        $tag =  (!$isChecked || $categoryId == 0 ) ? 'checked=true' : ' ';
                         
                         $formFields['common_plan_' . $reference] = true;//added
 
@@ -150,7 +149,6 @@ class Tab extends \Magento\Backend\Block\Template
                                     </div>
                                 </div>
                         ';
-                        $asd[] = $reference;
                     }
                 }
             }
@@ -171,7 +169,7 @@ class Tab extends \Magento\Backend\Block\Template
                     // If it hasn't been added to array yet
                     if (!array_key_exists('advanced_plan_' . $installment['uid'], $formFields)) {
                         $isChecked = is_array($checkedAdvancedPlans) ? in_array($installment['uid'], $checkedAdvancedPlans) : false;
-                        $tag = $isChecked ? 'checked=true' : ' ';
+                        $tag = ($isChecked) ? 'checked=true' : ' ';
                         $label = $source['source']['name'] .': '. $installment['name'];
                         $formFields['advanced_plan_' . $installment['uid']] = true;//added
 
