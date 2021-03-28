@@ -62,8 +62,9 @@ class ProductSaveObserver implements ObserverInterface
             }
         }
 
-        $customField = $this->_customFieldFactory->create();
-        $customField->saveCustomField($productId, 'product', 'common_plans', serialize($commonPlans));
-        $customField->saveCustomField($productId, 'product', 'advanced_plans', serialize($advancedPlans));
+        $customFieldCommon = $this->_customFieldFactory->create();
+        $customFieldCommon->saveCustomField($productId, 'product', 'common_plans', serialize($commonPlans));
+        $customFieldAdvance = $this->_customFieldFactory->create();
+        $customFieldAdvance->saveCustomField($productId, 'product', 'advanced_plans', serialize($advancedPlans));
     }
 }
