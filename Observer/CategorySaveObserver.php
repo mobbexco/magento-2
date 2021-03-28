@@ -56,7 +56,7 @@ class CategorySaveObserver implements \Magento\Framework\Event\ObserverInterface
 
             // Get plans selected and save data
             foreach ($postFields as $id => $value) {
-                //only save uncheck common plans
+                // Only save uncheck common plans
                 if (strpos($id, 'common_plan_') !== false && $value === '0') {
                     $uid = explode('common_plan_', $id)[1];
                     $commonPlans[] = $uid;
@@ -67,7 +67,6 @@ class CategorySaveObserver implements \Magento\Framework\Event\ObserverInterface
                     unset($postFields[$id]);
                 }
             }
-            
 
             $customFieldCommon = $this->_customFieldFactory->create();
             $customFieldCommon->saveCustomField($categoryId, 'category', 'common_plans', serialize($commonPlans));
