@@ -27,6 +27,10 @@
 
 ## Changelog:
 
+2021-03-28: 1.4.0
+- Add common/advanced plans filter by category
+- Some improvements
+
 2021-03-23: 1.3.4
 - Hide order URL (Mobbex console) from frontend
 - Fix js error on product view
