@@ -67,6 +67,11 @@
                        showInStore="1">
                     <label>Checkout</label>
 
+                    <field id="wallet_active" translate="label comment" sortOrder="11" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label> Mobbex Wallet para usuarios logeados</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                     <field id="embed_payment" translate="label comment" sortOrder="12" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Pago desde el sitio</label>
