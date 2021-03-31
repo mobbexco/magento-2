@@ -153,6 +153,11 @@ class Mobbex extends AbstractHelper
         // get order amount
         $orderAmount = round($this->order->getData('base_grand_total'), 2);
 
+        // get user session data and check wallet status
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $userSession = $objectManager->get('Magento\Customer\Model\Session');
+        $is_wallet_active = ((bool) ($this->config->getWalletActive()) ) && $userSession->isLoggedIn();
+
         // get customer data
         $customer = [
             'email' => $orderData->getCustomerEmail(), 
@@ -228,7 +233,9 @@ class Mobbex extends AbstractHelper
             'customer' => $customer,
             'installments' => $this->getInstallments(),
             'timeout' => 5,
+            'wallet' => ($is_wallet_active),
         ];
+        
 
         if($this->config->getDebugMode())
         {
