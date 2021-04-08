@@ -7,7 +7,7 @@
 /**
  * Product description block
  *
- * @author     
+ * @author
  */
 namespace Mobbex\Webpay\Block\Product;
 
@@ -59,7 +59,7 @@ class Financial extends \Magento\Framework\View\Element\Template
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\Registry $registry,
         array $data = [],
-        Config $config 
+        Config $config
     ) {
         $this->_coreRegistry = $registry;
         parent::__construct($context, $data);
@@ -109,15 +109,17 @@ class Financial extends \Magento\Framework\View\Element\Template
         $err = curl_error($curl);
 
         curl_close($curl);
-
+        $cuit="";
         if ($err) {
             //search the cuit in the plugins config if cant get it from api request
             $cuit = $this->config->getCuit();
         } else {
             $res = json_decode($response, true);
-            $cuit = $res['data']['tax_id'];
+            if(isset($res['data']) && isset($res['data']['tax_id'])){
+                $cuit = $res['data']['tax_id'];
+            }
         }
-        return $cuit; 
+        return $cuit;
     }
 
     /**
