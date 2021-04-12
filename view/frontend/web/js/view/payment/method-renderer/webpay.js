@@ -1,4 +1,33 @@
 var embed = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
+var wallet = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
+
+
+
+/**
+ * 
+ * @param {*} url
+ *  
+ */
+function createCheckoutWallet(url)
+{
+    var customerData = JSON.stringify(window.customerData);
+    var orderData = JSON.stringify(window.checkoutConfig.quoteData);
+    var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
+    console.log(customerData);
+    //ADD USER VERIFICATION
+    jQuery.ajax({
+        context: '#ajaxresponse',
+        url: url,
+        type: "POST",
+        contentType: "application/json",
+        data: {customer: customerData , quote: orderData, items:itemsData},
+    }).done(function (data) {
+        $('#ajaxresponse').html(data.output);
+        return true;
+    });
+}
+
+
 
 if (embed) {
 
@@ -58,6 +87,7 @@ if (embed) {
 
 }
 
+
 define(
     [
         'jquery',
@@ -72,7 +102,6 @@ define(
                 redirectAfterPlaceOrder: false
             },
             afterPlaceOrder: function (url) {
-
                 if (embed) {
                     $("body").trigger('processStart');
                     createCheckout(urlBuilder.build('webpay/payment/embedpayment/'));
@@ -81,11 +110,14 @@ define(
                         urlBuilder.build('webpay/payment/redirect/')
                     );
                 }
-
             },
             getData: function () {
+                if(wallet){
+                    $("body").trigger('processStart');
+                    var response = createCheckoutWallet(urlBuilder.build('webpay/payment/walletpayment/'));
+                    console.info(response);
+                }
                 console.info(this.item);
-
                 return {
                     'method': this.item.method,
                     'additional_data': {}
