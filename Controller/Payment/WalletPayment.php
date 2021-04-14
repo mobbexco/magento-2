@@ -6,7 +6,9 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Mobbex\Webpay\Helper\Data;
-
+use Mobbex\Webpay\Helper\Custom;
+use Magento\Quote\Model\QuoteFactory;
+    
 /**
  * Class WalletPayment
  * @package Mobbex\Webpay\Controller\Payment
@@ -19,76 +21,86 @@ class WalletPayment extends Action
 
     protected $_helper;
 
+    protected $_customHelper;
+
     public function __construct(
         Context $context,
         Data $_helper,
-        JsonFactory $resultJsonFactory
+        Custom $_customHelper,
+        JsonFactory $resultJsonFactory,
+        QuoteFactory $quoteFactory
     ) {
         $this->_helper = $_helper;
+        $this->_customHelper = $_customHelper;
         parent::__construct($context);
         $this->resultJsonFactory = $resultJsonFactory;
+        $this->quoteFactory = $quoteFactory;
     }
 
     /**
+     * Generates and return a Mobbex Checkout if Wallet is active
      * This functions is used by webpay.js 
+     * @return array
      */
     public function execute()
     {
-    
+        $resultJson = $this->resultJsonFactory->create();
+        
         $result  = $this->resultJsonFactory->create();
-        if ($this->getRequest()->isAjax()) 
+        //Quote data 
+        $quoteData =json_decode($this->getRequest()->getParam('quote'));
+        //Customer data
+        $customerData = json_decode($this->getRequest()->getParam('customer'));
+        //Products in the checkout
+        $itemsData = json_decode($this->getRequest()->getParam('items'));
+        $totals = json_decode($this->getRequest()->getParam('totals'));
+        $customerAddresses = (array) $customerData->addresses;
+        if($customerAddresses)
         {
-            $quoteData =json_decode($this->getRequest()->getParam('quote'));
-            $customerData = json_decode($this->getRequest()->getParam('customer'));
-            $itemsData = json_decode($this->getRequest()->getParam('items'));
-            $customerAddresses = (array) $customerData->addresses;
             //the first key can be a number or  string its depend on user configuration
             $addressKey = array_key_first($customerAddresses);
+        }
 
-            error_log("[itemsData : ".$itemsData." ]", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/walletController.log");
-            //error_log("[Quote : ".$quoteData." ]", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/walletController.log");
-            
-            
-            //grand_total
-            //customer_is_guest
-/*
-            $tempOrder=[
-                'currency_id'  => $quoteData->store_currency_code,
-                'email'        => $quoteData->customer_email, //buyer email id
-                'shipping_address' =>[
-                            'firstname'	   => $quoteData->customer_firstname, //address Details
-                            'lastname'	   => $quoteData->customer_lastname,
-                            'street' => $customerAddresses[$addressKey]->street[0],
-                            'city' => $customerAddresses[$addressKey]->city,
-                            'region' => '',
-                            'postcode' => $customerAddresses[$addressKey]->postcode,
-                            'telephone' => $customerAddresses[$addressKey]->telephone,
-                            'fax' => '',
-                            'save_in_address_book' => 1
-                        ],
-                'items'=> [ //array of product which order you want to create
-                            ['product_id'=>'1','qty'=>1],
-                            ['product_id'=>'2','qty'=>2]
-                        ]
-           ];
-*/
+        $itemsOrden = array();
+        foreach($itemsData as $item)
+        {
+            //$item is a Sdt class
+            array_push($itemsOrden , ["product_id" => $item->product_id, "qty" => $item->qty,"price" => $item->price, "name" => $item->name]);
         }
 
         
-       
-       
-       return null;
+        $quoteData=[
+            'entity_id' => $quoteData->entity_id,
+            'customer_id' => $customerData->id,
+            'price' => $quoteData->grand_total,
+            'currency_id'  => $quoteData->store_currency_code,
+            'email'        => $quoteData->customer_email, 
+            'shipping_address' =>[
+                        'firstname'	   => $quoteData->customer_firstname, 
+                        'lastname'	   => $quoteData->customer_lastname,
+                        'street' => $customerAddresses ? $customerAddresses[$addressKey]->street[0] : '',
+                        'city' => $customerAddresses ? $customerAddresses[$addressKey]->city : '',
+                        'region' => '',
+                        'postcode' => $customerAddresses ?  $customerAddresses[$addressKey]->postcode : '',
+                        'telephone' => $customerAddresses ? $customerAddresses[$addressKey]->telephone : '',
+                        'save_in_address_book' => 1
+                    ],
+            'items'=> $itemsOrden,
+            'shipping_total'=> $totals->base_shipping_incl_tax,
 
-        /*$resultJson = $this->resultJsonFactory->create();
+        ];
 
-        $checkout = $this->_helper->getCheckout();
+        //Make the Mobbex checkout using quote data
+        $checkout = $this->_helper->getCheckoutWallet($quoteData);
         $vac = [ 
             'returnUrl' => $checkout['return_url'], 
-            'checkoutId' => $checkout['id']
+            'checkoutId' => $checkout['id'],
+            //array with the stored credit cards
+            'wallet' => $checkout['wallet'],
         ];
 
         $resultJson->setData($vac);
 
-        return $resultJson;*/
+        return $resultJson;
     }
 }

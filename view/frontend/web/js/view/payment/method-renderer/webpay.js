@@ -4,29 +4,81 @@ var wallet = window.checkoutConfig.payment.webpay.config.wallet && window.checko
 
 
 /**
- * 
+ * Creates a custom Mobbex checkout using 
+ * a quote and customer data when the wallet is active
+ * and the customer is logged in
  * @param {*} url
- *  
+ * @return array
  */
 function createCheckoutWallet(url)
 {
-    var customerData = JSON.stringify(window.customerData);
-    var orderData = JSON.stringify(window.checkoutConfig.quoteData);
-    var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
-    console.log(customerData);
-    //ADD USER VERIFICATION
-    jQuery.ajax({
-        context: '#ajaxresponse',
-        url: url,
-        type: "POST",
-        contentType: "application/json",
-        data: {customer: customerData , quote: orderData, items:itemsData},
-    }).done(function (data) {
-        $('#ajaxresponse').html(data.output);
-        return true;
-    });
+    //wallet work if the customer is logged in
+    if(window.isCustomerLoggedIn){
+        var customerData = JSON.stringify(window.customerData);
+        var orderData = JSON.stringify(window.checkoutConfig.quoteData);
+        var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
+        var totalAmount = JSON.stringify(window.checkoutConfig.totalsData);
+        
+        console.log(customerData);
+        console.log(orderData);
+        console.log(itemsData);
+        jQuery.ajax({
+            context: '#ajaxresponse',
+            url: url,
+            type: "POST",
+            data: {customer: customerData , quote: orderData, items:itemsData, totals: totalAmount},
+        }).done(function (data) {
+            //use data['wallet'][0] to retrieve the first card data in case it exist
+            return data;
+        });
+    }
 }
 
+
+/*
+function executeWallet(checkoutUrl) {
+    lockForm()
+    var securityCode;
+    var installment;
+    var intentToken;
+    var cards = document.getElementsByName("walletCard")
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].checked) {
+        var cardIndex = cards[i].value
+        var cardDiv = document.getElementById(`card_${cardIndex}_form`)
+        securityCode = cardDiv.getElementsByTagName("input")[0].value
+        maxlength = cardDiv.getElementsByTagName("input")[0].getAttribute('maxlength')
+        if (securityCode.length < parseInt(maxlength)) {
+          cardDiv.getElementsByTagName("input")[0].style.borderColor = '#dc3545'
+          unlockForm()
+          return alert("Código de seguridad incompleto")
+        }
+        installment = cardDiv.getElementsByTagName("select")[0].value
+        intentToken = cardDiv.getElementsByTagName("input")[1].value
+      }
+    }
+    window.MobbexJS.operation.process({
+      intentToken: intentToken,
+      installment: installment,
+      securityCode: securityCode
+    })
+      .then(data => {
+        if (data.result) {
+          var status = data.data.status.code;
+          var link = checkoutUrl + '&status=' + status + '&type=card' + '&transactionId=' + data.data.id;
+          setTimeout(function(){window.top.location.href = link}, 5000)
+        }
+        else {
+          alert("Error procesando el pago")
+          unlockForm()
+        }
+      })
+      .catch(error => {
+        alert("Error: " + error)
+        unlockForm()
+      })
+  }
+*/
 
 
 if (embed) {
@@ -102,6 +154,7 @@ define(
                 redirectAfterPlaceOrder: false
             },
             afterPlaceOrder: function (url) {
+                
                 if (embed) {
                     $("body").trigger('processStart');
                     createCheckout(urlBuilder.build('webpay/payment/embedpayment/'));
@@ -110,8 +163,10 @@ define(
                         urlBuilder.build('webpay/payment/redirect/')
                     );
                 }
+
             },
             getData: function () {
+                //When Mobbex is selected as paymen method creates a checkout usin quote data
                 if(wallet){
                     $("body").trigger('processStart');
                     var response = createCheckoutWallet(urlBuilder.build('webpay/payment/walletpayment/'));

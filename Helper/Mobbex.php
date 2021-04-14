@@ -162,11 +162,16 @@ class Mobbex extends AbstractHelper
         $customer = [
             'email' => $orderData->getCustomerEmail(), 
             'name' => $orderData->getCustomerName(),
+            //Customer id added for wallet usage
+            'uid' => $orderData->getCustomerId(),
+            
         ];
-        if (!empty($orderData->getBillingAddress()->getTelephone())) {
-            $customer['phone'] = $orderData->getBillingAddress()->getTelephone();
+        error_log("[ID: ". $orderData->getCustomerId() ." ]", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/wallet.log");
+        if ($orderData->getBillingAddress()){
+            if (!empty($orderData->getBillingAddress()->getTelephone())) {
+                $customer['phone'] = $orderData->getBillingAddress()->getTelephone();
+            }
         }
-
         // ------------------------------
 
         $items = [];
@@ -258,8 +263,9 @@ class Mobbex extends AbstractHelper
         $response = curl_exec($curl);
         $err = curl_error($curl);
 
-        curl_close($curl);
+        error_log("[NO Wallet: ". $response ." ]", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/wallet.log");
 
+        curl_close($curl);
         if ($err) {
             Data::log("Checkout Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
             return false;
@@ -271,6 +277,142 @@ class Mobbex extends AbstractHelper
 
             return $res['data'];
         }
+    }
+
+    /**
+     * Create checkout when wallet is active,
+     *  using a quote as an order.
+     * @return bool
+     */
+    public function createCheckoutWallet($quoteData)
+    {
+        $curl = curl_init();
+
+        // set quote description as #QUOTEID
+        $description = __('Quote #').$quoteData['entity_id'] ;//Quoteid / entityId
+
+        // get order amount
+        $orderAmount = round($quoteData['price'], 2);
+
+        // get user session data and check wallet status
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $userSession = $objectManager->get('Magento\Customer\Model\Session');
+        $is_wallet_active = ((bool) ($this->config->getWalletActive()) ) && $userSession->isLoggedIn();
+
+        // get customer data
+        $customer = [
+            'email' => $quoteData['email'], 
+            'name' => $quoteData['shipping_address']['firstname'],
+            //Customer id added for wallet usage
+            'uid' => $quoteData['customer_id'],
+        ];
+        if ($quoteData['shipping_address']){
+            if ($quoteData['shipping_address']['telephone']) {
+                $customer['phone'] = $quoteData['shipping_address']['telephone'];
+            }
+        }
+        
+
+        $items = [];
+
+        foreach ($quoteData['items'] as $item) {
+            $items[] = [
+                "description" => $item['name'],
+                "quantity" => $item['qty'],
+                "total" => round($item['price'], 2),
+            ];
+        }
+
+        
+        if ($quoteData['shipping_total']) {
+            $items[] = [
+                'description' => 'Shipping Amount',
+                'total' => $quoteData['shipping_total'],
+            ];
+        }
+
+        $returnUrl = $this->urlBuilder->getUrl('webpay/payment/paymentreturn', [
+            '_secure' => true,
+            '_current' => true,
+            '_use_rewrite' => true,
+            '_query' => [
+                "quote_id" => $quoteData['entity_id']
+            ],
+        ]);
+        $webhook = $this->urlBuilder->getUrl('webpay/payment/webhook', [
+            '_secure' => true,
+            '_current' => true,
+            '_use_rewrite' => true,
+            '_query' => [
+                "quote_id" => $quoteData['entity_id']
+            ],
+        ]);
+
+        // Create data
+        $data = [
+            'reference' => $this->getReference($quoteData['entity_id']),
+            'currency' => 'ARS',
+            'description' => $description,
+            // Test Mode
+            'test' => (bool) ($this->config->getTestMode()),
+            'return_url' => $returnUrl,
+            'items' => $items,
+            'webhook' => $webhook,
+            "options" => [
+                "button" => (bool) ($this->config->getEmbedPayment()),
+                "domain" => $this->urlBuilder->getUrl('/'),
+                "theme" => $this->getTheme(),
+                "redirect" => [
+                    "success" => true,
+                    "failure" => false,
+                ],
+                "platform" => $this->getPlatform(),
+            ],
+            'total' => (float) $orderAmount,
+            'customer' => $customer,
+            'installments' => $this->getInstallments(),
+            'timeout' => 5,
+            'wallet' => ($is_wallet_active),
+        ];
+        
+
+        if($this->config->getDebugMode())
+        {
+            Data::log("Checkout Headers:" . print_r($this->getHeaders(), true), "mobbex_debug_" . date('m_Y') . ".log");
+            Data::log("Checkout Headers:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
+        }
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://api.mobbex.com/p/checkout",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => $this->getHeaders(),
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        
+        
+        if ($err) {
+            Data::log("Checkout Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
+            return false;
+        } else {
+            $res = json_decode($response, true);
+
+            Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
+            
+            $res['data']['return_url'] = $returnUrl; 
+            return $res['data'];
+        }
+
     }
 
     /**
