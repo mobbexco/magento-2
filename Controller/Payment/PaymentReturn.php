@@ -64,6 +64,9 @@ class PaymentReturn extends Action
      */
     protected $_orderUpdate;
 
+
+    protected $quoteFactory;
+
     /**
      * PaymentReturn constructor.
      * @param Context $context
@@ -84,7 +87,8 @@ class PaymentReturn extends Action
         Session $checkoutSession,
         LoggerInterface $logger,
         OrderUpdate $orderUpdate,
-        ManagerInterface $messageManager
+        ManagerInterface $messageManager,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     ) {
         $this->_invoiceService = $_invoiceService;
         $this->_transaction = $_transaction;
@@ -97,6 +101,7 @@ class PaymentReturn extends Action
         $this->checkoutSession = $checkoutSession;
 
         $this->log = $logger;
+        $this->quoteFactory = $quoteFactory;
 
         parent::__construct($context);
     }
@@ -109,6 +114,7 @@ class PaymentReturn extends Action
     {
         try {
             // Get data
+            $quoteId = $this->getRequest()->getParam('quote_id');
             $orderId = $this->getRequest()->getParam('order_id');
             $status = $this->getRequest()->getParam('status');
 
@@ -116,6 +122,11 @@ class PaymentReturn extends Action
                 "id" => $orderId,
                 "status" => $status,
             ]);
+
+            
+            $quote = $this->quoteFactory->create()->load($quoteId);
+
+            error_log(" [quote!". $quoteId ."] { ".$quote->getId()." } ", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/walletReturn.log");
 
             // if data looks fine
             if (isset($orderId)) {
