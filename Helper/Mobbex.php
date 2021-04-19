@@ -166,7 +166,7 @@ class Mobbex extends AbstractHelper
             'uid' => $orderData->getCustomerId(),
             
         ];
-        error_log("[ID: ". $orderData->getCustomerId() ." ]", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/wallet.log");
+        
         if ($orderData->getBillingAddress()){
             if (!empty($orderData->getBillingAddress()->getTelephone())) {
                 $customer['phone'] = $orderData->getBillingAddress()->getTelephone();
@@ -226,7 +226,7 @@ class Mobbex extends AbstractHelper
             'webhook' => $webhook,
             "options" => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
-                "domain" => $this->urlBuilder->getUrl('/'),
+                "domain" => '7c74aa671df3.ngrok.io',
                 "theme" => $this->getTheme(),
                 "redirect" => [
                     "success" => true,
@@ -263,7 +263,7 @@ class Mobbex extends AbstractHelper
         $response = curl_exec($curl);
         $err = curl_error($curl);
 
-        error_log("[NO Wallet: ". $response ." ]", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/wallet.log");
+        
 
         curl_close($curl);
         if ($err) {
@@ -348,6 +348,7 @@ class Mobbex extends AbstractHelper
             ],
         ]);
 
+
         // Create data
         $data = [
             'reference' => $this->getReference($quoteData['entity_id']),
@@ -360,7 +361,7 @@ class Mobbex extends AbstractHelper
             'webhook' => $webhook,
             "options" => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
-                "domain" => $this->urlBuilder->getUrl('/'),
+                "domain" => '7c74aa671df3.ngrok.io',
                 "theme" => $this->getTheme(),
                 "redirect" => [
                     "success" => true,
@@ -393,20 +394,19 @@ class Mobbex extends AbstractHelper
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => $this->getHeaders(),
         ]);
-
+        
+        
         $response = curl_exec($curl);
         $err = curl_error($curl);
 
         curl_close($curl);
 
-        
-        
         if ($err) {
             Data::log("Checkout Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
             return false;
         } else {
             $res = json_decode($response, true);
-
+            
             Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
             
             $res['data']['return_url'] = $returnUrl; 
@@ -414,6 +414,7 @@ class Mobbex extends AbstractHelper
         }
 
     }
+
 
     /**
      * @return array

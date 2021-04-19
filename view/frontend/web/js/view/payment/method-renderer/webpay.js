@@ -1,6 +1,8 @@
 var embed = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
 var wallet = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
 
+let walletEmpty = true;
+
 // define global array for credit cards
 let creditCards = []
 
@@ -37,7 +39,9 @@ function createCheckoutWallet(url)
             if (data.length < 1) return
             //use data['wallet'][0] to retrieve the first card data in case it exist
             creditCards = data.wallet
-
+            if(creditCards.length > 0){
+                walletEmpty = false;
+            }
             walletReturnUrl = data.returnUrl
             // for each card add onClick function to show form (only if wasn't rendered yet)
             if (!rendered) {
@@ -123,71 +127,29 @@ function executeWallet(checkoutBuilder) {
         let installment = $(`#${card} select`).val()
         let securityCode = $(`#${card} input[name=security-code]`).val()
         let intentToken = $(`#${card} input[name=intent-token]`).val()
-
+        console.log(installment);
+        console.log(securityCode);
+        console.log(intentToken);
+        
+        
         window.MobbexJS.operation.process({
             intentToken: intentToken,
             installment: installment,
             securityCode: securityCode
         })
         .then(data => {
-            location.href = walletReturnUrl + '&status=' + data.status.code
+            console.info(walletReturnUrl);
+            location.href = walletReturnUrl + '&status=' + data.status.code;
         })
         .catch(error => {
-            console.log(error)
             $("body").trigger('processStop');
-            location.href =  walletReturnUrl
+            location.href =  walletReturnUrl  ;
         })
     }
     else {
         createCheckout(checkoutBuilder);
     }
 } 
-
-
-/*
-function executeWallet(checkoutUrl) {
-    lockForm()
-    var securityCode;
-    var installment;
-    var intentToken;
-    var cards = document.getElementsByName("walletCard")
-    for (var i = 0; i < cards.length; i++) {
-      if (cards[i].checked) {
-        var cardIndex = cards[i].value
-        var cardDiv = document.getElementById(`card_${cardIndex}_form`)
-        securityCode = cardDiv.getElementsByTagName("input")[0].value
-        maxlength = cardDiv.getElementsByTagName("input")[0].getAttribute('maxlength')
-        if (securityCode.length < parseInt(maxlength)) {
-          cardDiv.getElementsByTagName("input")[0].style.borderColor = '#dc3545'
-          unlockForm()
-          return alert("Código de seguridad incompleto")
-        }
-        installment = cardDiv.getElementsByTagName("select")[0].value
-        intentToken = cardDiv.getElementsByTagName("input")[1].value
-      }
-    }
-    window.MobbexJS.operation.process({
-      intentToken: intentToken,
-      installment: installment,
-      securityCode: securityCode
-    })
-      .then(data => {
-        if (data.result) {
-          var status = data.data.status.code;
-          var link = checkoutUrl + '&status=' + status + '&type=card' + '&transactionId=' + data.data.id;
-          setTimeout(function(){window.top.location.href = link}, 5000)
-        }
-        else {
-          alert("Error procesando el pago")
-          unlockForm()
-        }
-      })
-      .catch(error => {
-        alert("Error: " + error)
-        unlockForm()
-      })
-  }
-*/
 
 
 if (embed) {
@@ -228,7 +190,6 @@ if (embed) {
                     },
 
                     onError: (error) => {
-                        console.log(error)
                         jQuery("body").trigger('processStop');
                         location.href = returnUrl
                     }
@@ -263,7 +224,7 @@ define(
                 redirectAfterPlaceOrder: false
             },
             afterPlaceOrder: function (url) {
-                if  (wallet) {
+                if  (wallet && !walletEmpty) {
                     $("body").trigger('processStart');
                     executeWallet(urlBuilder.build('webpay/payment/embedpayment/'))
                     return

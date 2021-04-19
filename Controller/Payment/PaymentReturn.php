@@ -126,8 +126,6 @@ class PaymentReturn extends Action
             
             $quote = $this->quoteFactory->create()->load($quoteId);
 
-            error_log(" [quote!". $quoteId ."] { ".$quote->getId()." } ", 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/walletReturn.log");
-
             // if data looks fine
             if (isset($orderId)) {
                 // Get Order
