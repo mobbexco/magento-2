@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2021-04-19: 1.4.1
+- Add checks to CUIT obtaining
+
 2021-03-28: 1.4.0
 - Add common/advanced plans filter by category
 - Some improvements
