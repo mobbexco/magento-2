@@ -26,9 +26,6 @@ function createCheckoutWallet(url)
         var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
         var totalAmount = JSON.stringify(window.checkoutConfig.totalsData);
         
-        console.log(customerData);
-        console.log(orderData);
-        console.log(itemsData);
         jQuery.ajax({
             context: '#ajaxresponse',
             url: url,
@@ -131,9 +128,6 @@ function executeWallet(checkoutBuilder) {
         let installment = $(`#${card} select`).val()
         let securityCode = $(`#${card} input[name=security-code]`).val()
         let intentToken = $(`#${card} input[name=intent-token]`).val()
-        console.log(installment);
-        console.log(securityCode);
-        console.log(intentToken);
         
         
         window.MobbexJS.operation.process({
@@ -142,7 +136,6 @@ function executeWallet(checkoutBuilder) {
             securityCode: securityCode
         })
         .then(data => {
-            console.info(walletReturnUrl);
             location.href = walletReturnUrl + '&status=' + data.data.status.code;
         })
         .catch(error => {
