@@ -4,11 +4,11 @@ var wallet = window.checkoutConfig.payment.webpay.config.wallet && window.checko
 let walletEmpty = true;
 
 // define global array for credit cards
-let creditCards = []
+let creditCards = [];
 
-// define global boolean to check if cards where alredy rendered
-let rendered = false
-let walletReturnUrl
+// define global boolean variable to check if cards where alredy rendered
+let rendered = false;
+let walletReturnUrl;
 
 /**
  * Creates a custom Mobbex checkout using 
@@ -56,7 +56,6 @@ function createCheckoutWallet(url)
 }
 
 // Another option: pass the wallet throw function arguments instead of global var
-
 function renderWallet() {
     let $ = jQuery
     // Add mobbex wallet SDK script
@@ -120,10 +119,15 @@ function renderCreditCards() {
 
 }
 
+/**
+ * Call Mobbex API using sdk to make the payment
+ * with wallet card
+ * @param {*} checkoutBuilder 
+ */
 function executeWallet(checkoutBuilder) {
     let $ = jQuery
     let card = $("input[name=wallet-option]:checked").val()
-    if (card !== "new_card") {
+    if (card && card !== "new-card") {
         let installment = $(`#${card} select`).val()
         let securityCode = $(`#${card} input[name=security-code]`).val()
         let intentToken = $(`#${card} input[name=intent-token]`).val()
@@ -139,17 +143,64 @@ function executeWallet(checkoutBuilder) {
         })
         .then(data => {
             console.info(walletReturnUrl);
-            location.href = walletReturnUrl + '&status=' + data.status.code;
+            location.href = walletReturnUrl + '&status=' + data.data.status.code;
         })
         .catch(error => {
             $("body").trigger('processStop');
-            location.href =  walletReturnUrl  ;
+            location.href =  walletReturnUrl;
         })
-    }
-    else {
-        createCheckout(checkoutBuilder);
-    }
+    }else{
+        //if new-card or none option is selected, then proced to normal checkout
+        if(embed){
+            createCheckoutEmbed(checkoutBuilder);
+        }else{
+            createCheckout(checkoutBuilder);
+        }
+        
+    }   
 } 
+
+
+/**
+ * Create normal checkout 
+ * 
+ *  */ 
+function createCheckout(url)
+{
+    jQuery.ajax({
+        url: url,
+        success: function(response) {
+            var checkoutId = response.checkoutId;
+            var returnUrl = response.returnUrl;
+
+            var options = {
+                id: checkoutId,
+                type: 'checkout',
+
+                onResult: (data) => {
+                    location.href = returnUrl + '&status=' + data.status.code
+                },
+
+                onClose: () => {
+                    jQuery("body").trigger('processStop');
+                    location.href = returnUrl
+                },
+
+                onError: (error) => {
+                    jQuery("body").trigger('processStop');
+                    location.href = returnUrl
+                }
+            }
+
+        },
+        error: function() {
+            console.log("No se ha podido obtener la información");
+            return false;
+        }
+    });
+
+}
+
 
 
 if (embed) {
@@ -167,8 +218,10 @@ if (embed) {
       return doc.documentElement.textContent;
     }
 
-    // Create checkout and init Mobbex Embed
-    function createCheckout(url)
+    /**
+     * Create checkout and init Mobbex Embed
+     *  */ 
+    function createCheckoutEmbed(url)
     {
         jQuery.ajax({
             url: url,
@@ -208,6 +261,8 @@ if (embed) {
     }
 
 }
+    
+
 
 
 define(
@@ -225,28 +280,25 @@ define(
             },
             afterPlaceOrder: function (url) {
                 if  (wallet && !walletEmpty) {
-                    $("body").trigger('processStart');
+                    //only use wallet payment if there is at least one card stored
                     executeWallet(urlBuilder.build('webpay/payment/embedpayment/'))
-                    return
                 }
                 if (embed) {
                     $("body").trigger('processStart');
-                    createCheckout(urlBuilder.build('webpay/payment/embedpayment/'));
+                    createCheckoutEmbed(urlBuilder.build('webpay/payment/embedpayment/'));
                 } else {
                     window.location.replace(
                         urlBuilder.build('webpay/payment/redirect/')
                     );
                 }
-
             },
             getData: function () {
                 //When Mobbex is selected as payment method creates a checkout using quote data
                 if(wallet && window.isCustomerLoggedIn){
+                    //Only retrieve wallet cards and show them if the wallet config is set true and the user is logged in
                     $("body").trigger('processStart');
                     var response = createCheckoutWallet(urlBuilder.build('webpay/payment/walletpayment/'));
-                    console.info(response);
                 }
-                console.info(this.item);
                 return {
                     'method': this.item.method,
                     'additional_data': {}
