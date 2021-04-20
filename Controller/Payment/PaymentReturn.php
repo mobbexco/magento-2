@@ -124,7 +124,11 @@ class PaymentReturn extends Action
             ]);
 
             
-            $quote = $this->quoteFactory->create()->load($quoteId);
+            if (empty($order_id) && !empty($quoteId)) {
+                $quote = $this->quoteFactory->create()->load($quoteId);
+                $orderId = $quote->getReservedOrderId();
+            }
+            
 
             // if data looks fine
             if (isset($orderId)) {
@@ -132,7 +136,6 @@ class PaymentReturn extends Action
                 $order = $this->_order->loadByIncrementId($orderId);
 
                 $this->log->debug('Return Controller > Order', $this->_order->debug());
-
                 if ($status > 1 && $status < 400) {
                     $this->_redirect('checkout/onepage/success');
                 } else {
