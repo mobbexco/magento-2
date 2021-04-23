@@ -128,7 +128,6 @@ class PaymentReturn extends Action
                 $quote = $this->quoteFactory->create()->load($quoteId);
                 $orderId = $quote->getReservedOrderId();
             }
-            
 
             // if data looks fine
             if (isset($orderId)) {

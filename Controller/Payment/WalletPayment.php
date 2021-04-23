@@ -6,7 +6,6 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Mobbex\Webpay\Helper\Data;
-use Mobbex\Webpay\Helper\Custom;
 use Magento\Quote\Model\QuoteFactory;
     
 /**
@@ -26,12 +25,10 @@ class WalletPayment extends Action
     public function __construct(
         Context $context,
         Data $_helper,
-        Custom $_customHelper,
         JsonFactory $resultJsonFactory,
         QuoteFactory $quoteFactory
     ) {
         $this->_helper = $_helper;
-        $this->_customHelper = $_customHelper;
         parent::__construct($context);
         $this->resultJsonFactory = $resultJsonFactory;
         $this->quoteFactory = $quoteFactory;

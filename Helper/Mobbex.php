@@ -166,13 +166,11 @@ class Mobbex extends AbstractHelper
             'uid' => $orderData->getCustomerId(),
             
         ];
-        
         if ($orderData->getBillingAddress()){
             if (!empty($orderData->getBillingAddress()->getTelephone())) {
                 $customer['phone'] = $orderData->getBillingAddress()->getTelephone();
             }
         }
-        // ------------------------------
 
         $items = [];
         $orderedItems = $this->order->getAllVisibleItems();
@@ -226,7 +224,7 @@ class Mobbex extends AbstractHelper
             'webhook' => $webhook,
             "options" => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
-                "domain" => '7c74aa671df3.ngrok.io',
+                "domain" => $this->urlBuilder->getUrl('/'),
                 "theme" => $this->getTheme(),
                 "redirect" => [
                     "success" => true,
@@ -262,29 +260,26 @@ class Mobbex extends AbstractHelper
 
         $response = curl_exec($curl);
         $err = curl_error($curl);
-
-        
-
         curl_close($curl);
+
         if ($err) {
             Data::log("Checkout Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
             return false;
         } else {
             $res = json_decode($response, true);
             Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
-
             $res['data']['return_url'] = $returnUrl; 
-
             return $res['data'];
         }
     }
 
     /**
      * Create checkout when wallet is active,
-     *  using a quote as an order.
+     *  using a quote instead of an order.
+     *  can't use an order object beacouse there is a duplication problem
      * @return bool
      */
-    public function createCheckoutWallet($quoteData)
+    public function createCheckoutFromQuote($quoteData)
     {
         $curl = curl_init();
 
@@ -348,7 +343,6 @@ class Mobbex extends AbstractHelper
             ],
         ]);
 
-
         // Create data
         $data = [
             'reference' => $this->getReference($quoteData['entity_id']),
@@ -361,7 +355,7 @@ class Mobbex extends AbstractHelper
             'webhook' => $webhook,
             "options" => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
-                "domain" => '7c74aa671df3.ngrok.io',
+                "domain" => $this->urlBuilder->getUrl('/'),
                 "theme" => $this->getTheme(),
                 "redirect" => [
                     "success" => true,
@@ -395,7 +389,6 @@ class Mobbex extends AbstractHelper
             CURLOPT_HTTPHEADER => $this->getHeaders(),
         ]);
         
-        
         $response = curl_exec($curl);
         $err = curl_error($curl);
 
@@ -406,10 +399,9 @@ class Mobbex extends AbstractHelper
             return false;
         } else {
             $res = json_decode($response, true);
-            
             Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
-            
             $res['data']['return_url'] = $returnUrl; 
+            error_log("¡ ".print_r($res['data'], true), 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/checkoutquote.log");//..-----------------------------
             return $res['data'];
         }
 
