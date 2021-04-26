@@ -20,7 +20,6 @@ class WalletPayment extends Action
 
     protected $_helper;
 
-    protected $_customHelper;
 
     public function __construct(
         Context $context,
@@ -66,6 +65,7 @@ class WalletPayment extends Action
         }
 
         
+        
         $quoteData=[
             'entity_id' => $quoteData->entity_id,
             'customer_id' => $customerData->id,
@@ -94,6 +94,7 @@ class WalletPayment extends Action
             'checkoutId' => $checkout['id'],
             //array with the stored credit cards
             'wallet' => $checkout['wallet'],
+            'paymentUrl' => $checkout['url'],
         ];
 
         $resultJson->setData($vac);
