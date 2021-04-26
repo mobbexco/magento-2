@@ -28,7 +28,7 @@ function createCheckoutWallet(url)
         var orderData = JSON.stringify(window.checkoutConfig.quoteData);
         var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
         var totalAmount = JSON.stringify(window.checkoutConfig.totalsData);
-        
+
         jQuery.ajax({
             context: '#ajaxresponse',
             url: url,
@@ -142,7 +142,7 @@ function executeWallet(checkoutBuilder) {
             securityCode: securityCode
         })
         .then(data => {
-            location.href = walletReturnUrl + '&status=' + data.data.status.code;
+            location.href = walletReturnUrl+ '&status=' + data.status.code ;
         })
         .catch(error => {
             $("body").trigger('processStop');

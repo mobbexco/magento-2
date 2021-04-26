@@ -15,6 +15,7 @@ use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
+use Magento\Quote\Model\QuoteFactory;
 
 /**
  * Class Mobbex
@@ -85,6 +86,11 @@ class Mobbex extends AbstractHelper
     protected $productMetadata;
 
     /**
+     * @var QuoteFactory
+     */
+    protected $quoteFactory;
+
+    /**
      * Mobbex constructor.
      * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
@@ -98,6 +104,7 @@ class Mobbex extends AbstractHelper
      * @param Image $imageHelper
      * @param CustomFieldFactory $_customFieldFactory
      * @param ProductMetadataInterface $productMetadata
+     * @param QuoteFactory $quoteFactory
      */
     public function __construct(
         Config $config,
@@ -111,6 +118,7 @@ class Mobbex extends AbstractHelper
         UrlInterface $urlBuilder,
         Image $imageHelper,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        QuoteFactory $quoteFactory,
         ProductMetadataInterface $productMetadata
     ) {
         $this->config = $config;
@@ -118,7 +126,7 @@ class Mobbex extends AbstractHelper
         $this->modelOrder = $modelOrder;
         $this->cart = $cart;
         $this->scopeConfig = $scopeConfig;
-
+        $this->quoteFactory = $quoteFactory;
         $this->_storeManager = $_storeManager;
         $this->_objectManager = $_objectManager;
         $this->log = $logger;
@@ -306,7 +314,11 @@ class Mobbex extends AbstractHelper
                 $customer['phone'] = $quoteData['shipping_address']['telephone'];
             }
         }
-        
+
+        //get quote to retrieve shipping amount
+        $quote = $this->quoteFactory->create()->load($quoteData['entity_id']);
+        $quote_grand_total = $quote->getGrandTotal();
+
 
         $items = [];
 
@@ -319,11 +331,18 @@ class Mobbex extends AbstractHelper
         }
 
         
-        if ($quoteData['shipping_total']) {
+        if ($quoteData['shipping_total'] > 0) {
             $items[] = [
                 'description' => 'Shipping Amount',
                 'total' => $quoteData['shipping_total'],
             ];
+        }elseif($quote_grand_total > $orderAmount){
+            $shipping_amount = $quote_grand_total - $orderAmount;
+            $items[] = [
+                'description' => 'Shipping Amount',
+                'total' => ($shipping_amount),
+            ];
+            $orderAmount = $orderAmount + $shipping_amount;
         }
 
         $returnUrl = $this->urlBuilder->getUrl('webpay/payment/paymentreturn', [
@@ -401,7 +420,6 @@ class Mobbex extends AbstractHelper
             $res = json_decode($response, true);
             Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
             $res['data']['return_url'] = $returnUrl; 
-            error_log("¡ ".print_r($res['data'], true), 3, "/var/www/html/magento2.2/vendor/mobbexco/magento-2/checkoutquote.log");//..-----------------------------
             return $res['data'];
         }
 
