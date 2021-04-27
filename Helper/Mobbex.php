@@ -318,8 +318,7 @@ class Mobbex extends AbstractHelper
         //get quote to retrieve shipping amount
         $quote = $this->quoteFactory->create()->load($quoteData['entity_id']);
         $quote_grand_total = $quote->getGrandTotal();
-
-
+        
         $items = [];
 
         foreach ($quoteData['items'] as $item) {
@@ -362,6 +361,9 @@ class Mobbex extends AbstractHelper
             ],
         ]);
 
+        //get domain format 
+        $domain = (string) $this->getDomainUrl();
+
         // Create data
         $data = [
             'reference' => $this->getReference($quoteData['entity_id']),
@@ -374,7 +376,7 @@ class Mobbex extends AbstractHelper
             'webhook' => $webhook,
             "options" => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
-                "domain" => $this->urlBuilder->getUrl('/'),
+                "domain" => $domain,
                 "theme" => $this->getTheme(),
                 "redirect" => [
                     "success" => true,
@@ -423,6 +425,29 @@ class Mobbex extends AbstractHelper
             return $res['data'];
         }
 
+    }
+
+    /**
+     * Return domain url without https:// or http://
+     * 
+     * @return string
+     */
+    private function getDomainUrl(){
+
+        $url = $this->urlBuilder->getUrl();
+        if(str_contains($url,'https'))
+        {
+            $url = substr($url,8);
+        }elseif(str_contains($url,'http'))
+        {
+            $url = substr($url,7);
+        }
+        
+        if(str_contains(substr($url,-1),'/')){
+            $url = substr($url,0,-1);
+        }
+
+        return $url;
     }
 
 

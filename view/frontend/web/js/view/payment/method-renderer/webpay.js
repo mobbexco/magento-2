@@ -39,9 +39,15 @@ function createCheckoutWallet(url)
             if (data.length < 1) return
             //use data['wallet'][0] to retrieve the first card data in case it exist
             creditCards = data.wallet
-            if(creditCards.length > 0){
+            //in case wallet is undefined 
+            if(creditCards)
+            {
                 walletEmpty = false;
+            }else
+            {
+                creditCards = [];
             }
+
             walletReturnUrl = data.returnUrl;
             // for each card add onClick function to show form (only if wasn't rendered yet)
             if (!rendered) {
@@ -58,7 +64,9 @@ function createCheckoutWallet(url)
     return false;
 }
 
-// Another option: pass the wallet throw function arguments instead of global var
+/**
+ * Another option: pass the wallet throw function arguments instead of global var
+ *  */ 
 function renderWallet() {
     let $ = jQuery
     // Add mobbex wallet SDK script
@@ -135,14 +143,13 @@ function executeWallet(checkoutBuilder) {
         let securityCode = $(`#${card} input[name=security-code]`).val()
         let intentToken = $(`#${card} input[name=intent-token]`).val()
         
-        
         window.MobbexJS.operation.process({
             intentToken: intentToken,
             installment: installment,
             securityCode: securityCode
         })
         .then(data => {
-            location.href = walletReturnUrl+ '&status=' + data.status.code ;
+            location.href = walletReturnUrl+ '&status=' + data.data.status.code ;
         })
         .catch(error => {
             $("body").trigger('processStop');
