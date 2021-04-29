@@ -124,7 +124,7 @@ class PaymentReturn extends Action
             ]);
 
             
-            if (empty($order_id) && !empty($quoteId)) {
+            if (empty($orderId) && !empty($quoteId)) {
                 $quote = $this->quoteFactory->create()->load($quoteId);
                 $orderId = $quote->getReservedOrderId();
             }
