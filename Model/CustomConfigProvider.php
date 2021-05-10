@@ -43,7 +43,8 @@ class CustomConfigProvider implements ConfigProviderInterface
                 'webpay' => [
                     'config' => [
                         'embed' => $this->config->getEmbedPayment(),
-                        'wallet' => $this->config->getWalletActive()
+                        'wallet' => $this->config->getWalletActive(),
+                        'dni' => $this->config->getShowDni()
                     ],
                     'banner' => $this->config->getBannerCheckout()
                 ]

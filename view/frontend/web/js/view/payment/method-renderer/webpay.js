@@ -1,5 +1,7 @@
 let embed = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
 let wallet = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
+let dni = window.checkoutConfig.payment.webpay.config.dni && window.checkoutConfig.payment.webpay.config.dni != '0';
+
 // for wallet usage
 let walletEmpty = true;
 let wallet_checkout_used = false;
@@ -12,6 +14,30 @@ let creditCards = [];
 let rendered = false;
 let walletReturnUrl;
 
+
+/**
+ * Show dni input field
+ * @return boolean
+ */
+function renderDni()
+{
+    let $ = jQuery
+    // get .mobbex-content && get the parent to inject HTML after div.checkout-messages
+    let mobbexContainer = $(".mobbex-content").parent()
+    // add id to parent, with this we can inject html AFTER checkout-messages
+    mobbexContainer.attr("id", "mobbex-container")
+    // aftrer messages inject dni div
+    $("#mobbex-container div:eq(0)").after(`
+    <div id="dni-container" style="border:0,5px solid grey;">   
+        <label>DNI:</label> 
+        <input type="text" id="dni-input" name="dni" minlength="7" size="2" style=" width:60%">
+    </div>`);
+
+    //Hide loader (?)
+    $("body").trigger('processStop');
+
+    return true
+}
 
 /**
  * Creates a custom Mobbex checkout using 
@@ -286,6 +312,11 @@ define(
                         wallet_response = createCheckoutWallet(urlBuilder.build('webpay/payment/walletpayment/'));
                     }
                 }
+                //Mobbex is selected and show_dni is active 
+                if(dni){
+                    renderDni();
+                }
+
                 return {
                     'method': this.item.method,
                     'additional_data': {}
