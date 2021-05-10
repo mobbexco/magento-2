@@ -29,6 +29,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_ORDER_STATUS_REFUNDED = 'payment/webpay/checkout/order_status_settings/order_status_refunded';
 
     const PATH_WALLET_ACTIVE = 'payment/webpay/checkout/wallet_active';
+    const PATH_SHOW_DNI  = 'payment/webpay/checkout/show_dni';
 
     public function getBannerCheckout($store = null)
     {
@@ -197,6 +198,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_WALLET_ACTIVE,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getShowDni($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_SHOW_DNI,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
