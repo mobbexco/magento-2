@@ -13,7 +13,7 @@ let creditCards = [];
 // define global boolean variable to check if cards where alredy rendered
 let rendered = false;
 let walletReturnUrl;
-
+let dni_input_rendered = false;
 
 /**
  * Show dni input field
@@ -21,21 +21,24 @@ let walletReturnUrl;
  */
 function renderDni()
 {
-    let $ = jQuery
-    // get .mobbex-content && get the parent to inject HTML after div.checkout-messages
-    let mobbexContainer = $(".mobbex-content").parent()
-    // add id to parent, with this we can inject html AFTER checkout-messages
-    mobbexContainer.attr("id", "mobbex-container")
-    // aftrer messages inject dni div
-    $("#mobbex-container div:eq(0)").after(`
-    <div id="dni-container" style="border:0,5px solid grey;">   
-        <label>DNI:</label> 
-        <input type="text" id="dni-input" name="dni" minlength="7" size="2" style=" width:60%">
-    </div>`);
+    if(!dni_input_rendered)
+    {
+        dni_input_rendered = true;
+        let $ = jQuery;
+        // get .mobbex-content && get the parent to inject HTML after div.checkout-messages
+        let mobbexContainer = $(".mobbex-content").parent();
+        // add id to parent, with this we can inject html AFTER checkout-messages
+        mobbexContainer.attr("id", "mobbex-container");
+        // aftrer messages inject dni div
+        $("#mobbex-container div:eq(0)").after(`
+        <div id="dni-container" style="border:0,5px solid grey;">   
+            <label>DNI:</label> 
+            <input type="text" id="dni-input" name="dni" minlength="7" size="2" style=" width:60%">
+        </div>`);
 
-    //Hide loader (?)
-    $("body").trigger('processStop');
-
+        //Hide loader (?)
+        $("body").trigger('processStop');
+    }
     return true
 }
 
@@ -54,12 +57,19 @@ function createCheckoutWallet(url)
         var orderData = JSON.stringify(window.checkoutConfig.quoteData);
         var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
         var totalAmount = JSON.stringify(window.checkoutConfig.totalsData);
+        var dni_value = "";
+        
+        //if dni is active, then the value is obtained from the input
+        if(dni_input_rendered){
+            let $ = jQuery;
+            dni_value = $("#dni-input").val(); 
+        }
 
         jQuery.ajax({
             context: '#ajaxresponse',
             url: url,
             type: "POST",
-            data: {customer: customerData , quote: orderData, items:itemsData, totals: totalAmount, type: 'wallet'},
+            data: {customer: customerData , quote: orderData, items:itemsData, totals: totalAmount, type: 'wallet', dni_key:dni_value},
         }).done(function (data) {
             // if no wallets, do not execute rendering
             if (data.length < 1) return
@@ -236,8 +246,14 @@ if (embed) {
      * */ 
     function createCheckoutEmbed(url)
     {
+        var dni_value = "";
+        if(dni){
+            let $ = jQuery;
+            dni_value = $("#dni-input").val(); 
+        }
         jQuery.ajax({
             url: url,
+            data: {dni_key:dni_value},
             success: function(response) {
                 var checkoutId = response.checkoutId;
                 var returnUrl = response.returnUrl;
@@ -273,7 +289,32 @@ if (embed) {
 
     }
 
+}else{
+    /**
+     * Function for normal checkout
+     * @param {*} url 
+     */
+    function createNormalCheckout(url){
+        var dni_value = "";
+        if(dni){
+            let $ = jQuery;
+            dni_value = $("#dni-input").val(); 
+        }
+        jQuery.ajax({
+            url: url,
+            data: {dni_key:dni_value},
+            success: function(response) 
+            {
+                window.location.href =  response.paymentUrl;
+            },
+            error: function() {
+                console.log("No se ha podido obtener la información");
+                return false;
+            }
+        });
+    }
 }
+
     
 
 define(
@@ -298,9 +339,7 @@ define(
                     $("body").trigger('processStart');
                     createCheckoutEmbed(urlBuilder.build('webpay/payment/embedpayment/'));
                 }else{
-                    window.location.replace(
-                        urlBuilder.build('webpay/payment/redirect/')
-                    );
+                    createNormalCheckout(urlBuilder.build('webpay/payment/normalpayment/'));
                 }
             },
             getData: function () {
