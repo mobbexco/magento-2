@@ -39,23 +39,14 @@ function renderDni($url_wallet)
 
         $("#place_order_mobbex").prop('disabled', true);
 
-        /*
-        // Show card form if it is selected and hide it if is not
-        $("#dni-input").keyup(function( event ) {
-            console.info("Entro");
-            var dni_value = $("#dni-input").val(); 
-            if(dni_value.length > 6){
-                $("#place_order_mobbex").prop('disabled', false);
-            }else{
-                $("#place_order_mobbex").prop('disabled', true);
-            }
-        });*/
-
         // Show card form if it is selected and hide it if is not
         $("#btn-dni-mobbex").on("click", () => {
             var dni_value = $("#dni-input").val(); 
             if(dni_value.length > 6){
                 $("#place_order_mobbex").prop('disabled', false);
+                $("#place_order_mobbex").html('habilitado');
+                $("#place_order_mobbex").removeClass('disabled');
+                console.info("habilitado  "+$("#place_order_mobbex").attr('disabled'));
                 //When Mobbex is selected as payment method creates a checkout using quote data
                 if(wallet_url_payment == null){
                     if(wallet && window.isCustomerLoggedIn){
@@ -66,6 +57,9 @@ function renderDni($url_wallet)
                 }
             }else{
                 $("#place_order_mobbex").prop('disabled', true);
+                $("#place_order_mobbex").html('deshabilitado');
+                $("#place_order_mobbex").addClass('disabled');
+                console.info("deshabilitado  "+$("#place_order_mobbex").attr('disabled'));
                 alert("Es necesario cargar el DNI.");
             }
         });
@@ -339,7 +333,7 @@ if (embed) {
             url: url,
             data: {dni_key:dni_value},
             success: function(response) 
-            {Order
+            {
                 window.location.href =  response.paymentUrl;
             },
             error: function() {
