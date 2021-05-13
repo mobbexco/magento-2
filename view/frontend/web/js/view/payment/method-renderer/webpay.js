@@ -16,10 +16,12 @@ let walletReturnUrl;
 let dni_input_rendered = false;
 
 /**
- * Show dni input field
+ * Show dni input field and 
+ * Enable or Disable Place Order button
+ * @param String url_wallet 
  * @return boolean
  */
-function renderDni($url_wallet)
+function renderDni(url_wallet)
 {
     if(!dni_input_rendered)
     {
@@ -33,33 +35,28 @@ function renderDni($url_wallet)
         $("#mobbex-container div:eq(0)").after(`
         <div id="dni-container" style="border:0,5px solid grey;">   
             <label>DNI:</label> 
-            <input type="text" id="dni-input" name="dni" minlength="7" size="2" style=" width:40%" required>
+            <label style="color:red">* </label> 
+            <input type="text" id="dni-input" name="dni" style=" width:30%" required>
             <button type="button" id="btn-dni-mobbex" style=" width:15%">Guardar</button> 
         </div>`);
-
-        $("#place_order_mobbex").prop('disabled', true);
 
         // Show card form if it is selected and hide it if is not
         $("#btn-dni-mobbex").on("click", () => {
             var dni_value = $("#dni-input").val(); 
+            //Only DNI value with more than six characters is valid
             if(dni_value.length > 6){
-                $("#place_order_mobbex").prop('disabled', false);
-                $("#place_order_mobbex").html('habilitado');
-                $("#place_order_mobbex").removeClass('disabled');
-                console.info("habilitado  "+$("#place_order_mobbex").attr('disabled'));
+                $("#place_order_mobbex").removeClass('disabled');// Enable Button
                 //When Mobbex is selected as payment method creates a checkout using quote data
                 if(wallet_url_payment == null){
                     if(wallet && window.isCustomerLoggedIn){
                         //Only retrieve wallet cards and show them if the wallet config is set true and the user is logged in
                         $("body").trigger('processStart');
-                        wallet_response = createCheckoutWallet($url_wallet);
+                        wallet_response = createCheckoutWallet(url_wallet);
                     }
                 }
             }else{
-                $("#place_order_mobbex").prop('disabled', true);
-                $("#place_order_mobbex").html('deshabilitado');
+                // Disable Button
                 $("#place_order_mobbex").addClass('disabled');
-                console.info("deshabilitado  "+$("#place_order_mobbex").attr('disabled'));
                 alert("Es necesario cargar el DNI.");
             }
         });
@@ -360,13 +357,6 @@ define(
                 redirectAfterPlaceOrder: false
             },
             afterPlaceOrder: function (url) {
-                if(dni){
-                    let $ = jQuery;
-                    if($("#dni-input").val()==""){
-                        alert("DNI VACIO");
-                        return false;
-                    } 
-                }
                 if  (wallet && wallet_url_payment != null) {
                     //only use wallet payment if there is at least one card stored
                     executeWallet(urlBuilder.build('webpay/payment/walletpayment/'))
@@ -384,6 +374,8 @@ define(
                 if(dni){
                     renderDni(urlBuilder.build('webpay/payment/walletpayment/'));
                 }else{
+                    let $ = jQuery;
+                    $("#place_order_mobbex").removeClass('disabled');
                     //When Mobbex is selected as payment method creates a checkout using quote data
                     if(wallet_url_payment == null){
                         if(wallet && window.isCustomerLoggedIn){
