@@ -2,7 +2,7 @@
 /** @var $block \Magento\Catalog\Block\Product\View */
 $product = $block->getProduct();
 
-$price = $product->getPrice() ?: $product->getFinalPrice();
+$price = $product->getFinalPrice() ?: $product->getPrice() ;
 $isActiveFinancialInfo = $block->getFinancialActive();
 $cuit = $block->getCuit();// or tax_id
 //stablish the initial url with only one product selected
