@@ -39,15 +39,17 @@ class RefundObserverBeforeSave implements ObserverInterface
 
         $order = $creditMemo->getOrder();
         $payment = $order->getPayment();
-        
-        $paymentId = $payment->getAdditionalInformation('mobbex_data')['payment']['id'];
+
         $paymentMethod = $payment->getMethodInstance()->getCode();
 
         if ($paymentMethod != 'webpay') {
             return;
         }
         
-        // If amount is invalid throw exception 
+        $paymentId = $payment->getAdditionalInformation('mobbex_data')['payment']['id'];
+
+
+        // If amount is invalid throw exception
         if ($amount <= 0) {
             $message = __('Refund Error: Sorry! This is not a refundable transaction.');
             $this->messageManager->addErrorMessage($message);
