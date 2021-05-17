@@ -27,6 +27,11 @@
 
 ## Changelog:
 
+2021-04-19: 1.4.2
+- Fix refund observer payment method check
+- Fix financial widget price get
+- Improved financial widget IDs uniqueness
+
 2021-04-19: 1.4.1
 - Add checks to CUIT obtaining
 
