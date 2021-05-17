@@ -3,13 +3,13 @@ require(['jquery', 'domReady!'], function ($) {
         let quantityDom = document.getElementsByClassName("qty");
 
         // Get the modal
-        let modal = document.getElementById("myModal");
+        let modal = document.getElementById("modal_mobbex");
         // Get the button that opens the modal
         let btn = document.getElementById("btn_mobbex_installments");
         // Get the <span> element that closes the modal
-        let span = document.getElementsByClassName("close")[0];
+        let span = document.getElementsByClassName("button_mobbex_close")[0];
         // Get the <iframe> element that show the financing info, if it not exist then is null
-        let iframe_element = document.getElementById("iframe");
+        let iframe_element = document.getElementById("mobbex_iframe");
         
         // When the user clicks on <span> (x), close the modal
         if(span){
@@ -27,12 +27,12 @@ require(['jquery', 'domReady!'], function ($) {
                 let tax_id = $('.mobbex-finance').data('cuit');
                 //recalculate the price based on quantity
                 let total_price = price_one * quantity;
-                iframe.src = "https://mobbex.com/p/sources/widget/arg/"+tax_id+"/?total="+total_price;
+                mobbex_iframe.src = "https://mobbex.com/p/sources/widget/arg/"+tax_id+"/?total="+total_price;
                     modal.style.display = "block";
                     //set the modal and iframe style
                     window.dispatchEvent(new Event('resize'));
-                    document.getElementById('iframe').style.width = "100%";
-                    document.getElementById('iframe').style.height = "96%";
+                    document.getElementById('mobbex_iframe').style.width = "100%";
+                    document.getElementById('mobbex_iframe').style.height = "96%";
                     return false;
             });
 
