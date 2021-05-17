@@ -17,18 +17,18 @@ $url_information = "https://mobbex.com/p/sources/widget/arg/" . $cuit . "/?total
             <div class="fieldset">
                 <div class="actions">
                     <!-- The Button !-->
-                    <button class="action primary tocart" id="myBtn"><?= __('View Installments') ?></button>
+                    <button class="action primary tocart" id="btn_mobbex_installments"><?= __('View Installments') ?></button>
                     <?= $block->getChildHtml('', true) ?>
                 </div>
             </div>
         </div>
 
         <!-- The Modal -->
-        <div id="myModal" class="modal ">
+        <div id="modal_mobbex" class="modal ">
             <!-- Modal content -->
             <div class="modal-content">
-                <span class="close">&times;</span>
-                <iframe id="iframe" src=<?php echo $url_information ?>></iframe>
+                <span  class="button_mobbex_close close">&times;</span>
+                <iframe id="mobbex_iframe" src=<?php echo $url_information ?>></iframe>
             </div>
         </div>
     </div>
