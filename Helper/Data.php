@@ -125,8 +125,6 @@ class Data extends AbstractHelper
         }
     }
 
-
-
     /**
      * Get sources with common plans from mobbex.
      * @param integer|null $total

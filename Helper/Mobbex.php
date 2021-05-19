@@ -422,28 +422,23 @@ class Mobbex extends AbstractHelper
     }
 
     /**
-     * Return domain url without https:// or http://
+     * Return domain url without "https://" or "http://".
      * 
      * @return string
      */
-    private function getDomainUrl(){
-
+    private function getDomainUrl()
+    {
         $url = $this->urlBuilder->getUrl();
-        if(str_contains($url,'https'))
-        {
-            $url = substr($url,8);
-        }elseif(str_contains($url,'http'))
-        {
-            $url = substr($url,7);
-        }
-        
-        if(str_contains(substr($url,-1),'/')){
+
+        // Remove scheme from URL
+        $url = str_replace(['http://', 'https://'], '', $url);
+
+        // Remove empty path
+        if (str_contains(substr($url,-1),'/'))
             $url = substr($url,0,-1);
-        }
 
         return $url;
     }
-
 
     /**
      * @return array
