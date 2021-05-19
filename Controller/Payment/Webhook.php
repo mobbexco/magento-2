@@ -89,6 +89,13 @@ class Webhook extends WebhookBase
             // get post data
             $postData = $this->getRequest()->getPostValue();
             $orderId = $this->getRequest()->getParam('order_id');
+            $quoteId = $this->getRequest()->getParam('quote_id');
+
+            //check if wallet was used for checkout, if it was used, then get orderId using Quote object
+            if (empty($orderId) && !empty($quoteId)) {
+                $quote = $this->quoteFactory->create()->load($quoteId);
+                $orderId = $quote->getReservedOrderId();
+            }
 
             $data = $postData['data'];
 
