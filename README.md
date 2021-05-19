@@ -2,6 +2,14 @@
 
 ## Installation
 
+### Using Composer: 
+1. Run the following commands in the Magento installation folder
+    ```
+    composer require mobbexco/magento-2
+    php bin/magento setup:upgrade
+    php bin/magento setup:static-content:deploy -f
+    ```
+
 ### Manually: 
 1. Create the following directory in the Magento installation folder
 
@@ -17,17 +25,12 @@
     php bin/magento setup:static-content:deploy -f
     ```
 
-### Using Composer: 
-1. Run the following commands in the Magento installation folder
-    ```
-    composer require mobbexco/magento-2
-    php bin/magento setup:upgrade
-    php bin/magento setup:static-content:deploy -f
-    ```
-
 ## Changelog:
 
-2021-04-19: 1.4.2
+2021-05-19: 2.0.0
+- Introduced Mobbex Wallet for logged in users
+
+2021-05-17: 1.4.2
 - Fix refund observer payment method check
 - Fix financial widget price get
 - Improved financial widget IDs uniqueness
