@@ -28,6 +28,8 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_ORDER_STATUS_CANCELLED = 'payment/webpay/checkout/order_status_settings/order_status_cancelled';
     const PATH_ORDER_STATUS_REFUNDED = 'payment/webpay/checkout/order_status_settings/order_status_refunded';
 
+    const PATH_WALLET_ACTIVE = 'payment/webpay/checkout/wallet_active';
+
     public function getBannerCheckout($store = null)
     {
         return $this->scopeConfig->getValue(
@@ -185,6 +187,16 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_FINANCIAL_ACTIVE,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+
+    public function getWalletActive($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_WALLET_ACTIVE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );

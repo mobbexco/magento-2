@@ -64,6 +64,9 @@ class PaymentReturn extends Action
      */
     protected $_orderUpdate;
 
+
+    protected $quoteFactory;
+
     /**
      * PaymentReturn constructor.
      * @param Context $context
@@ -84,7 +87,8 @@ class PaymentReturn extends Action
         Session $checkoutSession,
         LoggerInterface $logger,
         OrderUpdate $orderUpdate,
-        ManagerInterface $messageManager
+        ManagerInterface $messageManager,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
     ) {
         $this->_invoiceService = $_invoiceService;
         $this->_transaction = $_transaction;
@@ -97,6 +101,7 @@ class PaymentReturn extends Action
         $this->checkoutSession = $checkoutSession;
 
         $this->log = $logger;
+        $this->quoteFactory = $quoteFactory;
 
         parent::__construct($context);
     }
@@ -109,6 +114,7 @@ class PaymentReturn extends Action
     {
         try {
             // Get data
+            $quoteId = $this->getRequest()->getParam('quote_id');
             $orderId = $this->getRequest()->getParam('order_id');
             $status = $this->getRequest()->getParam('status');
 
@@ -117,13 +123,18 @@ class PaymentReturn extends Action
                 "status" => $status,
             ]);
 
+            
+            if (empty($orderId) && !empty($quoteId)) {
+                $quote = $this->quoteFactory->create()->load($quoteId);
+                $orderId = $quote->getReservedOrderId();
+            }
+
             // if data looks fine
             if (isset($orderId)) {
                 // Get Order
                 $order = $this->_order->loadByIncrementId($orderId);
 
                 $this->log->debug('Return Controller > Order', $this->_order->debug());
-
                 if ($status > 1 && $status < 400) {
                     $this->_redirect('checkout/onepage/success');
                 } else {

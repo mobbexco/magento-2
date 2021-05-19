@@ -101,8 +101,22 @@ class Data extends AbstractHelper
     {
         // get checkout object
         $checkout = $this->mobbex->createCheckout();
+        
 
-        $this->log->debug("Checkout => " . $checkout['url']);
+        if ($checkout != false) {
+            return $checkout;
+        } else {
+            // Error?
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function getCheckoutWallet($quoteData)
+    {
+        // get checkout object
+        $checkout = $this->mobbex->createCheckoutFromQuote($quoteData);
 
         if ($checkout != false) {
             return $checkout;
