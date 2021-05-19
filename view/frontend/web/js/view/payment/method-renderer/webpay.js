@@ -78,8 +78,9 @@ function renderWallet() {
     let mobbexContainer = $(".mobbex-content").parent()
     // add id to parent, with this we can inject html AFTER checkout-messages
     mobbexContainer.attr("id", "mobbex-container")
-    // aftrer messages inject div+ul
-    $("#mobbex-container div:eq(0)").after(`<div id="wallet-cards-container"><ul id="wallet-cards"></ul></div>`)
+
+    // Inject wallet container after billing adress form
+    $("#mobbex-container .payment-method-billing-address").after(`<div id="wallet-cards-container"><ul id="wallet-cards" style="padding: 0;"></ul></div>`)
 
     renderCreditCards()
 }
@@ -93,12 +94,15 @@ function renderCreditCards() {
         let installments = card.installments
         // Add card form
         walletContainer.append(`
-        <li>
-            <input name="wallet-option" id="wallet-card-${i}" type="radio" value="card-${i}">
-            <label for="wallet-card-${i}"><img width="30" style="border-radius: 1rem;margin: 0px 4px 0px 0px;" src="${card.source.card.product.logo}"> ${card.card.card_number}</label>
-            <div class="mobbex-wallet-form" id="card-${i}" style="display: none;">
-                <select name="installment"></select>
-                <input style="margin-top:1rem" type="password" maxlength="${card.source.card.product.code.length}" name="security-code" placeholder="${card.source.card.product.code.name}" required>
+        <li style="display: block;margin-bottom: 20px;">
+            <div style="display: flex; align-items: center;">
+                <input name="wallet-option" id="wallet-card-${i}" type="radio" value="card-${i}">
+                <img width="30" style="border-radius: 100%;margin: 0px 4px 0px 0px;" src="${card.source.card.product.logo}">
+                <label for="wallet-card-${i}">${card.name}</label>
+            </div>
+            <div class="mobbex-wallet-form" id="card-${i}" style="display: none; margin-left: 25px;">
+                <select name="installment" style="max-width: 100px; padding: 0 9px;"></select>
+                <input style="margin: 20px 0; max-width: 100px;" type="password" maxlength="${card.source.card.product.code.length}" name="security-code" placeholder="${card.source.card.product.code.name}" required>
                 <input type="hidden" name="intent-token" value="${card.it}">
             </div>
         </li>
@@ -111,7 +115,7 @@ function renderCreditCards() {
 
     // Add new card method
     walletContainer.append(`
-    <li>
+    <li style="display: block;margin-bottom: 20px;">
         <input name="wallet-option" id="wallet-new-card" type="radio" value="new-card">
         <label for="new-card">Nueva tarjeta / Otro medio de pago</label>
     </li>
