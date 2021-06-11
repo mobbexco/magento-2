@@ -380,7 +380,7 @@ class Mobbex extends AbstractHelper
             ],
             'total' => (float) $orderAmount,
             'customer' => $customer,
-            'installments' => $this->getInstallments(),
+            'installments' => $this->getInstallments($quoteData['items']),
             'timeout' => 5,
             'wallet' => ($is_wallet_active),
         ];
@@ -485,7 +485,7 @@ class Mobbex extends AbstractHelper
      * The advanced plans stored in the data base are those that will be show on the checkout
      * @return array
      */
-    public function getInstallments()
+    public function getInstallments($items_custom = null)
     {
         $installments = [];
         $total_advanced_plans = [];
@@ -499,11 +499,23 @@ class Mobbex extends AbstractHelper
 
         $categories_ids = [];
         $addedPlans = [];
-        $items = $this->order->getAllVisibleItems();
-
-        foreach ( $items as $item) 
+        //if $items_custom is not null then is called from quote checkout 
+        if($items_custom)
         {
-            $productId = $item->getProduct()->getId();
+            $items = $items_custom;
+        }else{
+            $items = $this->order->getAllVisibleItems();
+        }
+        
+
+        foreach ($items as $item) 
+        {
+            if($items_custom)
+            {
+                $productId = $item['product_id'];
+            }else{
+                $productId = $item->getProduct()->getId();
+            }
 
             // Product 'Ahora' Plans
             foreach ($ahora as $key => $value) {
@@ -572,6 +584,7 @@ class Mobbex extends AbstractHelper
                 $installments[] = '+uid:' . $plan;
             }
         }
+        
 
         return $installments;
     }
