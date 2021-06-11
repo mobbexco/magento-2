@@ -488,6 +488,7 @@ class Mobbex extends AbstractHelper
     public function getInstallments()
     {
         $installments = [];
+        $total_advanced_plans = [];
 
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
@@ -498,8 +499,10 @@ class Mobbex extends AbstractHelper
 
         $categories_ids = [];
         $addedPlans = [];
+        $items = $this->order->getAllVisibleItems();
 
-        foreach ($this->order->getAllVisibleItems() as $item) {
+        foreach ( $items as $item) 
+        {
             $productId = $item->getProduct()->getId();
 
             // Product 'Ahora' Plans
@@ -529,11 +532,7 @@ class Mobbex extends AbstractHelper
             if (is_array($checkedAdvancedPlans)) {
                 // Check not selected plans only 
                 $checkedAdvancedPlans = array_diff($checkedAdvancedPlans, $addedPlans);
-                foreach ($checkedAdvancedPlans as $key => $plan) {
-                    $addedPlans[] = $plan;
-                    $installments[] = '+uid:' . $plan;
-                    unset($checkedAdvancedPlans[$key]);
-                }
+                $total_advanced_plans = array_merge($total_advanced_plans,$checkedAdvancedPlans);
             }
 
             // Categories Plans
@@ -558,12 +557,19 @@ class Mobbex extends AbstractHelper
                 if (is_array($checkedAdvancedPlansCat)) {
                     // Check not selected plans only 
                     $checkedAdvancedPlansCat = array_diff($checkedAdvancedPlansCat, $addedPlans);
-                    foreach ($checkedAdvancedPlansCat as $key => $plan) {
-                        $addedPlans[] = $plan;
-                        $installments[] = '+uid:' . $plan;
-                        unset($checkedAdvancedPlansCat[$key]);
-                    }
+                    $total_advanced_plans = array_merge($total_advanced_plans,$checkedAdvancedPlansCat);
                 }
+            }
+        }
+        // Get all the advanced plans with their number of reps
+        $counted_advanced_plans = array_count_values($total_advanced_plans);
+
+        // Advanced plans
+        foreach ($counted_advanced_plans as $plan => $reps) {
+            // Only if the plan is active on all products
+            if ($reps == count($items)) {
+                // Add to installments
+                $installments[] = '+uid:' . $plan;
             }
         }
 
