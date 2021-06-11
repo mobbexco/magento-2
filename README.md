@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2021-06-11: 2.0.1
+- Fix order mail sending
+
 2021-05-19: 2.0.0
 - Introduced Mobbex Wallet for logged in users
 
