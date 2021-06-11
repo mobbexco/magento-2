@@ -128,9 +128,6 @@ class OrderUpdate
             $order->cancel();
         }
         $order->save();
-
-        $this->sendOrderEmail($order, $statusMessage);
-        $order->save();
     }
 
     /**
@@ -142,7 +139,6 @@ class OrderUpdate
         $statusDescription = __($statusDetail)->render();
         $orderPayment = $order->getPayment();
         $orderStatus = $this->config->getOrderStatusRefunded();
-
 
         $orderPayment->setAdditionalInformation('error_card', $statusDescription);
 
@@ -196,9 +192,9 @@ class OrderUpdate
         );
 
         $emailSent = $invoice->getEmailSent();
-        $canSentCreation = $this->config->getCreateInvoiceEmail();
+        $canSendInvoice = $this->config->getCreateInvoiceEmail();
 
-        if (!$emailSent && $canSentCreation) {
+        if (!$emailSent && $canSendInvoice) {
             $this->invoiceSender->send($invoice);
             $invoice->setIsCustomerNotified(true)
                 ->save();
@@ -208,21 +204,23 @@ class OrderUpdate
     }
 
     /**
-     * @param $order
-     * @param $message
+     * Send an email to customer with the Order information.
+     * 
+     * @param Order $order
+     * @param string $message
      */
     public function sendOrderEmail($order ,$message = null)
     {
-        $emailSent = $order->getEmailSent();
-        $canSentCreation = $this->config->getCreateOrderEmail();
-        $canSentUpdate = $this->config->getUpdateOrderEmail();
+        $emailSent       = $order->getEmailSent();
+        $canSendCreation = $this->config->getCreateOrderEmail();
+        $canSendUpdate   = $this->config->getUpdateOrderEmail();
 
         if (!$emailSent) {
-            if ($canSentCreation) {
+            if ($canSendCreation) {
                 $this->orderSender->send($order);
                 $order->setIsCustomerNotified(true);
             }
-        } else if ($canSentUpdate) {
+        } else if ($canSendUpdate) {
             $this->orderCommentSender->send($order, $notify = '1', str_replace("<br/>", "", $message));
         }
     }

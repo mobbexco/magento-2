@@ -91,33 +91,38 @@ function renderCreditCards() {
     let walletContainer = $("#wallet-cards")
     // for each card render form, inside a div with display hidden by default (must have same class and unique id)
     creditCards.forEach((card, i) => {
-        let installments = card.installments
-        // Add card form
-        walletContainer.append(`
-        <li style="display: block;margin-bottom: 20px;">
-            <div style="display: flex; align-items: center;">
-                <input name="wallet-option" id="wallet-card-${i}" type="radio" value="card-${i}">
-                <img width="30" style="border-radius: 100%;margin: 0px 4px 0px 0px;" src="${card.source.card.product.logo}">
-                <label for="wallet-card-${i}">${card.name}</label>
-            </div>
-            <div class="mobbex-wallet-form" id="card-${i}" style="display: none; margin-left: 25px;">
-                <select name="installment" style="max-width: 100px; padding: 0 9px;"></select>
-                <input style="margin: 20px 0; max-width: 100px;" type="password" maxlength="${card.source.card.product.code.length}" name="security-code" placeholder="${card.source.card.product.code.name}" required>
-                <input type="hidden" name="intent-token" value="${card.it}">
-            </div>
-        </li>
-        `)
-        // Add installments options to select
-        installments.forEach(installment => {
-            $(`#card-${i} select`).append(`<option value="${installment.reference}">${installment.name}</option>`)
-        })
+        let installments = card.installments;
+
+        // Only if the card have plans available
+        if (installments.length > 0) {
+            // Add card form
+            walletContainer.append(`
+            <li style="display: block;">
+                <div style="display: flex; align-items: center;">
+                    <input name="wallet-option" id="wallet-card-${i}" type="radio" value="card-${i}">
+                    <img width="30" style="border-radius: 100%;margin: 0px 10px 0px 0px;" src="${card.source.card.product.logo}">
+                    <label for="wallet-card-${i}">${card.name}</label>
+                </div>
+                <div class="mobbex-wallet-form" id="card-${i}" style="display: none; margin-left: 25px;">
+                    <select name="installment" style="max-width: 100px; padding: 0 9px;"></select>
+                    <input style="margin: 20px 0; max-width: 100px;" type="password" maxlength="${card.source.card.product.code.length}" name="security-code" placeholder="${card.source.card.product.code.name}" required>
+                    <input type="hidden" name="intent-token" value="${card.it}">
+                </div>
+            </li>
+            `)
+
+            // Add installments options to select
+            installments.forEach(installment => {
+                $(`#card-${i} select`).append(`<option value="${installment.reference}">${installment.name}</option>`)
+            })
+        }
     })
 
     // Add new card method
     walletContainer.append(`
     <li style="display: block;margin-bottom: 20px;">
         <input name="wallet-option" id="wallet-new-card" type="radio" value="new-card">
-        <label for="new-card">Nueva tarjeta / Otro medio de pago</label>
+        <label for="wallet-new-card">Nueva tarjeta / Otro medio de pago</label>
     </li>
     `)
 
