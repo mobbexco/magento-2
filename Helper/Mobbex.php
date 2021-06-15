@@ -23,7 +23,7 @@ use Magento\Quote\Model\QuoteFactory;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '2.0.0';
+    const VERSION = '1.4.2';
 
     /**
      * @var Config
@@ -519,7 +519,8 @@ class Mobbex extends AbstractHelper
             }
 
             // Product 'Ahora' Plans
-            foreach ($ahora as $key => $value) {
+            foreach ($ahora as $key => $value) 
+            {
                 if ($item->getProduct()->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
@@ -545,36 +546,43 @@ class Mobbex extends AbstractHelper
             if (is_array($checkedAdvancedPlans)) {
                 // Check not selected plans only 
                 foreach ($checkedAdvancedPlans as $key => $plan) {
-                    $added_advanced_plans[] = $plan;
+                    $added_advanced_plans[$plan] = $plan;
                 }
             }
 
             // Categories Plans
             // Get categories from product
             $categories_ids = $item->getProduct()->getCategoryIds();
-            foreach($categories_ids as $cat_id) {
-                $checkedCommonPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'common_plans'));
-                $checkedAdvancedPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'advanced_plans'));
+            if(sizeof($categories_ids)>0){
+                foreach($categories_ids as $cat_id) {
+                    $checkedCommonPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'common_plans'));
+                    $checkedAdvancedPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'advanced_plans'));
 
-                // Common Plans
-                if (is_array($checkedCommonPlansCat)) {
-                    // Check not selected plans only 
-                    $checkedCommonPlansCat = array_diff($checkedCommonPlansCat, $addedPlans);
-                    foreach ($checkedCommonPlansCat as $key => $plan) {
-                        $addedPlans[] = $plan;
-                        $installments[] = '-' . $plan;
-                        unset($checkedCommonPlansCat[$key]);
-                    }
-                }
-
-                // Advanced Plans
-                if (is_array($checkedAdvancedPlansCat)) {
-                    // Check not selected plans only 
-                    foreach ($checkedAdvancedPlansCat as $key => $plan) {
-                        if(in_array($plan, $added_advanced_plans)){
-                            $total_advanced_plans[] = $plan;
+                    // Common Plans
+                    if (is_array($checkedCommonPlansCat)) {
+                        // Check not selected plans only 
+                        $checkedCommonPlansCat = array_diff($checkedCommonPlansCat, $addedPlans);
+                        foreach ($checkedCommonPlansCat as $key => $plan) {
+                            $addedPlans[] = $plan;
+                            $installments[] = '-' . $plan;
+                            unset($checkedCommonPlansCat[$key]);
                         }
                     }
+
+                    // Advanced Plans
+                    if (is_array($checkedAdvancedPlansCat)) {
+                        // Check not selected plans only 
+                        foreach ($checkedAdvancedPlansCat as $key => $plan) {
+                            if(in_array($plan, $added_advanced_plans)){
+                                $total_advanced_plans[] = $plan;
+                                unset($added_advanced_plans[$plan]);
+                            }
+                        }
+                    }
+                }
+            }else{
+                foreach($added_advanced_plans as $plan){
+                    $installments[] = '+uid:' . $plan;    
                 }
             }
         }
