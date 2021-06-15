@@ -510,6 +510,7 @@ class Mobbex extends AbstractHelper
 
         foreach ($items as $item) 
         {
+            $added_advanced_plans = [];//all advanced plans selected for this items
             if($items_custom)
             {
                 $productId = $item['product_id'];
@@ -543,8 +544,9 @@ class Mobbex extends AbstractHelper
             $checkedAdvancedPlans = unserialize($customField->getCustomField($productId, 'product', 'advanced_plans'));
             if (is_array($checkedAdvancedPlans)) {
                 // Check not selected plans only 
-                $checkedAdvancedPlans = array_diff($checkedAdvancedPlans, $addedPlans);
-                $total_advanced_plans = array_merge($total_advanced_plans,$checkedAdvancedPlans);
+                foreach ($checkedAdvancedPlans as $key => $plan) {
+                    $added_advanced_plans[] = $plan;
+                }
             }
 
             // Categories Plans
@@ -568,11 +570,15 @@ class Mobbex extends AbstractHelper
                 // Advanced Plans
                 if (is_array($checkedAdvancedPlansCat)) {
                     // Check not selected plans only 
-                    $checkedAdvancedPlansCat = array_diff($checkedAdvancedPlansCat, $addedPlans);
-                    $total_advanced_plans = array_merge($total_advanced_plans,$checkedAdvancedPlansCat);
+                    foreach ($checkedAdvancedPlansCat as $key => $plan) {
+                        if(in_array($plan, $added_advanced_plans)){
+                            $total_advanced_plans[] = $plan;
+                        }
+                    }
                 }
             }
         }
+
         // Get all the advanced plans with their number of reps
         $counted_advanced_plans = array_count_values($total_advanced_plans);
 
