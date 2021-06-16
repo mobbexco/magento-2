@@ -488,7 +488,7 @@ class Mobbex extends AbstractHelper
     public function getInstallments($items_custom = null)
     {
         $installments = [];
-        $total_advanced_plans = [];
+        $total_advanced_plans = [];//global array of advanced plans
 
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
@@ -546,7 +546,9 @@ class Mobbex extends AbstractHelper
             if (is_array($checkedAdvancedPlans)) {
                 // Check not selected plans only 
                 foreach ($checkedAdvancedPlans as $key => $plan) {
-                    $added_advanced_plans[$plan] = $plan;
+                    $added_advanced_plans[] = $plan;
+                    $total_advanced_plans[] = $plan;
+                    unset($checkedAdvancedPlans[$key]);
                 }
             }
 
@@ -572,17 +574,13 @@ class Mobbex extends AbstractHelper
                     // Advanced Plans
                     if (is_array($checkedAdvancedPlansCat)) {
                         // Check not selected plans only 
+                        $checkedAdvancedPlansCat = array_diff($checkedAdvancedPlansCat, $added_advanced_plans);
                         foreach ($checkedAdvancedPlansCat as $key => $plan) {
-                            if(in_array($plan, $added_advanced_plans)){
-                                $total_advanced_plans[] = $plan;
-                                unset($added_advanced_plans[$plan]);
-                            }
+                            $total_advanced_plans[] = $plan;
+                            $added_advanced_plans[] = $plan;
+                            unset($checkedAdvancedPlansCat[$key]);
                         }
                     }
-                }
-            }else{
-                foreach($added_advanced_plans as $plan){
-                    $installments[] = '+uid:' . $plan;    
                 }
             }
         }
@@ -599,7 +597,6 @@ class Mobbex extends AbstractHelper
             }
         }
         
-
         return $installments;
     }
 
