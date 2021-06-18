@@ -27,6 +27,10 @@
 
 ## Changelog:
 
+2021-06-18: 2.1.0
+- New option to add DNI field in checkout
+- Fix advanced plans condition
+
 2021-06-11: 2.0.1
 - Fix order mail sending
 
