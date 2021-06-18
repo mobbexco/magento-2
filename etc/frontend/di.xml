@@ -9,4 +9,7 @@
             </argument>
         </arguments>
     </type>
+    <type name="\Magento\Checkout\Block\Checkout\LayoutProcessor">
+        <plugin name="Mobbex_Webpay::checkoutFieldsPlugin" type="Mobbex\Webpay\Plugin\CheckoutForm"/>
+    </type>
 </config>

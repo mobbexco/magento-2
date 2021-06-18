@@ -108,7 +108,13 @@
                         <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>
 
-                    <group id="order_status_settings" translate="label" sortOrder="17" showInDefault="1" showInWebsite="1"
+                    <field id="own_dni_field" translate="label comment" sortOrder="17" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Mostrar campo DNI</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
+                    <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>
 
