@@ -23,7 +23,7 @@ use Magento\Quote\Model\QuoteFactory;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '1.4.2';
+    const VERSION = '2.0.0';
 
     /**
      * @var Config
