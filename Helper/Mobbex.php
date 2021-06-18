@@ -16,6 +16,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Quote\Model\QuoteFactory;
+use Magento\Customer\Model\Session;
 
 /**
  * Class Mobbex
@@ -91,6 +92,11 @@ class Mobbex extends AbstractHelper
     protected $quoteFactory;
 
     /**
+     * @var Session
+     */
+    protected $customerSession;
+
+    /**
      * Mobbex constructor.
      * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
@@ -105,6 +111,7 @@ class Mobbex extends AbstractHelper
      * @param CustomFieldFactory $_customFieldFactory
      * @param ProductMetadataInterface $productMetadata
      * @param QuoteFactory $quoteFactory
+     * @param Session $customerSession
      */
     public function __construct(
         Config $config,
@@ -119,7 +126,8 @@ class Mobbex extends AbstractHelper
         Image $imageHelper,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         QuoteFactory $quoteFactory,
-        ProductMetadataInterface $productMetadata
+        ProductMetadataInterface $productMetadata,
+        Session $customerSession
     ) {
         $this->config = $config;
         $this->order = $order;
@@ -134,6 +142,7 @@ class Mobbex extends AbstractHelper
         $this->imageHelper = $imageHelper;
         $this->_customFieldFactory = $customFieldFactory;
         $this->productMetadata = $productMetadata;
+        $this->customerSession = $customerSession;
     }
 
     /**
@@ -161,19 +170,22 @@ class Mobbex extends AbstractHelper
         // get order amount
         $orderAmount = round($this->order->getData('base_grand_total'), 2);
 
-        // get customer data
-        $customer = [
-            'email' => $orderData->getCustomerEmail(), 
-            'name' => $orderData->getCustomerName(),
-            //Customer id added for wallet usage
-            'uid' => $orderData->getCustomerId(),
-            
-        ];
+        // Get phone
+        $phone = '';
         if ($orderData->getBillingAddress()){
             if (!empty($orderData->getBillingAddress()->getTelephone())) {
-                $customer['phone'] = $orderData->getBillingAddress()->getTelephone();
+                $phone = $orderData->getBillingAddress()->getTelephone();
             }
         }
+
+        // Get customer data
+        $customer = [
+            'name'           => $orderData->getCustomerName(),
+            'email'          => $orderData->getCustomerEmail(), 
+            'uid'            => $orderData->getCustomerId(),
+            'phone'          => $phone,
+            'identification' => $this->getDni($orderData->getQuoteId()),
+        ];
 
         $items = [];
         $orderedItems = $this->order->getAllVisibleItems();
@@ -302,6 +314,7 @@ class Mobbex extends AbstractHelper
             'name' => $quoteData['shipping_address']['firstname'],
             //Customer id added for wallet usage
             'uid' => $quoteData['customer_id'],
+            'identification' => $this->getDni($quoteData['entity_id']),
         ];
         if ($quoteData['shipping_address']){
             if ($quoteData['shipping_address']['telephone']) {
@@ -584,5 +597,24 @@ class Mobbex extends AbstractHelper
     public function isReady()
     {
         return (!empty($this->config->getApiKey()) && !empty($this->config->getAccessToken()));
+    }
+
+    /**
+     * Get DNI configured by quote or current user if logged in.
+     * 
+     * @param int|string $quoteId
+     * 
+     * @return string $dni 
+     */
+    public function getDni($quoteId)
+    {
+        $customField = $this->_customFieldFactory->create();
+
+        // Get dni custom field from quote or current user if logged in
+        $customerId = $this->customerSession->getCustomer()->getId();
+        $object     = $customerId ? 'customer' : 'quote';
+        $rowId      = $customerId ? $customerId : $quoteId;
+
+        return $customField->getCustomField($rowId, $object, 'dni') ?: '';
     }
 }
