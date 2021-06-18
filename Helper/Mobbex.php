@@ -393,7 +393,7 @@ class Mobbex extends AbstractHelper
             ],
             'total' => (float) $orderAmount,
             'customer' => $customer,
-            'installments' => $this->getInstallments(),
+            'installments' => $this->getInstallments($quoteData['items']),
             'timeout' => 5,
             'wallet' => ($is_wallet_active),
         ];
@@ -498,9 +498,10 @@ class Mobbex extends AbstractHelper
      * The advanced plans stored in the data base are those that will be show on the checkout
      * @return array
      */
-    public function getInstallments()
+    public function getInstallments($items_custom = null)
     {
         $installments = [];
+        $total_advanced_plans = [];//global array of advanced plans
 
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
@@ -511,12 +512,28 @@ class Mobbex extends AbstractHelper
 
         $categories_ids = [];
         $addedPlans = [];
+        //if $items_custom is not null then is called from quote checkout 
+        if($items_custom)
+        {
+            $items = $items_custom;
+        }else{
+            $items = $this->order->getAllVisibleItems();
+        }
+        
 
-        foreach ($this->order->getAllVisibleItems() as $item) {
-            $productId = $item->getProduct()->getId();
+        foreach ($items as $item) 
+        {
+            $added_advanced_plans = [];//all advanced plans selected for this items
+            if($items_custom)
+            {
+                $productId = $item['product_id'];
+            }else{
+                $productId = $item->getProduct()->getId();
+            }
 
             // Product 'Ahora' Plans
-            foreach ($ahora as $key => $value) {
+            foreach ($ahora as $key => $value) 
+            {
                 if ($item->getProduct()->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
@@ -541,10 +558,9 @@ class Mobbex extends AbstractHelper
             $checkedAdvancedPlans = unserialize($customField->getCustomField($productId, 'product', 'advanced_plans'));
             if (is_array($checkedAdvancedPlans)) {
                 // Check not selected plans only 
-                $checkedAdvancedPlans = array_diff($checkedAdvancedPlans, $addedPlans);
                 foreach ($checkedAdvancedPlans as $key => $plan) {
-                    $addedPlans[] = $plan;
-                    $installments[] = '+uid:' . $plan;
+                    $added_advanced_plans[] = $plan;
+                    $total_advanced_plans[] = $plan;
                     unset($checkedAdvancedPlans[$key]);
                 }
             }
@@ -552,34 +568,48 @@ class Mobbex extends AbstractHelper
             // Categories Plans
             // Get categories from product
             $categories_ids = $item->getProduct()->getCategoryIds();
-            foreach($categories_ids as $cat_id) {
-                $checkedCommonPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'common_plans'));
-                $checkedAdvancedPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'advanced_plans'));
+            if(sizeof($categories_ids)>0){
+                foreach($categories_ids as $cat_id) {
+                    $checkedCommonPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'common_plans'));
+                    $checkedAdvancedPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'advanced_plans'));
 
-                // Common Plans
-                if (is_array($checkedCommonPlansCat)) {
-                    // Check not selected plans only 
-                    $checkedCommonPlansCat = array_diff($checkedCommonPlansCat, $addedPlans);
-                    foreach ($checkedCommonPlansCat as $key => $plan) {
-                        $addedPlans[] = $plan;
-                        $installments[] = '-' . $plan;
-                        unset($checkedCommonPlansCat[$key]);
+                    // Common Plans
+                    if (is_array($checkedCommonPlansCat)) {
+                        // Check not selected plans only 
+                        $checkedCommonPlansCat = array_diff($checkedCommonPlansCat, $addedPlans);
+                        foreach ($checkedCommonPlansCat as $key => $plan) {
+                            $addedPlans[] = $plan;
+                            $installments[] = '-' . $plan;
+                            unset($checkedCommonPlansCat[$key]);
+                        }
                     }
-                }
 
-                // Advanced Plans
-                if (is_array($checkedAdvancedPlansCat)) {
-                    // Check not selected plans only 
-                    $checkedAdvancedPlansCat = array_diff($checkedAdvancedPlansCat, $addedPlans);
-                    foreach ($checkedAdvancedPlansCat as $key => $plan) {
-                        $addedPlans[] = $plan;
-                        $installments[] = '+uid:' . $plan;
-                        unset($checkedAdvancedPlansCat[$key]);
+                    // Advanced Plans
+                    if (is_array($checkedAdvancedPlansCat)) {
+                        // Check not selected plans only 
+                        $checkedAdvancedPlansCat = array_diff($checkedAdvancedPlansCat, $added_advanced_plans);
+                        foreach ($checkedAdvancedPlansCat as $key => $plan) {
+                            $total_advanced_plans[] = $plan;
+                            $added_advanced_plans[] = $plan;
+                            unset($checkedAdvancedPlansCat[$key]);
+                        }
                     }
                 }
             }
         }
 
+        // Get all the advanced plans with their number of reps
+        $counted_advanced_plans = array_count_values($total_advanced_plans);
+
+        // Advanced plans
+        foreach ($counted_advanced_plans as $plan => $reps) {
+            // Only if the plan is active on all products
+            if ($reps == count($items)) {
+                // Add to installments
+                $installments[] = '+uid:' . $plan;
+            }
+        }
+        
         return $installments;
     }
 
