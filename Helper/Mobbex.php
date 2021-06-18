@@ -24,7 +24,7 @@ use Magento\Customer\Model\Session;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '2.0.1';
+    const VERSION = '2.1.0';
 
     /**
      * @var Config
