@@ -62,25 +62,25 @@ class Info extends \Magento\Payment\Block\Info
 
         if (!empty($mobbexData['payment']['id'])) {
             $paymentId = $mobbexData['payment']['id'];
-            $data[_("Transaction ID")] = $paymentId;
+            $data[__("Transaction ID")] = $paymentId;
         }
 
         if (!empty($cardInfo)) {
-            $data[_("Card Information")] = $cardInfo;
+            $data[__("Card Information")] = $cardInfo;
         }
 
         if (!empty($cardPlan)) {
-            $data[_("Card Plan")] = $cardPlan;
+            $data[__("Card Plan")] = $cardPlan;
         }
 
         // Only show in admin panel
         // It may be necessary to verify 'webapi_rest' also
         if ($this->_state->getAreaCode() === 'adminhtml') {
             if (!empty($orderUrl)) {
-                $data[_("Order URL")] = $orderUrl;
+                $data[__("Order URL")] = $orderUrl;
             }
             if (!empty($mobbexData['payment']['riskAnalysis']['level'])) {
-                $data[_("Risk Analysis")] = $mobbexData['payment']['riskAnalysis']['level'];
+                $data[__("Risk Analysis")] = $mobbexData['payment']['riskAnalysis']['level'];
             }
         }
 
