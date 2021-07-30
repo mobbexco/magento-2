@@ -14,7 +14,7 @@
                 <test_mode>0</test_mode>
                 <title>Mobbex</title>
                 <checkout>
-                    <embed_payment>0</embed_payment>
+                    <embed_payment>1</embed_payment>
                     <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
                     <theme>light</theme>
                     <background_color>#ECF2F6</background_color>
