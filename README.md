@@ -27,6 +27,11 @@
 
 ## Changelog:
 
+2021-08-03: 2.1.1
+- Fix check that checkout fields are defined
+- Fix translation function uses
+- Embed payment is enabled by default
+
 2021-06-18: 2.1.0
 - New option to add DNI field in checkout
 - Fix advanced plans condition
