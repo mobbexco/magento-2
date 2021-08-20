@@ -19,6 +19,7 @@ use Magento\Quote\Model\QuoteFactory;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Event\ManagerInterface as EventManager;
 use Magento\Framework\Session\SessionManagerInterface;
+use Magento\Catalog\Model\ProductRepository;
 
 /**
  * Class Mobbex
@@ -109,6 +110,11 @@ class Mobbex extends AbstractHelper
     protected $session;
 
     /**
+     * @var ProductRepository
+     */
+    protected $productRepository;
+
+    /**
      * Mobbex constructor.
      * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
@@ -124,6 +130,9 @@ class Mobbex extends AbstractHelper
      * @param ProductMetadataInterface $productMetadata
      * @param QuoteFactory $quoteFactory
      * @param Session $customerSession
+     * @param EventManager $eventManager
+     * @param SessionManagerInterface $session
+     * @param ProductRepository $productRepository
      */
     public function __construct(
         Config $config,
@@ -141,7 +150,8 @@ class Mobbex extends AbstractHelper
         ProductMetadataInterface $productMetadata,
         Session $customerSession,
         EventManager $eventManager,
-        SessionManagerInterface $session
+        SessionManagerInterface $session,
+        ProductRepository $productRepository
     ) {
         $this->config = $config;
         $this->order = $order;
@@ -159,6 +169,7 @@ class Mobbex extends AbstractHelper
         $this->customerSession = $customerSession;
         $this->eventManager = $eventManager;
         $this->session = $session;
+        $this->productRepository = $productRepository;
     }
 
     /**
@@ -543,7 +554,7 @@ class Mobbex extends AbstractHelper
             $added_advanced_plans = [];//all advanced plans selected for this items
             if($quoteItems) {
                 $productId = $item['product_id'];
-                $product = \Magento\Catalog\Api\ProductRepositoryInterface::getById($item['product_id']);
+                $product = $this->productRepository->getById($item['product_id']);
             } else {
                 $product = $item->getProduct();
                 $productId = $product->getId();
