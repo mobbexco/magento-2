@@ -17,6 +17,8 @@ use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Customer\Model\Session;
+use Magento\Framework\Event\ManagerInterface as EventManager;
+use Magento\Framework\Session\SessionManagerInterface;
 
 /**
  * Class Mobbex
@@ -97,6 +99,16 @@ class Mobbex extends AbstractHelper
     protected $customerSession;
 
     /**
+     * @var EventManager
+     */
+    protected $eventManager;
+
+    /**
+     * @var SessionManagerInterface
+     */
+    protected $session;
+
+    /**
      * Mobbex constructor.
      * @param Config $config
      * @param ScopeConfigInterface $scopeConfig
@@ -127,7 +139,9 @@ class Mobbex extends AbstractHelper
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         QuoteFactory $quoteFactory,
         ProductMetadataInterface $productMetadata,
-        Session $customerSession
+        Session $customerSession,
+        EventManager $eventManager,
+        SessionManagerInterface $session
     ) {
         $this->config = $config;
         $this->order = $order;
@@ -143,6 +157,8 @@ class Mobbex extends AbstractHelper
         $this->_customFieldFactory = $customFieldFactory;
         $this->productMetadata = $productMetadata;
         $this->customerSession = $customerSession;
+        $this->eventManager = $eventManager;
+        $this->session = $session;
     }
 
     /**
@@ -232,7 +248,6 @@ class Mobbex extends AbstractHelper
             'reference' => $this->getReference($orderId),
             'currency' => 'ARS',
             'description' => $description,
-            // Test Mode
             'test' => (bool) ($this->config->getTestMode()),
             'return_url' => $returnUrl,
             'items' => $items,
@@ -252,7 +267,14 @@ class Mobbex extends AbstractHelper
             'installments' => $this->getInstallments(),
             'timeout' => 5,
         ];
-        
+
+        // Init session to get event response
+        $this->session->start();
+        $this->session->setMobbexCheckoutBody($data);
+
+        $this->eventManager->dispatch('mobbex_modify_checkout', ['order' => $this->order, 'body' => $data]);
+
+        $data = $this->session->getMobbexCheckoutBody();
 
         if($this->config->getDebugMode())
         {
@@ -397,7 +419,6 @@ class Mobbex extends AbstractHelper
             'timeout' => 5,
             'wallet' => ($is_wallet_active),
         ];
-        
 
         if($this->config->getDebugMode())
         {
@@ -498,10 +519,9 @@ class Mobbex extends AbstractHelper
      * The advanced plans stored in the data base are those that will be show on the checkout
      * @return array
      */
-    public function getInstallments($items_custom = null)
+    public function getInstallments($quoteItems = null)
     {
-        $installments = [];
-        $total_advanced_plans = [];//global array of advanced plans
+        $installments = $total_advanced_plans = $categories_ids = $addedPlans = [];
 
         $ahora = array(
             'ahora_3'  => 'Ahora 3',
@@ -510,13 +530,10 @@ class Mobbex extends AbstractHelper
             'ahora_18' => 'Ahora 18',
         );
 
-        $categories_ids = [];
-        $addedPlans = [];
         //if $items_custom is not null then is called from quote checkout 
-        if($items_custom)
-        {
-            $items = $items_custom;
-        }else{
+        if ($quoteItems){
+            $items = $quoteItems;
+        } else {
             $items = $this->order->getAllVisibleItems();
         }
         
@@ -524,17 +541,17 @@ class Mobbex extends AbstractHelper
         foreach ($items as $item) 
         {
             $added_advanced_plans = [];//all advanced plans selected for this items
-            if($items_custom)
-            {
+            if($quoteItems) {
                 $productId = $item['product_id'];
-            }else{
-                $productId = $item->getProduct()->getId();
+                $product = \Magento\Catalog\Api\ProductRepositoryInterface::getById($item['product_id']);
+            } else {
+                $product = $item->getProduct();
+                $productId = $product->getId();
             }
 
             // Product 'Ahora' Plans
-            foreach ($ahora as $key => $value) 
-            {
-                if ($item->getProduct()->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
+            foreach ($ahora as $key => $value) {
+                if ($product->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
                     $installments[] = '-' . $key;
                     unset($ahora[$key]);
                 }
@@ -567,7 +584,7 @@ class Mobbex extends AbstractHelper
 
             // Categories Plans
             // Get categories from product
-            $categories_ids = $item->getProduct()->getCategoryIds();
+            $categories_ids = $product->getCategoryIds();
             if(sizeof($categories_ids)>0){
                 foreach($categories_ids as $cat_id) {
                     $checkedCommonPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'common_plans'));
