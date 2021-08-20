@@ -22,46 +22,44 @@ let walletReturnUrl;
  */
 function createCheckoutWallet(url)
 {
-    //wallet work if the customer is logged in
-    if(window.isCustomerLoggedIn){
-        var customerData = JSON.stringify(window.customerData);
-        var orderData = JSON.stringify(window.checkoutConfig.quoteData);
-        var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
-        var totalAmount = JSON.stringify(window.checkoutConfig.totalsData);
+    jQuery("body").trigger('processStart');
 
-        jQuery.ajax({
-            context: '#ajaxresponse',
-            url: url,
-            type: "POST",
-            data: {customer: customerData , quote: orderData, items:itemsData, totals: totalAmount, type: 'wallet'},
-        }).done(function (data) {
-            // if no wallets, do not execute rendering
-            if (data.length < 1) return
-            //use data['wallet'][0] to retrieve the first card data in case it exist
-            creditCards = data.wallet
-            //in case wallet is undefined 
-            if(creditCards)
-            {
-                walletEmpty = false;
-            }else
-            {
-                creditCards = [];
-            }
+    var customerData = JSON.stringify(window.customerData);
+    var orderData = JSON.stringify(window.checkoutConfig.quoteData);
+    var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
+    var totalAmount = JSON.stringify(window.checkoutConfig.totalsData);
 
-            walletReturnUrl = data.returnUrl;
-            // for each card add onClick function to show form (only if wasn't rendered yet)
-            if (!rendered) {
-                rendered = true
-                renderWallet()
-            }
-            //if wallet checkout is created
-            wallet_checkout_used = true;
-            wallet_url_payment = data.paymentUrl;
-            wallet_checkout_id = data.checkoutId;
-            return JSON.stringify(data);
-        });
-    }
-    return false;
+    jQuery.ajax({
+        context: '#ajaxresponse',
+        url: url,
+        type: "POST",
+        data: {customer: customerData , quote: orderData, items:itemsData, totals: totalAmount, type: 'wallet'},
+    }).done(function (data) {
+        // if no wallets, do not execute rendering
+        if (data.length < 1) return
+        //use data['wallet'][0] to retrieve the first card data in case it exist
+        creditCards = data.wallet
+        //in case wallet is undefined 
+        if(creditCards)
+        {
+            walletEmpty = false;
+        }else
+        {
+            creditCards = [];
+        }
+
+        walletReturnUrl = data.returnUrl;
+        // for each card add onClick function to show form (only if wasn't rendered yet)
+        if (!rendered) {
+            rendered = true
+            renderWallet()
+        }
+        //if wallet checkout is created
+        wallet_checkout_used = true;
+        wallet_url_payment = data.paymentUrl;
+        wallet_checkout_id = data.checkoutId;
+        return JSON.stringify(data);
+    });
 }
 
 /**
@@ -135,8 +133,7 @@ function renderCreditCards() {
     })
 
     //Hide loader (?)
-    $("body").trigger('processStop');
-
+    jQuery("body").trigger('processStop');
 }
 
 /**
@@ -272,7 +269,13 @@ define(
                 template: 'Mobbex_Webpay/payment/webpay',
                 redirectAfterPlaceOrder: false
             },
-            afterPlaceOrder: function (url) {
+            onSelect: function () {
+                if (wallet && window.isCustomerLoggedIn && !wallet_url_payment)
+                    wallet_response = createCheckoutWallet(urlBuilder.build('webpay/payment/walletpayment/'));
+
+                return true;
+            },
+            afterPlaceOrder: function () {
                 if  (wallet && wallet_url_payment != null) {
                     //only use wallet payment if there is at least one card stored
                     executeWallet(urlBuilder.build('webpay/payment/walletpayment/'))
@@ -287,14 +290,6 @@ define(
                 }
             },
             getData: function () {
-                //When Mobbex is selected as payment method creates a checkout using quote data
-                if(wallet_url_payment == null){
-                    if(wallet && window.isCustomerLoggedIn){
-                        //Only retrieve wallet cards and show them if the wallet config is set true and the user is logged in
-                        $("body").trigger('processStart');
-                        wallet_response = createCheckoutWallet(urlBuilder.build('webpay/payment/walletpayment/'));
-                    }
-                }
                 return {
                     'method': this.item.method,
                     'additional_data': {}
