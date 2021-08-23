@@ -27,6 +27,11 @@
 
 ## Changelog:
 
+2021-08-23: 2.1.2
+- Support Mobbex Marketplace extension module
+- Fix order info page translations
+- Fix wallet card rendering and installments obtaining
+
 2021-08-03: 2.1.1
 - Fix check that checkout fields are defined
 - Fix translation function uses
