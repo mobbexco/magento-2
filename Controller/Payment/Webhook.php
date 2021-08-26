@@ -126,7 +126,6 @@ class Webhook extends WebhookBase
                 $source         = $data['payment']['source'];
                 $mainMobbexNote = 'ID de Operación Mobbex: ' . $mobbexPaymentId . '. ';
 
-            
                 // Save order url
                 if (!empty($data['entity']['uid'])) {
                     $mobbexOrderUrl = 'https://mobbex.com/console/' . $data['entity']['uid'] . '/operations/?oid=' . $mobbexPaymentId;
@@ -163,7 +162,7 @@ class Webhook extends WebhookBase
                     $this->_orderUpdate->holdPayment($order, $message);
                 } else if ($status == 4 || $status >= 200 && $status < 400) {
                     $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
-                    $this->_orderUpdate->approvePayment($order, $message, $paymentOrder);
+                    $this->_orderUpdate->approvePayment($order, $message);
                 } else {
                     $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
 
