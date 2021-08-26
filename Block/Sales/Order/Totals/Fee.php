@@ -29,16 +29,15 @@ class Fee extends \Magento\Framework\View\Element\Template
 
     public function initTotals()
     {
-        if(!$this->getSource()->getFee()) {
+        if(!$this->getSource()->getFee() || $this->getSource()->getFee() == 0)
             return $this;
-        }
 
         $fee = new \Magento\Framework\DataObject(
             [
                 'code' => 'fee',
                 'strong' => false,
                 'value' => $this->getSource()->getFee(),
-                'label' => __('Payment fee'),
+                'label' => __('Finnancial Charge'),
             ]
         );
 
