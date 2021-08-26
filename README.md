@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2021-08-26: 2.1.3
+- Fix discount and finnancial charge save
+
 2021-08-23: 2.1.2
 - Support Mobbex Marketplace extension module
 - Fix order info page translations
