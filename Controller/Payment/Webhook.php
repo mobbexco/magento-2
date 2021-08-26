@@ -113,7 +113,6 @@ class Webhook extends WebhookBase
             if (isset($orderId) && !empty($status)) {
 
                 $order = $this->_order->loadByIncrementId($orderId);
-                $paymentOrder = $order->getPayment();
                 
                 $mobbexPaymentId    = $data['payment']['id'];
                 $paymentMethod      = isset($data['payment']['source']['name']) ? $data['payment']['source']['name'] : '';
@@ -121,10 +120,12 @@ class Webhook extends WebhookBase
 
                 $totalPaid = $data['payment']['total'];
                 $this->addFeeOrDiscount($totalPaid, $order);
+                $paymentOrder = $order->getPayment();
                 $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
                 
                 $source         = $data['payment']['source'];
                 $mainMobbexNote = 'ID de Operación Mobbex: ' . $mobbexPaymentId . '. ';
+
             
                 // Save order url
                 if (!empty($data['entity']['uid'])) {
@@ -154,15 +155,15 @@ class Webhook extends WebhookBase
 
                 $order->addStatusHistoryComment($mainMobbexNote);
                 $order->save();
+
                 $paymentOrder->setAdditionalInformation('mobbex_data', $data);
-                $paymentOrder->save();
 
                 if ($status == 2 || $status == 3 || $status == 100) {
                     $message = __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
                     $this->_orderUpdate->holdPayment($order, $message);
                 } else if ($status == 4 || $status >= 200 && $status < 400) {
                     $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
-                    $this->_orderUpdate->approvePayment($order, $message);
+                    $this->_orderUpdate->approvePayment($order, $message, $paymentOrder);
                 } else {
                     $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
 
@@ -199,14 +200,15 @@ class Webhook extends WebhookBase
         $orderTotal = $order->getGrandTotal();
         $quote = $this->quoteFactory->create()->load($order->getQuoteId());
 
-        if ($orderTotal == $totalPaid) {
+        if ($totalPaid > $orderTotal) {
+            $quote->setFee($totalPaid - $orderTotal);
+            $order->setFee($totalPaid - $orderTotal);
+        } elseif ($totalPaid < $orderTotal) {
+            $quote->setDiscountAmount($orderTotal - $totalPaid);
+            $order->setDiscountAmount($orderTotal - $totalPaid);
+        } else {
             return false;
         }
-
-        $fee = $totalPaid - $orderTotal;
-
-        $quote->setFee($fee);
-        $order->setFee($fee);
 
         $order->setGrandTotal($totalPaid);
         $quote->setGrandTotal($totalPaid);
