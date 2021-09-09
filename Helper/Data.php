@@ -70,7 +70,8 @@ class Data extends AbstractHelper
         Cart $cart,
         ObjectManagerInterface $_objectManager,
         LoggerInterface $logger,
-        Mobbex $mobbex
+        Mobbex $mobbex,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         $this->order = $order;
         $this->modelOrder = $modelOrder;
@@ -80,6 +81,7 @@ class Data extends AbstractHelper
 
         $this->_objectManager = $_objectManager;
         $this->log = $logger;
+        $this->customFields = $customFieldFactory->create();
     }
 
     /**
@@ -201,5 +203,59 @@ class Data extends AbstractHelper
         }
 
         return [];
+    }
+
+    /**
+     * Retrieve plans filter fields data for product/category settings.
+     * 
+     * @param int|string $id
+     * @param string $catalogType
+     * 
+     * @return array
+     */
+    public function getPlansFilterFields($id, $catalogType = 'product')
+    {
+        $commonFields = $advancedFields = $sourceNames = [];
+
+        // Get saved values from database
+        $checkedCommonPlans   = unserialize($this->customFields->getCustomField($id, $catalogType, 'common_plans')) ?: [];
+        $checkedAdvancedPlans = unserialize($this->customFields->getCustomField($id, $catalogType, 'advanced_plans')) ?: [];
+
+        // Create common plan fields
+        foreach ($this->getSources() as $source) {
+            // Only if have installments
+            if (empty($source['installments']['list']))
+                continue;
+
+            // Create field array data
+            foreach ($source['installments']['list'] as $plan) {
+                $commonFields[$plan['reference']] = [
+                    'id'    => 'common_plan_' . $plan['reference'],
+                    'value' => !in_array($plan['reference'], $checkedCommonPlans),
+                    'label' => $plan['description'] ?: $plan['name'],
+                ];
+            }
+        }
+
+        // Create plan with advanced rules fields
+        foreach ($this->getSourcesAdvanced() as $source) {
+            // Only if have installments
+            if (empty($source['installments']))
+                continue;
+
+            // Save source name
+            $sourceNames[$source['source']['reference']] = $source['source']['name'];
+
+            // Create field array data
+            foreach ($source['installments'] as $plan) {
+                $advancedFields[$source['source']['reference']][] = [
+                    'id'      => 'advanced_plan_' . $plan['uid'],
+                    'value'   => in_array($plan['uid'], $checkedAdvancedPlans),
+                    'label'   => $plan['description'] ?: $plan['name'],
+                ];
+            }
+        }
+
+        return compact('commonFields', 'advancedFields', 'sourceNames');
     }
 }
