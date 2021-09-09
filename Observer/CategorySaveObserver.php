@@ -2,76 +2,44 @@
 
 namespace Mobbex\Webpay\Observer;
 
-use Magento\Framework\App\Action\Context;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 
-class CategorySaveObserver implements \Magento\Framework\Event\ObserverInterface
+class CategorySaveObserver implements ObserverInterface
 {
-
-    /**
-     * @var CustomFieldFactory
-     */
-    protected $_customFieldFactory;
-
-    /**
-     * @var Context
-     */
-    protected $context;
-    protected $_request;
-    protected $registry;
-    /**
-     * ProductSaveObserver constructor.
-     * @param CustomFieldFactory $_customFieldFactory
-     */
     public function __construct(
-        Context $context,
-        \Magento\Framework\Registry $registry,
-        \Magento\Framework\App\RequestInterface $request,
+        \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
-        $this->_customFieldFactory = $customFieldFactory;
-        $this->context = $context;
-        $this->_request = $context->getRequest();
-        $this->registry = $registry;
+        $this->customFields = $customFieldFactory->create();
+        $this->params       = $context->getRequest()->getParams();
     }
 
-
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    /**
+     * Save own category options.
+     * 
+     * @param Observer $observer
+     */
+    public function execute($observer)
     {
-        // Get category id
-        $category = $this->registry->registry('current_category');//get current category
-        if($category){
-            $categoryId = $category->getId();
-            // Get post data
-            $params = $this->_request->getParams();
+        $commonPlans = $advancedPlans = [];
 
-            if(!isset($params['mobbex'])){
-                return;
+        // Exit if params params are empty
+        if (!isset($this->params['mobbex']))
+            return;
+
+        // Get plans selected
+        foreach ($this->params['mobbex'] as $key => $value) {
+            if (strpos($key, 'common_plan_') !== false && $value === 'no') {
+                // Add UID to common plans
+                $commonPlans[] = explode('common_plan_', $key)[1];
+            } else if (strpos($key, 'advanced_plan_') !== false && $value === 'yes'){
+                // Add UID to advanced plans
+                $advancedPlans[] = explode('advanced_plan_', $key)[1];
             }
-            $postFields = $params['mobbex'];
-
-            $commonPlans = [];
-            $advancedPlans = [];
-
-            // Get plans selected and save data
-            foreach ($postFields as $id => $value) {
-                // Only save uncheck common plans
-                if (strpos($id, 'common_plan_') !== false && $value === '0') {
-                    $uid = explode('common_plan_', $id)[1];
-                    $commonPlans[] = $uid;
-                } else if (strpos($id, 'advanced_plan_') !== false && $value === '1') {
-                    $uid = explode('advanced_plan_', $id)[1];
-                    $advancedPlans[] = $uid;
-                } else {
-                    unset($postFields[$id]);
-                }
-            }
-
-            $customFieldCommon = $this->_customFieldFactory->create();
-            $customFieldCommon->saveCustomField($categoryId, 'category', 'common_plans', serialize($commonPlans));
-            $customFieldAdvance = $this->_customFieldFactory->create();
-            $customFieldAdvance->saveCustomField($categoryId, 'category', 'advanced_plans', serialize($advancedPlans));
         }
+
+        $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'common_plans', serialize($commonPlans));
+        $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'advanced_plans', serialize($advancedPlans));
     }
 }
