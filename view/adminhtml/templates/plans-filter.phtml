@@ -8,8 +8,7 @@
             <td class="mbbx-plans">
                 <?php foreach ($commonFields as $field) : ?>
                     <div class="mbbx-plan">
-                        <input type="hidden" name="<?= $field['id'] ?>" value="no">
-                        <input type="checkbox" name="<?= $field['id'] ?>" value="yes" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $field['id'] ?>">
+                        <input type="checkbox" name="<?= $field['id'] ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $field['id'] ?>" data-form-part="category_form">
                         <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
                     </div>
                 <?php endforeach; ?>
@@ -22,7 +21,7 @@
                     </div>
                     <?php foreach ($fields as $field) : ?>
                         <div class="mbbx-plan-advanced">
-                            <input type="checkbox" name="<?= $field['id'] ?>" <?= $field['value'] ? 'checked="checked" value="yes"' : '' ?> id="<?= $field['id'] ?>">
+                            <input type="checkbox" name="<?= $field['id'] ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $field['id'] ?>" data-form-part="category_form">
                             <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
                         </div>
                     <?php endforeach; ?>

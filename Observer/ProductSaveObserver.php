@@ -24,16 +24,12 @@ class ProductSaveObserver implements ObserverInterface
     {
         $commonPlans = $advancedPlans = [];
 
-        // Exit if params params are empty
-        if (!isset($this->params['mobbex']))
-            return;
-
         // Get plans selected
-        foreach ($this->params['mobbex'] as $key => $value) {
-            if (strpos($key, 'common_plan_') !== false && $value === 'no') {
+        foreach ($this->params as $key => $value) {
+            if (strpos($key, 'common_plan_') !== false && $value === '0') {
                 // Add UID to common plans
                 $commonPlans[] = explode('common_plan_', $key)[1];
-            } else if (strpos($key, 'advanced_plan_') !== false && $value === 'yes'){
+            } else if (strpos($key, 'advanced_plan_') !== false && $value === '1'){
                 // Add UID to advanced plans
                 $advancedPlans[] = explode('advanced_plan_', $key)[1];
             }
