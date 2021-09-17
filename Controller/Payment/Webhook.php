@@ -204,21 +204,24 @@ class Webhook extends WebhookBase
     public function addFeeOrDiscount($totalPaid, $order)
     {
         $orderTotal = $order->getGrandTotal();
-        $quote = $this->quoteFactory->create()->load($order->getQuoteId());
+        $quote      = $this->quoteFactory->create()->load($order->getQuoteId());
+        $paidDiff   = $totalPaid - $orderTotal;
 
-        if ($totalPaid > $orderTotal) {
-            $quote->setFee($totalPaid - $orderTotal);
-            $order->setFee($totalPaid - $orderTotal);
-        } elseif ($totalPaid < $orderTotal) {
-            $quote->setDiscountAmount($orderTotal - $totalPaid);
-            $order->setDiscountAmount($orderTotal - $totalPaid);
+        if ($paidDiff > 0) {
+            $quote->setFee($paidDiff);
+            $order->setFee($paidDiff);
+        } elseif ($paidDiff < 0) {
+            $quote->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
+            $order->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
         } else {
             return false;
         }
 
         $order->setGrandTotal($totalPaid);
+        $order->setTotalPaid($totalPaid);
         $quote->setGrandTotal($totalPaid);
 
+        $order->save();
         $quote->save();
     }
 }
