@@ -93,7 +93,10 @@ class OrderUpdate
         $order->save();
 
         $this->sendOrderEmail($order, $statusMessage);
-        $this->invoice($order, $orderPayment, $statusMessage);
+
+        if (!$this->config->getDisableInvoices())
+            $this->invoice($order, $orderPayment, $statusMessage);
+
         $order->save();
     }
 

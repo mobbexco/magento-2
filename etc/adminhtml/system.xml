@@ -141,6 +141,12 @@
                             <label>Estado del pedido cuando se reembolsa el pago</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
+
+                        <field id="disable_invoices" translate="label" type="select" sortOrder="22" showInDefault="1"
+                            showInWebsite="1" showInStore="0">
+                            <label>Deshabilitar creación automática de facturas</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
                     </group>
 
                     <group id="email_settings" translate="label" sortOrder="22" showInDefault="1" showInWebsite="1"
