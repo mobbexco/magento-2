@@ -27,6 +27,11 @@
 
 ## Changelog:
 
+2021-09-17: 2.1.4
+- Add new internal hook for webhook receive
+- Add disable invoice generation option
+- Update total paid order item on discounts
+
 2021-08-26: 2.1.3
 - Fix discount and finnancial charge save
 

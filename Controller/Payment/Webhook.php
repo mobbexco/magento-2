@@ -63,7 +63,8 @@ class Webhook extends WebhookBase
         OrderUpdate $orderUpdate,
         JsonFactory $resultJsonFactory,
         LoggerInterface $logger,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Mobbex\Webpay\Helper\Data $helper
     ) {
         $this->_order = $_order;
         $this->context = $context;
@@ -71,6 +72,7 @@ class Webhook extends WebhookBase
         $this->_orderUpdate = $orderUpdate;
         $this->log = $logger;
         $this->quoteFactory = $quoteFactory;
+        $this->helper = $helper;
 
         parent::__construct($context);
     }
@@ -117,9 +119,14 @@ class Webhook extends WebhookBase
                 $mobbexPaymentId    = $data['payment']['id'];
                 $paymentMethod      = isset($data['payment']['source']['name']) ? $data['payment']['source']['name'] : '';
                 $mobbexRiskAnalysis = $data['payment']['riskAnalysis']['level'];
+                $totalPaid          = $data['payment']['total'];
 
-                $totalPaid = $data['payment']['total'];
+                $this->helper->mobbex->executeHook('mobbex_webhook_received', [
+                    'order'   => $order,
+                    'webhook' => $data,
+                ]);
                 $this->addFeeOrDiscount($totalPaid, $order);
+
                 $paymentOrder = $order->getPayment();
                 $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
                 
@@ -197,21 +204,24 @@ class Webhook extends WebhookBase
     public function addFeeOrDiscount($totalPaid, $order)
     {
         $orderTotal = $order->getGrandTotal();
-        $quote = $this->quoteFactory->create()->load($order->getQuoteId());
+        $quote      = $this->quoteFactory->create()->load($order->getQuoteId());
+        $paidDiff   = $totalPaid - $orderTotal;
 
-        if ($totalPaid > $orderTotal) {
-            $quote->setFee($totalPaid - $orderTotal);
-            $order->setFee($totalPaid - $orderTotal);
-        } elseif ($totalPaid < $orderTotal) {
-            $quote->setDiscountAmount($orderTotal - $totalPaid);
-            $order->setDiscountAmount($orderTotal - $totalPaid);
+        if ($paidDiff > 0) {
+            $quote->setFee($paidDiff);
+            $order->setFee($paidDiff);
+        } elseif ($paidDiff < 0) {
+            $quote->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
+            $order->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
         } else {
             return false;
         }
 
         $order->setGrandTotal($totalPaid);
+        $order->setTotalPaid($totalPaid);
         $quote->setGrandTotal($totalPaid);
 
+        $order->save();
         $quote->save();
     }
 }

@@ -27,7 +27,7 @@ use Magento\Catalog\Model\ProductRepository;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '2.1.3';
+    const VERSION = '2.1.4';
 
     /**
      * @var Config
@@ -674,5 +674,26 @@ class Mobbex extends AbstractHelper
         $rowId      = $customerId ? $customerId : $quoteId;
 
         return $customField->getCustomField($rowId, $object, 'dni') ?: '';
+    }
+
+    /**
+     * Execute a hook and retrieve the response.
+     * 
+     * @param string $hookName The hook name.
+     * @param array $params Associative array that will be passed as params.
+     * 
+     * @return array
+     */
+    public function executeHook($hookName, $params = null)
+    {
+        // Dispatch event and init session to get response
+        $this->eventManager->dispatch($hookName, $params);
+        $this->session->start()->setMobbexData($params);
+
+        // Get response and clear data
+        $response = $this->session->getMobbexData();
+        $this->session->setMobbexData(null);
+
+        return $response;
     }
 }

@@ -1,15 +1,11 @@
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
-    <head>
-        <css src="Mobbex_Webpay::css/product_view.css"/>
-        <script  src="Mobbex_Webpay::js/view/product_view.js"/>
-    </head>
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceContainer name="page.wrapper">
+        <referenceContainer name="product.info.extrahint">
             <block class="Mobbex\Webpay\Block\Product\Financial"
                 name="product.info.financialinfo"
                 cacheable="false"
                 template="Mobbex_Webpay::product/financialInformation.phtml"/>
         </referenceContainer>
-        <move element="product.info.financialinfo" destination="product.info.addtocart" after="product.info.addtocart"/>
     </body>
 </page>

@@ -24,6 +24,7 @@
                         <order_status_in_process>pending</order_status_in_process>
                         <order_status_cancelled>canceled</order_status_cancelled>
                         <order_status_refunded>closed</order_status_refunded>
+                        <disable_invoices>0</disable_invoices>
                     </order_status_settings>
                     <email_settings>
                         <create_order_email>1</create_order_email>
