@@ -27,6 +27,11 @@
 
 ## Changelog:
 
+2021-09-22: 2.1.5
+- Improve finance widget events isolation
+- Refactor and some fixes on plans filter and installments obtaining
+- Update embed sdk version to 1.0.20
+
 2021-09-17: 2.1.4
 - Add new internal hook for webhook receive
 - Add disable invoice generation option
