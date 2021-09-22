@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
-    <fieldset name="mbbx_category_tab" sortOrder="10">
+    <fieldset name="mbbx_product_tab" sortOrder="10">
         <settings>
             <collapsible>true</collapsible>
             <label translate="true">Mobbex Configuration</label>
         </settings>
-        <container name="mbbx_category_tab" sortOrder="1">
+        <container name="mbbx_product_tab" sortOrder="1">
             <htmlContent name="html_content">
                 <block name="custom_category_block"
                        class="Mobbex\Webpay\Block\Template"
                        cacheable="false"
-                       template="Mobbex_Webpay::category-settings.phtml"/>
+                       template="Mobbex_Webpay::product-settings.phtml"/>
             </htmlContent>
         </container>
     </fieldset>
