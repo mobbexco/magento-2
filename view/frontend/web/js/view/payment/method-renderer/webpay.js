@@ -197,7 +197,7 @@ function executeWallet(checkoutBuilder) {
 
 // Add Mobbex script
 var script = document.createElement('script');
-script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.17.js`;
+script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.20.js`;
 script.async = true;
 document.body.appendChild(script);
 

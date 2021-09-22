@@ -1,0 +1,7 @@
+<h3><?= __('Configuración de planes') ?></h3>
+<p><?= __('Los planes habilitados aparecerán en el checkout de los productos que contenga esta categoría') ?></p>
+
+<?php
+extract($this->helper->getPlansFilterFields(isset($this->params['id']) ? $this->params['id'] : 0, 'category'));
+$form = 'category_form';
+include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');

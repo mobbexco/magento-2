@@ -27,7 +27,7 @@ use Magento\Catalog\Model\ProductRepository;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '2.1.4';
+    const VERSION = '2.1.5';
 
     /**
      * @var Config
@@ -165,6 +165,7 @@ class Mobbex extends AbstractHelper
         $this->urlBuilder = $urlBuilder;
         $this->imageHelper = $imageHelper;
         $this->_customFieldFactory = $customFieldFactory;
+        $this->customFields = $customFieldFactory->create();
         $this->productMetadata = $productMetadata;
         $this->customerSession = $customerSession;
         $this->eventManager = $eventManager;
@@ -275,7 +276,7 @@ class Mobbex extends AbstractHelper
             ],
             'total' => (float) $orderAmount,
             'customer' => $customer,
-            'installments' => $this->getInstallments(),
+            'installments' => $this->getInstallments($orderedItems),
             'timeout' => 5,
         ];
 
@@ -426,15 +427,14 @@ class Mobbex extends AbstractHelper
             ],
             'total' => (float) $orderAmount,
             'customer' => $customer,
-            'installments' => $this->getInstallments($quoteData['items']),
+            'installments' => $this->getInstallments($quoteData['items'], true),
             'timeout' => 5,
             'wallet' => ($is_wallet_active),
         ];
 
-        if($this->config->getDebugMode())
-        {
+        if($this->config->getDebugMode()) {
             Data::log("Checkout Headers:" . print_r($this->getHeaders(), true), "mobbex_debug_" . date('m_Y') . ".log");
-            Data::log("Checkout Headers:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
+            Data::log("Checkout Body:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
         }
 
         curl_setopt_array($curl, [
@@ -525,120 +525,76 @@ class Mobbex extends AbstractHelper
     }
 
     /**
-     * Get Financing plans
-     * The common plans stored in the data base are those that will not be show on the checkout
-     * The advanced plans stored in the data base are those that will be show on the checkout
+     * Retrieve active advanced plans from a product and its categories.
+     * 
+     * @param int $productId
+     * 
      * @return array
      */
-    public function getInstallments($quoteItems = null)
+    public function getInactivePlans($productId)
     {
-        $installments = $total_advanced_plans = $categories_ids = $addedPlans = [];
+        $product = $this->productRepository->getById($productId);
 
-        $ahora = array(
-            'ahora_3'  => 'Ahora 3',
-            'ahora_6'  => 'Ahora 6',
-            'ahora_12' => 'Ahora 12',
-            'ahora_18' => 'Ahora 18',
-        );
+        $inactivePlans = unserialize($this->customFields->getCustomField($productId, 'product', 'common_plans')) ?: [];
 
-        //if $items_custom is not null then is called from quote checkout 
-        if ($quoteItems){
-            $items = $quoteItems;
-        } else {
-            $items = $this->order->getAllVisibleItems();
-        }
-        
+        foreach ($product->getCategoryIds() as $categoryId)
+            $inactivePlans = array_merge($inactivePlans, unserialize($this->customFields->getCustomField($categoryId, 'category', 'common_plans')) ?: []);
 
-        foreach ($items as $item) 
-        {
-            $added_advanced_plans = [];//all advanced plans selected for this items
-            if($quoteItems) {
-                $productId = $item['product_id'];
-                $product = $this->productRepository->getById($item['product_id']);
-            } else {
-                $product = $item->getProduct();
-                $productId = $product->getId();
-            }
+        // Remove duplicated and return
+        return array_unique($inactivePlans);
+    }
 
-            // Product 'Ahora' Plans
-            foreach ($ahora as $key => $value) {
-                if ($product->getResource()->getAttributeRawValue($productId, $key, $this->_storeManager->getStore()->getId()) === '1') {
-                    $installments[] = '-' . $key;
-                    unset($ahora[$key]);
-                }
-            }
-            $customField = $this->_customFieldFactory->create();
+    /**
+     * Retrieve active advanced plans from a product and its categories.
+     * 
+     * @param int $productId
+     * 
+     * @return array
+     */
+    public function getActivePlans($productId)
+    {
+        $product = $this->productRepository->getById($productId);
 
-            // Product Common Plans
-            $checkedCommonPlans = unserialize($customField->getCustomField($productId, 'product', 'common_plans'));
-            if (is_array($checkedCommonPlans)) {    
-                // Check not selected plans only 
-                $checkedCommonPlans = array_diff($checkedCommonPlans, $addedPlans);
+        // Get plans from product and product categories
+        $activePlans = unserialize($this->customFields->getCustomField($productId, 'product', 'advanced_plans')) ?: [];
 
-                foreach ($checkedCommonPlans as $key => $plan) {
-                    $addedPlans[] = $plan;
-                    $installments[] = '-' . $plan;
-                    unset($checkedCommonPlans[$key]);
-                }
-            }
+        foreach ($product->getCategoryIds() as $categoryId)
+            $activePlans = array_merge($activePlans, unserialize($this->customFields->getCustomField($categoryId, 'category', 'advanced_plans')) ?: []);
 
-            // Product Advanced Plans
-            $checkedAdvancedPlans = unserialize($customField->getCustomField($productId, 'product', 'advanced_plans'));
-            if (is_array($checkedAdvancedPlans)) {
-                // Check not selected plans only 
-                foreach ($checkedAdvancedPlans as $key => $plan) {
-                    $added_advanced_plans[] = $plan;
-                    $total_advanced_plans[] = $plan;
-                    unset($checkedAdvancedPlans[$key]);
-                }
-            }
+        // Remove duplicated and return
+        return array_unique($activePlans);
+    }
 
-            // Categories Plans
-            // Get categories from product
-            $categories_ids = $product->getCategoryIds();
-            if(sizeof($categories_ids)>0){
-                foreach($categories_ids as $cat_id) {
-                    $checkedCommonPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'common_plans'));
-                    $checkedAdvancedPlansCat = unserialize($customField->getCustomField($cat_id, 'category', 'advanced_plans'));
+    /**
+     * Retrieve installments checked on plans filter of each item.
+     * 
+     * @param array $items
+     * @param bool $isQuote
+     * 
+     * @return array
+     */
+    public function getInstallments($items, $isQuote = false)
+    {
+        $installments = $inactivePlans = $activePlans = [];
 
-                    // Common Plans
-                    if (is_array($checkedCommonPlansCat)) {
-                        // Check not selected plans only 
-                        $checkedCommonPlansCat = array_diff($checkedCommonPlansCat, $addedPlans);
-                        foreach ($checkedCommonPlansCat as $key => $plan) {
-                            $addedPlans[] = $plan;
-                            $installments[] = '-' . $plan;
-                            unset($checkedCommonPlansCat[$key]);
-                        }
-                    }
-
-                    // Advanced Plans
-                    if (is_array($checkedAdvancedPlansCat)) {
-                        // Check not selected plans only 
-                        $checkedAdvancedPlansCat = array_diff($checkedAdvancedPlansCat, $added_advanced_plans);
-                        foreach ($checkedAdvancedPlansCat as $key => $plan) {
-                            $total_advanced_plans[] = $plan;
-                            $added_advanced_plans[] = $plan;
-                            unset($checkedAdvancedPlansCat[$key]);
-                        }
-                    }
-                }
-            }
+        // Get plans from order products
+        foreach ($items as $item) {
+            $inactivePlans = array_merge($inactivePlans, $this->getInactivePlans($isQuote ? $item['product_id'] : $item->getProductId()));
+            $activePlans   = array_merge($activePlans, $this->getActivePlans($isQuote ? $item['product_id'] : $item->getProductId()));
         }
 
-        // Get all the advanced plans with their number of reps
-        $counted_advanced_plans = array_count_values($total_advanced_plans);
+        // Add inactive (common) plans to installments
+        foreach ($inactivePlans as $plan)
+            $installments[] = '-' . $plan;
 
-        // Advanced plans
-        foreach ($counted_advanced_plans as $plan => $reps) {
-            // Only if the plan is active on all products
-            if ($reps == count($items)) {
-                // Add to installments
+        // Add active (advanced) plans to installments only if the plan is active on all products
+        foreach (array_count_values($activePlans) as $plan => $reps) {
+            if ($reps == count($items))
                 $installments[] = '+uid:' . $plan;
-            }
         }
-        
-        return $installments;
+
+        // Remove duplicated plans and return
+        return array_values(array_unique($installments));
     }
 
     /**
