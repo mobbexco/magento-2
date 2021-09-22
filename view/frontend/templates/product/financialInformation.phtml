@@ -30,7 +30,7 @@
             width: 100%;
             height: 90%;
             max-width: 600px;
-            padding: 20px;
+            padding: 0;
             display: flex;
             flex-flow: column;
             align-items: end;
@@ -68,11 +68,14 @@
     </style>
     <script>
         require(['jquery', 'domReady!'], function ($) {
+            let cont  = document.querySelector('.mbbx-widget')
             let modal = document.getElementById("modal-mobbex");
             let open  = document.getElementById('mbbx-open-widget');
             let close = document.getElementById('mbbx-close-widget');
 
-            document.addEventListener('click', function(event) {
+            cont.addEventListener('click', function(event) {
+                event.preventDefault();
+
                 if (event.target == modal || event.target == close) {
                     modal.style.display = "none";
                 } else if (event.target == open) {
@@ -82,6 +85,8 @@
                 }
 
                 document.body.classList.toggle('scroll-lock');
+
+                return false;
             });
         });
     </script>
