@@ -1,4 +1,5 @@
-´+<?php
+<?php
+namespace Mobbex\Webpay\Block\Product;
 
 /**
  * Copyright © Magento, Inc. All rights reserved.
@@ -11,7 +12,6 @@
  * @author
  */
 
-namespace Mobbex\Webpay\Block\Product;
 
 use Magento\Customer\Model\Session;
 use Magento\Framework\ObjectManagerInterface;
@@ -20,7 +20,6 @@ use Magento\Framework\View\Element\Template\Context;
 use Mobbex\Webpay\Helper\Data;
 use Psr\Log\LoggerInterface;
 use Mobbex\Webpay\Helper\Config;
-use Mobbex\Webpay\Helper\Mobbex;
 use Magento\Catalog\Model\Product;
 
 /**
@@ -62,14 +61,15 @@ class Financial extends \Magento\Framework\View\Element\Template
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\Registry $registry,
-        \Mobbex\Webpay\Helper\Mobbex $mobbex,
+        \Mobbex\Webpay\Helper\Data $helper,
         array $data = [],
         Config $config
     ) {
         $this->_coreRegistry = $registry;
         parent::__construct($context, $data);
         $this->config = $config;
-        
+        $this->helper = $helper;
+        $sources = $this->getSources();
     }
 
     /**
@@ -128,6 +128,22 @@ class Financial extends \Magento\Framework\View\Element\Template
             }
         }
         return $cuit;
+    }
+
+     /**
+     * Return the Sources with the filtered plans
+     * @return array
+     */
+    public function getSources() {
+
+        $product =  $this->getProduct();
+        $productId =  $product->getId();
+        $inactivePlans = $this->helper->mobbex->getInactivePlans($productId);
+        $activePlans = $this->helper->mobbex->getActivePlans($productId);
+        $sources = $this->helper->getSources($product->getPrice(), $inactivePlans);
+        $sourcesAdvanced = $this->helper->filterAdvancedSources($this->helper->getSourcesAdvanced(), $activePlans);
+
+        return $this->helper->mergeSources($sources, $sourcesAdvanced) ? : [];
     }
 
     /**

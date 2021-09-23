@@ -1,15 +1,15 @@
     
 <?php if ($block->getProduct()->isSaleable() && $block->getFinancialActive() && $block->getCuit() > 0) : ?>
-    <div id="mbbxProductModal" class="mobbex-plans-modal $planTheme">
-        <div id="mbbxProductModalContent" class="$plansTheme">
+    <div id="mbbxProductModal" class="mobbex-plans-modal">
+        <div id="mbbxProductModalContent" class="">
             <div id="mbbxProductModalHeader">
                 <label id="mobbex_select_title" for="mbbx-method-select">Seleccione un método de pago</label>
                 <span id="closembbxProduct">&times;</span>
                 <select name="mbbx-method-select" id="mbbx-method-select">
                     <option id="0" value="0">Todos</option>
-                    <?php foreach ($sources as $source): ?>
+                    <?php foreach ($block->getSources() as $source): ?>
                         <?php if(!empty($source['source']['name'])): ?>
-                            <option id="{$source['source']['reference']}" value="{$source['source']['reference']}">
+                            <option id="{$source['source']['reference']}" value="<?=$source['source']['reference']?>">
                                 <?= $source['source']['name'] ?>
                             </option>
                         <?php endif;?> 
@@ -17,11 +17,11 @@
                 </select>
             </div>
             <div id="mbbxProductModalBody">
-                <?php foreach ($sources as $source): ?>
+                <?php foreach ($block->getSources() as $source): ?>
                     <?php if(!empty($source['source']['name'])): ?>
-                        <div id="{$source['source']['reference']}" class="mobbexSource">
+                        <div id="<?=$source['source']['reference']?>" class="mobbexSource">
                             <p class="mobbexPaymentMethod">
-                            <img src="https://res.mobbex.com/images/sources/{$source['source']['reference']}.jpg">{$source['source']['name']}
+                            <img src="https://res.mobbex.com/images/sources/<?=$source['source']['reference']?>.jpg"><?=$source['source']['name']?>
                             </p>
                             <?php if(!empty($source['installments']['list'])):?>
                                 <table class="installmentsTable">
@@ -29,7 +29,7 @@
                                     <tr>
                                         <td><?=$installment['name']?></td>
                                         <?php if(isset($installment['totals']['total'])): ?>
-                                        <td class="mbbxPlansPrice">${$installment['totals']['total']}</td>
+                                        <td class="mbbxPlansPrice"><?= $installment['totals']['total']?></td>
                                         <?php else: ?>
                                         <td></td>
                                         <?php endif; ?>
@@ -45,10 +45,7 @@
     </div>
 
     <button type="button" id="mbbxProductBtn">
-        <?= $button_style['text'] ?>
-        <?php if(!empty($button_style['button_image'])): ?>
-            <img src="{$style_settings['button_image']}" width="40" height="40" style="margin-left: 15px; border-radius: 40px;">
-        <?php endif; ?>
+        <?= 'Pagar con mobbex' ?>
     </button>
 
     <style>
@@ -230,7 +227,7 @@
 
         // Add events to toggle modal
         document.body.addEventListener('click', function(e) {
-            if(e.target === openBtn || e.target === closeBtn || e.target === mbbxModalContainer) {
+            if(e.target === openBtn || e.target === closeBtn || e.target === mobbexPlansModal) {
                 mobbexPlansModal.classList.toggle('active');
                 document.querySelector('body').classList.toggle('scroll-lock');
             } 
@@ -246,22 +243,5 @@
                 source.style.display = source.id != methodSelect.value && methodSelect.value != 0 ? 'none' : '';
         });
 
-        // require(['jquery', 'domReady!'], function($) {
-        //     let modal = document.getElementById("modal-mobbex");
-        //     let open = document.getElementById('mbbx-open-widget');
-        //     let close = document.getElementById('mbbx-close-widget');
-
-        //     document.addEventListener('click', function(event) {
-        //         if (event.target == modal || event.target == close) {
-        //             modal.style.display = "none";
-        //         } else if (event.target == open) {
-        //             modal.style.display = "grid";
-        //         } else {
-        //             return;
-        //         }
-
-        //         document.body.classList.toggle('scroll-lock');
-        //     });
-        // });
     </script>
 <?php endif;

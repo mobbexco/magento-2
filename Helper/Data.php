@@ -131,11 +131,18 @@ class Data extends AbstractHelper
      * Get sources with common plans from mobbex.
      * @param integer|null $total
      */
-    public function getSources($total = null)
+    public function getSources($total = null, $inactivePlans = null)
     {
         $curl = curl_init();
 
         $data = $total ? '?total=' . $total : null;
+
+        if ($data && $inactivePlans) {
+            $data .= '&';
+            foreach ($inactivePlans as $plan) {
+                $data .= '&installments[]=-' . $plan;
+            }
+        }
 
         curl_setopt_array($curl, [
             CURLOPT_URL => 'https://api.mobbex.com/p/sources' . $data,
@@ -203,6 +210,53 @@ class Data extends AbstractHelper
         }
 
         return [];
+    }
+
+    /**
+     * Filter advanced sources 
+     *
+     * @return array
+     */
+    public function filterAdvancedSources($sources, $advancedPlans)
+    {
+        foreach ($sources as $firstKey => $source) {
+            foreach ($source['installments'] as $key => $installment) {
+                if (!in_array($installment['uid'], $advancedPlans)) {
+                    unset($sources[$firstKey]['installments'][$key]);
+                }
+            }
+        }
+        return $sources;
+    }
+
+    /**
+     * Merge common sources with sources obtained by advanced rules.
+     * 
+     * @param mixed $sources
+     * @param mixed $advanced_sources
+     * 
+     * @return array
+     */
+    public function mergeSources($sources, $advanced_sources)
+    {
+        foreach ($advanced_sources as $advanced_source) {
+            $key = array_search($advanced_source['sourceReference'], array_column(array_column($sources, 'source'), 'reference'));
+
+            // If source exists in common sources array
+            if ($key !== false) {
+                // Only add installments
+                $sources[$key]['installments']['list'] = array_merge($sources[$key]['installments']['list'], $advanced_source['installments']);
+            } else {
+                $sources[] = [
+                    'source'       => $advanced_source['source'],
+                    'installments' => [
+                        'list' => $advanced_source['installments']
+                    ]
+                ];
+            }
+        }
+
+        return $sources;
     }
 
     /**

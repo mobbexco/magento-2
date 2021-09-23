@@ -597,6 +597,7 @@ class Mobbex extends AbstractHelper
         return array_values(array_unique($installments));
     }
 
+
     /**
      * @return string
      */
