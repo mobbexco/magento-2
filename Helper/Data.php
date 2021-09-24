@@ -313,3 +313,4 @@ class Data extends AbstractHelper
         return compact('commonFields', 'advancedFields', 'sourceNames');
     }
 }
+

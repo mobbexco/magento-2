@@ -136,6 +136,10 @@ class Financial extends \Magento\Framework\View\Element\Template
      */
     public function getSources() {
 
+        if(isset($this->sources)) {
+            return $this->sources;
+        }
+
         $product =  $this->getProduct();
         $productId =  $product->getId();
         $inactivePlans = $this->helper->mobbex->getInactivePlans($productId);
@@ -143,7 +147,7 @@ class Financial extends \Magento\Framework\View\Element\Template
         $sources = $this->helper->getSources($product->getPrice(), $inactivePlans);
         $sourcesAdvanced = $this->helper->filterAdvancedSources($this->helper->getSourcesAdvanced(), $activePlans);
 
-        return $this->helper->mergeSources($sources, $sourcesAdvanced) ? : [];
+        return $this->mergeSources($sources, $sourcesAdvanced) ? : [];
     }
 
     /**
