@@ -140,14 +140,20 @@ class Financial extends \Magento\Framework\View\Element\Template
             return $this->sources;
         }
 
+        //Get the product data
         $product =  $this->getProduct();
         $productId =  $product->getId();
+
+        //Get the plans for the product
         $inactivePlans = $this->helper->mobbex->getInactivePlans($productId);
         $activePlans = $this->helper->mobbex->getActivePlans($productId);
+        
+        //Get the sources filtered
         $sources = $this->helper->getSources($product->getPrice(), $inactivePlans);
         $sourcesAdvanced = $this->helper->filterAdvancedSources($this->helper->getSourcesAdvanced(), $activePlans);
-
-        return $this->mergeSources($sources, $sourcesAdvanced) ? : [];
+        $sources = $this->helper->mergeSources($sources, $sourcesAdvanced) ? : [];
+        
+        return $this->sources = $sources;
     }
 
     /**

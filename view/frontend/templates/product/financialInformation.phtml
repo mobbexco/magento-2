@@ -215,7 +215,7 @@
                 color: rgb(226, 226, 226);
             }
         </style>
-        
+
         <script>
             require(['domReady'], () => {
 
@@ -232,6 +232,7 @@
                         mobbexPlansModal.classList.toggle('active');
                         document.querySelector('body').classList.toggle('scroll-lock');
                     }
+                    return false;
                 });
 
                 // Get sources and payment method selector 

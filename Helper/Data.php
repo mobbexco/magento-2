@@ -258,6 +258,7 @@ class Data extends AbstractHelper
 
         return $sources;
     }
+    
 
     /**
      * Retrieve plans filter fields data for product/category settings.
