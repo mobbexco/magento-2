@@ -137,8 +137,7 @@ class Data extends AbstractHelper
 
         $data = $total ? '?total=' . $total : null;
 
-        if ($data && $inactivePlans) {
-            $data .= '&';
+        if ($inactivePlans) {
             foreach ($inactivePlans as $plan) {
                 $data .= '&installments[]=-' . $plan;
             }
