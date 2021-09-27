@@ -273,6 +273,7 @@ class Mobbex extends AbstractHelper
                     "failure" => false,
                 ],
                 "platform" => $this->getPlatform(),
+                "multicard" => (bool) ($this->config->getMulticard()),
             ],
             'total' => (float) $orderAmount,
             'customer' => $customer,
@@ -424,6 +425,7 @@ class Mobbex extends AbstractHelper
                     "failure" => false,
                 ],
                 "platform" => $this->getPlatform(),
+                "test" => (bool) ($this->config->getMulticard())
             ],
             'total' => (float) $orderAmount,
             'customer' => $customer,
