@@ -150,8 +150,8 @@ class Financial extends \Magento\Framework\View\Element\Template
         
         //Get the sources filtered
         $sources = $this->helper->getSources($product->getPrice(), $inactivePlans);
-        $sourcesAdvanced = $this->helper->filterAdvancedSources($this->helper->getSourcesAdvanced(), $activePlans);
-        $sources = $this->helper->mergeSources($sources, $sourcesAdvanced) ? : [];
+        // $sourcesAdvanced = $this->helper->filterAdvancedSources($this->helper->getSourcesAdvanced(), $activePlans);
+        // $sources = $this->helper->mergeSources($sources, $sourcesAdvanced) ? : [];
         
         return $this->sources = $sources;
     }
