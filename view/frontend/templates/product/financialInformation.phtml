@@ -43,7 +43,7 @@
             </div>
         </div>
 
-        <button type="button" id="mbbxProductBtn">
+        <button type="button" id="mbbxProductBtn" onclick="toggleFinancialWidget(event)">
             <?= 'Pagar con mobbex' ?>
         </button>
 
@@ -227,10 +227,8 @@
 
                 // Add events to toggle modal
                 mobbexPlansModal.addEventListener('click', function(e) {
-                    if (e.target === openBtn || e.target === closeBtn || e.target === mobbexPlansModal) {
-                        e.target.preventDefault;
-                        mobbexPlansModal.classList.toggle('active');
-                        document.querySelector('body').classList.toggle('scroll-lock');
+                    if (e.target === closeBtn || e.target === mobbexPlansModal) {
+                        toggleFinancialWidget(e);
                     }
                     return false;
                 });
@@ -245,7 +243,13 @@
                         source.style.display = source.id != methodSelect.value && methodSelect.value != 0 ? 'none' : '';
                 });
             });
-            
+
+            function toggleFinancialWidget(e) {
+                e.target.preventDefault;
+                document.querySelector('#mbbxProductModal').classList.toggle('active')
+                document.querySelector('body').classList.toggle('scroll-lock');
+            }
+
         </script>
 
     <?php endif;
