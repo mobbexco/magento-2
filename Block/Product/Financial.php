@@ -149,7 +149,7 @@ class Financial extends \Magento\Framework\View\Element\Template
         $activePlans = $this->helper->mobbex->getActivePlans($productId);
         
         //Get the sources filtered
-        $sources = $this->helper->getSources($product->getPrice(), $inactivePlans);
+        $sources = $this->helper->getSources($product->getPrice(), $inactivePlans, $activePlans);
         
         return $this->sources = $sources;
     }
