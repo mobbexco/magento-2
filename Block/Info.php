@@ -40,6 +40,7 @@ class Info extends \Magento\Payment\Block\Info
 
         $data = [
             (string) __('Transaction ID')   => isset($mobbexData['payment']['id']) ? $mobbexData['payment']['id'] : '',
+            (string) __('Payment Method')   => $info->getAdditionalInformation('mobbex_payment_method') ?: '',
             (string) __('Card Information') => $info->getAdditionalInformation('mobbex_card_info') ?: '',
             (string) __('Card Plan')        => $info->getAdditionalInformation('mobbex_card_plan') ?: '',
         ];
@@ -47,7 +48,7 @@ class Info extends \Magento\Payment\Block\Info
         // Only show in admin panel
         if ($this->_state->getAreaCode() == 'adminhtml') {
             $data = array_merge($data, [
-                (string) __('Order URL')     => $info->getAdditionalInformation('mobbex_order_url') ?: '',
+                (string) __('Cupon URL')     => $info->getAdditionalInformation('mobbex_order_url') ?: '',
                 (string) __('Risk Analysis') => isset($mobbexData['payment']['riskAnalysis']['level']) ? $mobbexData['payment']['riskAnalysis']['level'] : '',
             ]);
         }

@@ -83,145 +83,54 @@ class Webhook extends WebhookBase
     public function execute()
     {
         $response = [
-            "result" => false,
+            'result' => false,
         ];
-        $resultJson = $this->resultJsonFactory->create();
 
         try {
-            // get post data
-            $postData = $this->getRequest()->getPostValue();
-            $orderId = $this->getRequest()->getParam('order_id');
-            $quoteId = $this->getRequest()->getParam('quote_id');
+            // Get request data
+            $request  = $this->getRequest();
+            $postData = $request->getPostValue();
+            $data     = $postData['data'];
+            $orderId  = $request->getParam('order_id');
+            $quoteId  = $request->getParam('quote_id');
 
-            //check if wallet was used for checkout, if it was used, then get orderId using Quote object
+            // If order ID is empty, try to load from quote id
             if (empty($orderId) && !empty($quoteId)) {
                 $quote = $this->quoteFactory->create()->load($quoteId);
                 $orderId = $quote->getReservedOrderId();
             }
 
-            $data = $postData['data'];
-
             Data::log(
-                "WebHook Controller > Data:" . print_r([
-                    "id" => $orderId,
-                    "data" => $data,
-                ], true),
+                "WebHook Controller > Data:" . json_encode(compact('orderId', 'data'), JSON_PRETTY_PRINT),
                 "mobbex_" . date('m_Y') . ".log"
             );
 
-            $status = $data['payment']['status']['code'];
+            if (empty($orderId) || empty($data['payment']['status']['code']))
+                throw new Exception('Empty Order ID or payment status', 1);
 
-            // if data looks fine
-            if (isset($orderId) && !empty($status)) {
+            $order = $this->_order->loadByIncrementId($orderId);
 
-                $order = $this->_order->loadByIncrementId($orderId);
-                
-                $mobbexPaymentId    = $data['payment']['id'];
-                $paymentMethod      = isset($data['payment']['source']['name']) ? $data['payment']['source']['name'] : '';
-                $mobbexRiskAnalysis = $data['payment']['riskAnalysis']['level'];
-                $totalPaid          = $data['payment']['total'];
+            // Execute own hook to extend functionalities
+            $this->helper->mobbex->executeHook('mobbex_webhook_received', [
+                'order'   => $order,
+                'webhook' => $data,
+            ]);
 
-                $this->helper->mobbex->executeHook('mobbex_webhook_received', [
-                    'order'   => $order,
-                    'webhook' => $data,
-                ]);
-                $this->addFeeOrDiscount($totalPaid, $order);
+            // Update order data
+            $this->_orderUpdate->updateTotals($order, $data);
+            $this->_orderUpdate->updateStatus($order, $data);
+            $this->_orderUpdate->saveWebhookData($order, $data);
 
-                $paymentOrder = $order->getPayment();
-                $formatedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
-                
-                $source         = $data['payment']['source'];
-                $mainMobbexNote = 'ID de Operación Mobbex: ' . $mobbexPaymentId . '. ';
-
-                // Save order url
-                if (!empty($data['entity']['uid'])) {
-                    $mobbexOrderUrl = 'https://mobbex.com/console/' . $data['entity']['uid'] . '/operations/?oid=' . $mobbexPaymentId;
-        
-                    $paymentOrder->setAdditionalInformation('mobbex_order_url', $mobbexOrderUrl);
-                    $order->addStatusHistoryComment('URL al Cupón: ' . $mobbexOrderUrl);
-                }
-                
-                // Save payment info
-                if ($source['type'] == 'card') {
-                    $mobbexCardPaymentInfo = $paymentMethod . ' ( ' . $source['number'] . ' )';
-                    $mobbexCardPlan = $source['installment']['description'] . '. ' . $source['installment']['count'] . ' Cuota/s' . ' de ' . $source['installment']['amount'];
-                    
-                    $paymentOrder->setAdditionalInformation('mobbex_card_info', $mobbexCardPaymentInfo);
-                    $paymentOrder->setAdditionalInformation('mobbex_card_plan', $mobbexCardPlan);
-                    
-                    $mainMobbexNote .= 'Pago realizado con ' . $mobbexCardPaymentInfo . '. ' . $mobbexCardPlan . '. ';
-                } else {
-                    $mainMobbexNote .= 'Pago realizado con ' . $paymentMethod . '. ';
-                }
-                
-                // Save risk analysis
-                if (!empty($mobbexRiskAnalysis)) {
-                    $order->addStatusHistoryComment('El riesgo de la operación fue evaluado en: ' . $mobbexRiskAnalysis);
-                }
-
-                $order->addStatusHistoryComment($mainMobbexNote);
-                $order->save();
-
-                $paymentOrder->setAdditionalInformation('mobbex_data', $data);
-
-                if ($status == 2 || $status == 3 || $status == 100) {
-                    $message = __('Transacción En Progreso por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
-                    $this->_orderUpdate->holdPayment($order, $message);
-                } else if ($status == 4 || $status >= 200 && $status < 400) {
-                    $message = __('Transacción aprobada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
-                    $this->_orderUpdate->approvePayment($order, $message);
-                } else {
-                    $message = __('Transacción cancelada por %1. Medio de Pago: %2. Id de pago Mobbex: %3', $formatedPrice, $paymentMethod, $mobbexPaymentId);
-
-                    if ($order->getStatus() == 'pending') {
-                        $this->_orderUpdate->cancelPayment($order, $message);
-                    } else {
-                        $this->_orderUpdate->refundPayment($order, $message);
-                    }
-                }
-
-                // redirect to success page
-                $response['result'] = true;
-            }
-        } catch (Exception $e) {
+            // Redirect to sucess page
+            $response['result'] = true;
+        } catch (\Exception $e) {
             Data::log('WebHook Controller > Error Paynment Data: ' . $e->getMessage(), "mobbex_error_" . date('m_Y') . ".log");
         }
 
         // Reply with json
+        $resultJson = $this->resultJsonFactory->create();
         $resultJson->setData($response);
 
         return $resultJson;
-    }
-
-    /**
-     * Add fee or discount to order & quote
-     * 
-     * @param int $totalPaid
-     * @param Order $order
-     * 
-     * @return bool
-     */
-    public function addFeeOrDiscount($totalPaid, $order)
-    {
-        $orderTotal = $order->getGrandTotal();
-        $quote      = $this->quoteFactory->create()->load($order->getQuoteId());
-        $paidDiff   = $totalPaid - $orderTotal;
-
-        if ($paidDiff > 0) {
-            $quote->setFee($paidDiff);
-            $order->setFee($paidDiff);
-        } elseif ($paidDiff < 0) {
-            $quote->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
-            $order->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
-        } else {
-            return false;
-        }
-
-        $order->setGrandTotal($totalPaid);
-        $order->setTotalPaid($totalPaid);
-        $quote->setGrandTotal($totalPaid);
-
-        $order->save();
-        $quote->save();
     }
 }
