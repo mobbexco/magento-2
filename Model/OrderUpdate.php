@@ -1,81 +1,125 @@
 <?php
+
 namespace Mobbex\Webpay\Model;
 
-use Mobbex\Webpay\Helper\Config;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Sales\Api\Data\OrderInterface;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\Order\Email\Sender\OrderCommentSender;
-use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
-use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment\Transaction;
-use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 
-/**
- * Class OrderUpdate
- * @package Improntus\Dlocal\Model
- */
 class OrderUpdate
 {
-    /**
-     * @var Config
-     */
+    /** @var Mobbex\Webpay\Helper\Config */
     protected $config;
 
-    /**
-     * @var OrderInterface
-     */
-    protected $_order;
-
-    /**
-     * @var BuilderInterface
-     */
-    protected $transactionBuilder;
-
-    /**
-     * @var OrderSender
-     */
+    /** @var OrderSender */
     protected $orderSender;
 
-    /**
-     * @var OrderCommentSender
-     */
+    /** @var InvoiceSender */
+    protected $invoiceSender;
+
+    /** @var OrderCommentSender */
     protected $orderCommentSender;
 
-    /**
-     * OrderUpdate constructor.
-     * @param OrderInterface $order
-     * @param BuilderInterface $transactionBuilder
-     * @param OrderSender $orderSender
-     * @param OrderCommentSender $orderCommentSender
-     * @param InvoiceSender $invoiceSender
-     */
+    /** @var BuilderInterface */
+    protected $transactionBuilder;
+
     public function __construct(
-        Config $config,
-        OrderInterface $order,
-        BuilderInterface $transactionBuilder,
-        OrderSender $orderSender,
-        OrderCommentSender $orderCommentSender,
-        InvoiceSender $invoiceSender
+        \Mobbex\Webpay\Helper\Config $config,
+        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
+        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
+        \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender,
+        \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder
     ) {
-        $this->config = $config;
-        $this->_order = $order;
-        $this->transactionBuilder = $transactionBuilder;
-        $this->orderSender = $orderSender;
+        $this->config             = $config;
+        $this->orderSender        = $orderSender;
+        $this->invoiceSender      = $invoiceSender;
         $this->orderCommentSender = $orderCommentSender;
-        $this->invoiceSender = $invoiceSender;
+        $this->transactionBuilder = $transactionBuilder;
     }
 
     /**
-     * @param $order
-     * @param $statusDetail
-     * @throws LocalizedException
+     * Update order status from webhook data.
+     * 
+     * @param OrderInterface $order
+     * @param int|string $data
      */
-    public function approvePayment($order, $statusDetail)
+    public function updateStatus($order, $data)
+    {
+        $statusName  = $this->getStatusConfigName($order, $data['payment']['status']['code']);
+        $orderStatus = $this->config->{"getOrderStatus$statusName"}();
+
+        if ($orderStatus == $order->getStatus())
+            return;
+
+        $order->setState($orderStatus)->setStatus($orderStatus);
+
+        if ($order->getStatus() == 'canceled')
+            $order->cancel();
+
+        // Notify the customer
+        $notified = $this->sendOrderEmail($order, $data['payment']['status']['message']);
+
+        if ($statusName == 'Approved') {
+            $this->generateTransaction($order, $data['payment']['status']['message'], $notified);
+            $this->generateInvoice($order, $data['payment']['status']['message']);
+        }
+
+        $order->save();
+    }
+
+    /**
+     * Update order totals from webhook data.
+     * 
+     * @param OrderInterface $order
+     * @param array $data
+     */
+    public function updateTotals($order, $data)
+    {
+        $orderTotal = $order->getGrandTotal();
+        $totalPaid  = isset($data['payment']['total']) ? $data['payment']['total'] : $orderTotal;
+        $paidDiff   = $totalPaid - $orderTotal;
+
+        if ($paidDiff > 0) {
+            $order->setFee($paidDiff);
+        } elseif ($paidDiff < 0) {
+            $order->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
+        }
+
+        $order->setGrandTotal($totalPaid);
+        $order->setTotalPaid($totalPaid);
+
+        $order->save();
+    }
+
+    /**
+     * Save webhook data to order.
+     * 
+     * @param OrderInterface $order
+     * @param array $data
+     */
+    public function saveWebhookData($order, $data)
+    {
+        $payment = $order->getPayment();
+
+        $payment->setAdditionalInformation('mobbex_data', $data);
+        $payment->setAdditionalInformation('mobbex_order_url', "https://mobbex.com/console/{$data['entity']['uid']}/operations/?oid={$data['payment']['id']}");
+        $payment->setAdditionalInformation('mobbex_payment_method', isset($data['payment']['source']['name']) ? $data['payment']['source']['name'] : '');
+
+        if ($data['payment']['source']['type'] == 'card') {
+            $payment->setAdditionalInformation('mobbex_card_info', "{$data['payment']['source']['name']} ({$data['payment']['source']['number']})");
+            $payment->setAdditionalInformation('mobbex_card_plan', "{$data['payment']['source']['installment']['description']}. {$data['payment']['source']['installment']['count']} Cuota/s de {$data['payment']['source']['installment']['amount']}");
+        }
+
+        $payment->save();
+    }
+
+    /**
+     * Generate an order transaction.
+     * 
+     * @param OrderInterface $order
+     * @param string $message
+     */
+    public function generateTransaction($order, $message, $notified)
     {
         $orderPayment = $order->getPayment();
-
         $orderPayment->setTransactionId($order->getIncrementId());
 
         $transaction = $this->transactionBuilder
@@ -84,135 +128,47 @@ class OrderUpdate
             ->setTransactionId($orderPayment->getTransactionId())
             ->build(Transaction::TYPE_AUTH);
 
-        $orderStatus = $this->config->getOrderStatusApproved();
-        $statusMessage = __('Payment status') . ': ' . __($statusDetail);
-
-        $orderPayment->addTransactionCommentsToOrder($transaction, $statusMessage);
-        $order->setState($orderStatus);
-        $order->addStatusToHistory($orderStatus, $statusDetail);
-        $order->save();
-
-        $this->sendOrderEmail($order, $statusMessage);
-
-        if (!$this->config->getDisableInvoices())
-            $this->invoice($order, $orderPayment, $statusMessage);
+        $order->addStatusToHistory(false, $message . '. ID de la transacción: ' . $transaction->getHtmlTxnId(), $notified);
 
         $order->save();
     }
 
     /**
-     * @param $order
-     * @param $statusDetail
+     * Generate an order invoice if possible.
+     * 
+     * @param OrderInterface $order
+     * @param string $message
      */
-    public function holdPayment($order, $statusDetail)
+    public function generateInvoice($order, $message)
     {
-        $orderStatus = $this->config->getOrderStatusInProcess();
-
-        $order->setState($orderStatus);
-        $order->addStatusToHistory($orderStatus, $statusDetail);
-        $order->save();
-
-        $this->sendOrderEmail($order, $statusDetail);
-        $order->save();
-    }
-
-    /**
-     * @param $order
-     * @param $statusMessage
-     */
-    public function cancelPayment($order, $statusMessage)
-    {
-        $orderStatus = $this->config->getOrderStatusCancelled();
-
-        $order->setState($orderStatus);
-        $order->addStatusToHistory($orderStatus, $statusMessage, true);
-
-        if ($orderStatus === 'canceled') {
-            $order->cancel();
-        }
-        $order->save();
-    }
-
-    /**
-     * @param $order
-     * @param $statusDetail
-     */
-    public function refundPayment($order, $statusDetail)
-    {
-        $statusDescription = __($statusDetail)->render();
-        $orderPayment = $order->getPayment();
-        $orderStatus = $this->config->getOrderStatusRefunded();
-
-        $orderPayment->setAdditionalInformation('error_card', $statusDescription);
-
-        $order->setState($orderStatus);
-        $order->addStatusToHistory($orderStatus, $statusDescription, true);
-
-        if ($orderStatus === 'canceled') {
-            $order->cancel();
-        }
-        $order->save();
-
-        $this->sendOrderEmail($order, $statusDescription);
-        $order->save();
-    }
-
-    /**
-     * @param $order
-     * @param $orderPayment
-     * @param $message
-     * @return bool|Invoice
-     * @throws LocalizedException
-     */
-    public function invoice($order, $orderPayment, $message)
-    {
-        if ($order->hasInvoices()) {
+        if ($order->hasInvoices() || $this->config->getDisableInvoices())
             return false;
-        }
 
-        $transaction = $this->transactionBuilder
-            ->setPayment($orderPayment)
-            ->setOrder($order)
-            ->setTransactionId($orderPayment->getTransactionId())
-            ->build(Transaction::TYPE_AUTH);
-
-        $orderPayment->addTransactionCommentsToOrder($transaction, $message);
-
-        /** @var Invoice $invoice */
-        $invoice = $orderPayment->getOrder()->prepareInvoice();
+        $payment = $order->getPayment();
+        $invoice = $order->prepareInvoice();
 
         $invoice->register();
-        if ($orderPayment->getMethodInstance()->canCapture()) {
+
+        if ($payment->getMethodInstance()->canCapture())
             $invoice->capture();
-        }
 
-        $orderPayment->getOrder()->addRelatedObject($invoice);
+        $order->addRelatedObject($invoice);
+        $invoice->addComment($message, true, true);
 
-        $invoice->addComment(
-            $message,
-            true,
-            true
-        );
-
-        $emailSent = $invoice->getEmailSent();
-        $canSendInvoice = $this->config->getCreateInvoiceEmail();
-
-        if (!$emailSent && $canSendInvoice) {
+        if (!$invoice->getEmailSent() && $this->config->getCreateInvoiceEmail()) {
             $this->invoiceSender->send($invoice);
-            $invoice->setIsCustomerNotified(true)
-                ->save();
         }
 
-        return $invoice;
+        $invoice->save();
     }
 
     /**
      * Send an email to customer with the Order information.
      * 
-     * @param Order $order
+     * @param OrderInterface $order
      * @param string $message
      */
-    public function sendOrderEmail($order ,$message = null)
+    public function sendOrderEmail($order, $message)
     {
         $emailSent       = $order->getEmailSent();
         $canSendCreation = $this->config->getCreateOrderEmail();
@@ -220,11 +176,31 @@ class OrderUpdate
 
         if (!$emailSent) {
             if ($canSendCreation) {
-                $this->orderSender->send($order);
-                $order->setIsCustomerNotified(true);
+                return $this->orderSender->send($order);
             }
         } else if ($canSendUpdate) {
-            $this->orderCommentSender->send($order, $notify = '1', str_replace("<br/>", "", $message));
+            return $this->orderCommentSender->send($order, '1', str_replace("<br/>", "", $message));
         }
+    }
+
+    /**
+     * Get the status config name from transaction status code.
+     * 
+     * @param OrderInterface $order
+     * @param int $statusCode
+     * 
+     * @return string 
+     */
+    public function getStatusConfigName($order, $statusCode)
+    {
+        if ($statusCode == 2 || $statusCode == 3 || $statusCode == 100 || $statusCode == 201) {
+            $name = 'InProcess';
+        } else if ($statusCode == 4 || $statusCode >= 200 && $statusCode < 400) {
+            $name = 'Approved';
+        } else {
+            $name = $order->getStatus() != 'pending' ? 'Cancelled' : 'Refunded';
+        }
+
+        return $name;
     }
 }
