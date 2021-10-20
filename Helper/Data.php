@@ -126,16 +126,21 @@ class Data extends AbstractHelper
             // Error?
         }
     }
+    
 
     /**
-     * Get sources with common plans from mobbex.
+     * Get sources with common plans and advanced plans filtered from mobbex.
      * @param integer|null $total
+     * @param array|null $inactivePLans
+     * @param array|null $activePlans
      */
-    public function getSources($total = null)
+    public function getSources($total = null, $inactivePlans = null, $activePlans = null)
     {
         $curl = curl_init();
 
         $data = $total ? '?total=' . $total : null;
+
+        $data .= self::getInstallmentsQuery($inactivePlans, $activePlans);
 
         curl_setopt_array($curl, [
             CURLOPT_URL => 'https://api.mobbex.com/p/sources' . $data,
@@ -206,6 +211,35 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Returns a query param with the installments of the product.
+     * @param array $inactivePlans
+     * @param array $activePlans
+     */
+    public static function getInstallmentsQuery($inactivePlans = null, $activePlans = null ) {
+        
+        $installments = [];
+        
+        //get plans
+        if($inactivePlans) {
+            foreach ($inactivePlans as $plan) {
+                $installments[] = "-$plan";
+            }
+        }
+
+        if($activePlans) {
+            foreach ($activePlans as $plan) {
+                $installments[] = "+uid:$plan";
+            } 
+        }
+
+        //Build query param
+        $query = http_build_query(['installments' => $installments]);
+        $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
+        
+        return $query;
+    }   
+
+    /**
      * Retrieve plans filter fields data for product/category settings.
      * 
      * @param int|string $id
@@ -259,3 +293,4 @@ class Data extends AbstractHelper
         return compact('commonFields', 'advancedFields', 'sourceNames');
     }
 }
+

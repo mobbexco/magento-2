@@ -274,10 +274,6 @@ class Mobbex extends AbstractHelper
                 ],
                 "platform" => $this->getPlatform(),
             ],
-            'total' => (float) $orderAmount,
-            'customer' => $customer,
-            'installments' => $this->getInstallments($orderedItems),
-            'timeout' => 5,
         ];
 
         // Init session to get event response
@@ -596,6 +592,7 @@ class Mobbex extends AbstractHelper
         // Remove duplicated plans and return
         return array_values(array_unique($installments));
     }
+
 
     /**
      * @return string

@@ -1,93 +1,254 @@
 <?php if ($block->getProduct()->isSaleable() && $block->getFinancialActive() && $block->getCuit() > 0) : ?>
-    <div class="mbbx-widget">
-        <button class="action primary" id="mbbx-open-widget"><?= __('View Installments') ?></button>
-        <div id="modal-mobbex">
-            <div id="mbbx-modal-content">
-                <span id="mbbx-close-widget">&times;</span>
-                <iframe id="mbbx-iframe" src="<?= "https://mobbex.com/p/sources/widget/arg/{$block->getCuit()}/?total={$block->getProduct()->getFinalPrice()}" ?>"></iframe>
+    <div class="mobbex-widget">
+        <div id="mbbxProductModal" class="mobbex-plans-modal">
+            <div id="mbbxProductModalContent" class="">
+                <div id="mbbxProductModalHeader">
+                    <label id="mobbex_select_title" for="mbbx-method-select">Seleccione un método de pago</label>
+                    <span id="closembbxProduct">&times;</span>
+                    <select name="mbbx-method-select" id="mbbx-method-select">
+                        <option id="0" value="0">Todos</option>
+                        <?php foreach ($block->getSources() as $source) : ?>
+                            <?php if (!empty($source['source']['name'])) : ?>
+                                <option id="{$source['source']['reference']}" value="<?= $source['source']['reference'] ?>">
+                                    <?= $source['source']['name'] ?>
+                                </option>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div id="mbbxProductModalBody">
+                    <?php foreach ($block->getSources() as $source) : ?>
+                        <?php if (!empty($source['source']['name'])) : ?>
+                            <div id="<?= $source['source']['reference'] ?>" class="mobbexSource">
+                                <p class="mobbexPaymentMethod">
+                                    <img src="https://res.mobbex.com/images/sources/<?= $source['source']['reference'] ?>.jpg"><?= $source['source']['name'] ?>
+                                </p>
+                                <?php if (!empty($source['installments']['list'])) : ?>
+                                    <table class="installmentsTable">
+                                        <?php foreach ($source['installments']['list'] as $installment) : ?>
+                                            <tr>
+                                                <td><?= $installment['name'] ?></td>
+                                                <?php if (isset($installment['totals']['total'])) : ?>
+                                                    <td class="mbbxPlansPrice"><?= $installment['totals']['total'] ?></td>
+                                                <?php else : ?>
+                                                    <td></td>
+                                                <?php endif; ?>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </table>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
-    </div>
+       
+        <button type="button" id="mbbxProductBtn">
+            <?= 'Pagar con mobbex' ?>
+        </button>
+        
 
-    <style>
-        #modal-mobbex {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: rgba(0, 0, 0, 0.4);
-            z-index: 9999;
-            display: none;
-            place-items: center;
-        }
+        <style>
+            /* CLOSE-OPEN BUTTONS */
+            #mbbxProductBtn {
+                padding: 4px 18px;
+                font-size: 16px;
+                color: #ffffff;
+                background-color: #8900ff;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: fit-content;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, .2);
+                min-height: 40px;
+            }
 
-        #mbbx-modal-content {
-            background: rgb(236, 242, 246);
-            border-radius: 10px;
-            z-index: 10000;
-            width: 100%;
-            height: 90%;
-            max-width: 600px;
-            padding: 0;
-            display: flex;
-            flex-flow: column;
-            align-items: end;
-        }
+            #closembbxProduct {
+                font-size: 35px;
+                color: rgb(0, 0, 0);
+                cursor: pointer;
+                margin-bottom: 10px;
+            }
 
-        #mbbx-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 16px;
-        }
+            .dark #closembbxProduct {
+                color: white;
+            }
 
-        #mbbx-close-widget {
-            color: #4e4e4e;
-            font-size: 28px;
-            background: white;
-            width: 38px;
-            text-align: center;
-            border-radius: 100%;
-            margin: 10px;
-            height: 38px;
-            text-decoration: none;
-        }
+            #closembbxProduct:hover {
 
-        #mbbx-close-widget:hover,
-        #mbbx-close-widget:focus {
-            color: black;
-            cursor: pointer;
-        }
+                cursor: pointer;
+            }
 
-        .scroll-lock {
-            padding-right: 17px;
-            overflow: hidden;
-        }
-    </style>
-    <script>
-        require(['jquery', 'domReady!'], function ($) {
-            let cont  = document.querySelector('.mbbx-widget')
-            let modal = document.getElementById("modal-mobbex");
-            let open  = document.getElementById('mbbx-open-widget');
-            let close = document.getElementById('mbbx-close-widget');
+            .scroll-lock {
+                padding-right: 17px;
+                overflow: hidden;
+            }
 
-            cont.addEventListener('click', function(event) {
-                event.preventDefault();
+            /* MODAL STYLES */
 
-                if (event.target == modal || event.target == close) {
-                    modal.style.display = "none";
-                } else if (event.target == open) {
-                    modal.style.display = "grid";
-                } else {
-                    return;
-                }
+            /* The Modal (background) */
+            #mbbxProductModal {
+                display: none;
+                /* Hidden by default */
+                position: fixed;
+                /* Stay in place */
+                left: 0;
+                top: 0;
+                width: 100%;
+                /* Full width */
+                height: 100%;
+                /* Full height */
+                overflow: auto;
+                /* Enable scroll if needed */
+                background-color: rgb(0, 0, 0);
+                /* Fallback color */
+                background-color: rgba(0, 0, 0, 0.4);
+                /* Black w/ opacity */
+                z-index: 9999;
+                place-items: center;
+            }
 
-                document.body.classList.toggle('scroll-lock');
+            #mbbxProductModal.active {
+                display: grid;
+            }
 
-                return false;
+            /* Modal Content/Box */
+            #mbbxProductModalContent {
+                background-color: #fefefe;
+                padding: 20px;
+                border: 1px solid #888;
+                max-width: 650px;
+                /* Could be more or less, depending on screen size */
+                height: 90%;
+                /* Full height */
+                width: 100%;
+                z-index: 10000;
+                overflow-y: scroll;
+                border-radius: 10px;
+            }
+
+            #mbbxProductModalHeader {
+                display: flex;
+                justify-content: space-between;
+                flex-flow: wrap;
+                align-items: center;
+            }
+
+            /* Modal Scrollbar */
+            #mbbxProductModalContent::-webkit-scrollbar {
+                width: 20px;
+            }
+
+            #mbbxProductModalContent::-webkit-scrollbar-track {
+                background-color: transparent;
+            }
+
+            #mbbxProductModalContent::-webkit-scrollbar-thumb {
+                background-color: #d6dee1;
+                border-radius: 20px;
+                border: 6px solid transparent;
+                background-clip: content-box;
+            }
+
+            #mbbxProductModalContent::-webkit-scrollbar-thumb:hover {
+                background-color: #a8bbbf;
+            }
+
+            .mobbexPaymentMethod {
+                display: flex;
+                align-items: center;
+                padding: 1em 0;
+                margin: 0;
+                font-weight: bold;
+            }
+
+            #mbbxProductModalBody td {
+                width: 65%;
+            }
+
+            .mobbexPaymentMethod img {
+                height: 40px;
+                border-radius: 100%;
+                margin-right: 10px;
+            }
+
+            #mbbx-method-select {
+                width: 100%;
+                min-height: 40px;
+                padding: 0.5rem;
+                border: 1px #d8d8d8 solid;
+                border-radius: 5px;
+            }
+
+            .installmentsTable {
+                margin-bottom: 20px;
+                width: 80%;
+                margin: 0 auto;
+            }
+
+            .installmentsTable tr {
+                width: 100%;
+                padding: 10px;
+                padding-left: 20px;
+            }
+
+            .installmentsTable td {
+                padding: 10px 0;
+                width: 70%;
+            }
+
+            .mbbxPlansPrice {
+                text-align: end;
+            }
+
+            /* DARK MODE  */
+            .dark #mbbxProductModalContent,
+            .dark #mbbxProductModalContent table td {
+                background-color: rgb(39, 31, 36);
+                color: rgb(226, 226, 226);
+            }
+
+            .dark #mbbxProductModalContent #mobbex_select_title,
+            .dark #mbbxProductModalContent .mobbexPaymentMethod {
+                color: rgb(226, 226, 226);
+            }
+        </style>
+
+        <script>
+            require(['domReady!'], () => {
+
+                var body = document.querySelector('body')
+                // Get modal action buttons
+                var mobbexWidget = document.querySelector('.mobbex-widget');
+                var openBtn = document.getElementById('mbbxProductBtn');
+                var closeBtn = document.querySelector('#closembbxProduct');
+                var mobbexPlansModal = document.querySelector('#mbbxProductModal');
+
+                // Add events to toggle modal
+                mobbexWidget.addEventListener('click', function(e) {
+                    e.target.preventDefault;
+                    if (e.target === closeBtn || e.target === mobbexPlansModal || e.target === openBtn) {
+                        document.querySelector('#mbbxProductModal').classList.toggle('active')
+                        document.querySelector('body').classList.toggle('scroll-lock');
+                    }
+                    return false;
+                });
+
+                // Get sources and payment method selector 
+                var sources = document.querySelectorAll('.mobbexSource');
+                var methodSelect = document.getElementById('mbbx-method-select');
+
+                // Filter payment methods in the modal
+                methodSelect.addEventListener('change', function() {
+                    for (source of sources)
+                        source.style.display = source.id != methodSelect.value && methodSelect.value != 0 ? 'none' : '';
+                });
             });
-        });
-    </script>
-<?php endif;
+        </script>
+        
+   </div>
+    <?php endif;

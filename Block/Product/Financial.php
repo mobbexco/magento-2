@@ -1,4 +1,6 @@
 <?php
+namespace Mobbex\Webpay\Block\Product;
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,7 +11,7 @@
  *
  * @author
  */
-namespace Mobbex\Webpay\Block\Product;
+
 
 use Magento\Customer\Model\Session;
 use Magento\Framework\ObjectManagerInterface;
@@ -54,16 +56,20 @@ class Financial extends \Magento\Framework\View\Element\Template
      * @param \Magento\Framework\Registry $registry
      * @param array $data
      * @param Mobbex\Webpay\Helper\Config $config
+     * @param Mobbex\Webpay\Helper\Mobex $mobbex
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\Registry $registry,
+        \Mobbex\Webpay\Helper\Data $helper,
         array $data = [],
         Config $config
     ) {
         $this->_coreRegistry = $registry;
         parent::__construct($context, $data);
         $this->config = $config;
+        $this->helper = $helper;
+        $sources = $this->getSources();
     }
 
     /**
@@ -80,7 +86,8 @@ class Financial extends \Magento\Framework\View\Element\Template
     /**
      * @return String Apikey
      */
-    public function getApikey(){
+    public function getApikey()
+    {
         return $this->config->getApiKey();
     }
 
@@ -88,7 +95,8 @@ class Financial extends \Magento\Framework\View\Element\Template
      * Return the Cuit/Tax_id using the ApiKey to request via web service
      * @return String Cuit
      */
-    public function getCuit(){
+    public function getCuit()
+    {
         $curl = curl_init();
         $cuit = "";
 
@@ -109,27 +117,51 @@ class Financial extends \Magento\Framework\View\Element\Template
         $err = curl_error($curl);
 
         curl_close($curl);
-        $cuit="";
+        $cuit = "";
         if ($err) {
             //search the cuit in the plugins config if cant get it from api request
             $cuit = $this->config->getCuit();
         } else {
             $res = json_decode($response, true);
-            if(isset($res['data']) && isset($res['data']['tax_id'])){
+            if (isset($res['data']) && isset($res['data']['tax_id'])) {
                 $cuit = $res['data']['tax_id'];
             }
         }
         return $cuit;
     }
 
+     /**
+     * Return the Sources with the filtered plans
+     * @return array
+     */
+    public function getSources() {
+
+        if(isset($this->sources)) {
+            return $this->sources;
+        }
+
+        //Get the product data
+        $product =  $this->getProduct();
+        $productId =  $product->getId();
+
+        //Get the plans for the product
+        $inactivePlans = $this->helper->mobbex->getInactivePlans($productId);
+        $activePlans = $this->helper->mobbex->getActivePlans($productId);
+        
+        //Get the sources filtered
+        $sources = $this->helper->getSources($product->getPrice(), $inactivePlans, $activePlans);
+        
+        return $this->sources = $sources;
+    }
+
     /**
      * Return true if the "Activar Info. Financiación" is set to "Si" or false if it's "No"
      * @return array
      */
-    public function getFinancialActive(){
+    public function getFinancialActive()
+    {
         return $this->config->getFinancialActive();
     }
-
 
     /**
      * Build an array with the headers for an api request
@@ -144,5 +176,4 @@ class Financial extends \Magento\Framework\View\Element\Template
             'x-access-token: ' . $this->config->getAccessToken(),
         ];
     }
-
 }
