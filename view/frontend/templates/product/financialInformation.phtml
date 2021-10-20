@@ -1,4 +1,5 @@
-    <?php if ($block->getProduct()->isSaleable() && $block->getFinancialActive() && $block->getCuit() > 0) : ?>
+<?php if ($block->getProduct()->isSaleable() && $block->getFinancialActive() && $block->getCuit() > 0) : ?>
+    <div class="mobbex-widget">
         <div id="mbbxProductModal" class="mobbex-plans-modal">
             <div id="mbbxProductModalContent" class="">
                 <div id="mbbxProductModalHeader">
@@ -42,10 +43,11 @@
                 </div>
             </div>
         </div>
-
-        <button type="button" id="mbbxProductBtn" onclick="toggleFinancialWidget(event)">
+       
+        <button type="button" id="mbbxProductBtn">
             <?= 'Pagar con mobbex' ?>
         </button>
+        
 
         <style>
             /* CLOSE-OPEN BUTTONS */
@@ -217,18 +219,21 @@
         </style>
 
         <script>
-            require(['domReady'], () => {
+            require(['domReady!'], () => {
 
                 var body = document.querySelector('body')
                 // Get modal action buttons
+                var mobbexWidget = document.querySelector('.mobbex-widget');
                 var openBtn = document.getElementById('mbbxProductBtn');
                 var closeBtn = document.querySelector('#closembbxProduct');
                 var mobbexPlansModal = document.querySelector('#mbbxProductModal');
 
                 // Add events to toggle modal
-                mobbexPlansModal.addEventListener('click', function(e) {
-                    if (e.target === closeBtn || e.target === mobbexPlansModal) {
-                        toggleFinancialWidget(e);
+                mobbexWidget.addEventListener('click', function(e) {
+                    e.target.preventDefault;
+                    if (e.target === closeBtn || e.target === mobbexPlansModal || e.target === openBtn) {
+                        document.querySelector('#mbbxProductModal').classList.toggle('active')
+                        document.querySelector('body').classList.toggle('scroll-lock');
                     }
                     return false;
                 });
@@ -243,13 +248,7 @@
                         source.style.display = source.id != methodSelect.value && methodSelect.value != 0 ? 'none' : '';
                 });
             });
-
-            function toggleFinancialWidget(e) {
-                e.target.preventDefault;
-                document.querySelector('#mbbxProductModal').classList.toggle('active')
-                document.querySelector('body').classList.toggle('scroll-lock');
-            }
-
         </script>
-
+        
+   </div>
     <?php endif;
