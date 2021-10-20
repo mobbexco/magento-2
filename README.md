@@ -27,6 +27,10 @@
 
 ## Changelog:
 
+2021-10-20: 2.2.0
+- New finance widget fully rendered from plugin
+- Fix duplicated order status updates
+
 2021-09-22: 2.1.5
 - Improve finance widget events isolation
 - Refactor and some fixes on plans filter and installments obtaining
