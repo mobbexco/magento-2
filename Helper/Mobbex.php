@@ -421,7 +421,6 @@ class Mobbex extends AbstractHelper
                 ],
                 "platform" => $this->getPlatform(),
             ],
-            'multicard' => (bool) ($this->config->getMulticard()),
             'total' => (float) $orderAmount,
             'customer' => $customer,
             'installments' => $this->getInstallments($quoteData['items'], true),
