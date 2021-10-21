@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2021-10-21: 2.2.1
+- Fix checkout body generation
+
 2021-10-20: 2.2.0
 - New finance widget fully rendered from plugin
 - Fix duplicated order status updates
