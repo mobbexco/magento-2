@@ -274,6 +274,10 @@ class Mobbex extends AbstractHelper
                 ],
                 "platform" => $this->getPlatform(),
             ],
+            'total' => (float) $orderAmount,
+            'customer' => $customer,
+            'installments' => $this->getInstallments($orderedItems),
+            'timeout' => 5,
         ];
 
         // Init session to get event response
