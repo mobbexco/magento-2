@@ -257,14 +257,14 @@ class Mobbex extends AbstractHelper
 
         // Create data
         $data = [
-            'reference' => $this->getReference($orderId),
-            'currency' => 'ARS',
-            'description' => $description,
-            'test' => (bool) ($this->config->getTestMode()),
-            'return_url' => $returnUrl,
-            'items' => $items,
-            'webhook' => $webhook,
-            "options" => [
+            'reference'    => $this->getReference($orderId),
+            'currency'     => 'ARS',
+            'description'  => $description,
+            'test'         => (bool) ($this->config->getTestMode()),
+            'return_url'   => $returnUrl,
+            'items'        => $items,
+            'webhook'      => $webhook,
+            "options"      => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
                 "domain" => $this->urlBuilder->getUrl('/'),
                 "theme" => $this->getTheme(),
@@ -274,10 +274,11 @@ class Mobbex extends AbstractHelper
                 ],
                 "platform" => $this->getPlatform(),
             ],
-            'total' => (float) $orderAmount,
-            'customer' => $customer,
+            "multicard"    => (bool) ($this->config->getMulticard()),
+            'total'        => (float) $orderAmount,
+            'customer'     => $customer,
             'installments' => $this->getInstallments($orderedItems),
-            'timeout' => 5,
+            'timeout'      => 5,
         ];
 
         // Init session to get event response
