@@ -80,7 +80,7 @@
 
                     <field id="multicard" translate="label comment" sortOrder="13" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Multicard Option</label>
+                        <label>Permitir pagos con múltiples tarjetas</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
