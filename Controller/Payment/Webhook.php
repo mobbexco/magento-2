@@ -94,7 +94,7 @@ class Webhook extends WebhookBase
             $postData = $request->getPostValue();
             $orderId  = $request->getParam('order_id');
             $quoteId  = $request->getParam('quote_id');
-            $data     = $this->formatWebhookData($postData['data'], $orderId, $this->config->getMulticard());
+            $data     = $this->formatWebhookData($postData['data'], $orderId, (bool) $this->config->getMulticard());
 
             // If order ID is empty, try to load from quote id
             if (empty($orderId) && !empty($quoteId)) {
