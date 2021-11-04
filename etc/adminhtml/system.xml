@@ -78,6 +78,12 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
+                    <field id="multicard" translate="label comment" sortOrder="13" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Permitir pagos con múltiples tarjetas</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
                     <field id="checkout_banner" translate="label comment" sortOrder="14" type="text" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Banner Checkout</label>
@@ -89,7 +95,7 @@
                             ]]>
                         </comment>
                     </field>
-
+                    
                     <field id="theme" translate="label comment" sortOrder="15" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="0">
                         <label>Tema</label>
