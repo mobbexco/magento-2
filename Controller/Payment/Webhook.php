@@ -17,6 +17,7 @@ use Psr\Log\LoggerInterface;
  */
 class Webhook extends WebhookBase
 {
+    
     /**
      * @var Context
      */
@@ -63,6 +64,7 @@ class Webhook extends WebhookBase
         OrderUpdate $orderUpdate,
         JsonFactory $resultJsonFactory,
         LoggerInterface $logger,
+        \Mobbex\Webpay\Helper\Config $config,
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
         \Mobbex\Webpay\Helper\Data $helper,
         \Mobbex\Webpay\Model\MobbexTransactionFactory $mobbexTransactionFactory
@@ -75,6 +77,7 @@ class Webhook extends WebhookBase
         $this->quoteFactory = $quoteFactory;
         $this->helper = $helper;
         $this->mobbexTransaction = $mobbexTransactionFactory->create();
+        $this->config = $config;
 
         parent::__construct($context);
     }
@@ -94,7 +97,7 @@ class Webhook extends WebhookBase
             $postData = $request->getPostValue();
             $orderId  = $request->getParam('order_id');
             $quoteId  = $request->getParam('quote_id');
-            $data     = $this->formatWebhookData($postData['data'], $orderId, (bool) $this->config->getMulticard());
+            $data     = $this->formatWebhookData($postData['data'], $orderId, $this->config->getMulticard(), false);
 
             // If order ID is empty, try to load from quote id
             if (empty($orderId) && !empty($quoteId)) {
@@ -106,8 +109,6 @@ class Webhook extends WebhookBase
                 "WebHook Controller > Data:" . json_encode(compact('orderId', 'data'), JSON_PRETTY_PRINT),
                 "mobbex_" . date('m_Y') . ".log"
             );
-
-            error_log('Data: ' . "\n" . json_encode($data, JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
 
             //Save webhook data en database
             $this->mobbexTransaction->saveTransaction($data);
@@ -154,7 +155,7 @@ class Webhook extends WebhookBase
      * @return array $data
      * 
      */
-    public function formatWebhookData($webhookData, $orderId, $multicard = false, $multivendor = false)
+    public function formatWebhookData($webhookData, $orderId, $multicard, $multivendor)
     {
         $data = [
             'order_id'           => $orderId,

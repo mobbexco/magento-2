@@ -19,23 +19,29 @@ class MobbexTransaction extends AbstractModel
     }
 
     /**
-     * Get transaction data
+     * Return webhooks transaction data from db
      * 
-     * @param int $row_id
-     * @param string $object
-     * @param string $field_name
-     * @param string $data
-     * @param string $searched_column
+     * @param int $order_id
+     * @param bool $parent 
      * 
-     * @return string
+     * @return array
      */
-    public function getTransaction($order_id)
+    public function getTransaction($order_id, $parent = false)
     {
-      
+        if($parent){
+            $collection = $this->getCollection()
+                ->addToFilter('order_id', $order_id)
+                ->addToFilter('parent', 1);
+            return !empty($collection[0]) ? $collection[0] : false;
+        }
+        $collection = $this->getCollection()
+        ->addToFilter('order_id', $order_id);
+        return !empty($collection) ? $collection : false;
+        
     }
 
     /**
-     * Saves transaction
+     * Saves webhook transaction data
      * 
      * @param array $data
      * 
@@ -43,7 +49,6 @@ class MobbexTransaction extends AbstractModel
      */
     public function saveTransaction($data)
     {
-        error_log('DATA (saveTrans): ' . "\n" . json_encode($data, JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         //Save data in mobbex transaction table
         $this->setData('order_id', $data['order_id']);
         $this->setData('parent', $data['parent']);
