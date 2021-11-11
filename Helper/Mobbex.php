@@ -219,15 +219,19 @@ class Mobbex extends AbstractHelper
         $orderedItems = $this->order->getAllVisibleItems();
 
         foreach ($orderedItems as $item) {
+
             $product = $item->getProduct();
-            $price = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
+            $price   = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
+            $entity  = $this->getEntity($product);
 
             $items[] = [
-                "image" => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
+                "image"       => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
                 "description" => $product->getName(),
-                "quantity" => $item->getQtyOrdered(),
-                "total" => round($price, 2),
+                "quantity"    => $item->getQtyOrdered(),
+                "total"       => round($price, 2),
+                "entity"      => $entity
             ];
+
         }
 
         if (!empty($this->order->getShippingDescription())) {
@@ -267,7 +271,7 @@ class Mobbex extends AbstractHelper
             "options"      => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
                 "domain" => $this->urlBuilder->getUrl('/'),
-                "theme" => $this->getTheme(),
+                "theme"  => $this->getTheme(),
                 "redirect" => [
                     "success" => true,
                     "failure" => false,
@@ -275,6 +279,8 @@ class Mobbex extends AbstractHelper
                 "platform" => $this->getPlatform(),
             ],
             "multicard"    => (bool) ($this->config->getMulticard()),
+            "multivendor"  => $this->config->getMultivendor() === 'disable' ? false : $this->config->getMultivendor(),
+            "merchants"    => $this->getMerchants($items),
             'total'        => (float) $orderAmount,
             'customer'     => $customer,
             'installments' => $this->getInstallments($orderedItems),
@@ -341,7 +347,7 @@ class Mobbex extends AbstractHelper
         // get user session data and check wallet status
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $userSession = $objectManager->get('Magento\Customer\Model\Session');
-        $is_wallet_active = ((bool) ($this->config->getWalletActive()) ) && $userSession->isLoggedIn();
+        $is_wallet_active = ((bool) ($this->config->getWalletActive()) && $userSession->isLoggedIn());
 
         // get customer data
         $customer = [
@@ -364,42 +370,48 @@ class Mobbex extends AbstractHelper
         $items = [];
 
         foreach ($quoteData['items'] as $item) {
+
+            $product = $objectManager->create('Magento\Catalog\Model\Product')->load($item['product_id']);
+            $entity  = $this->getEntity($product);
+
             $items[] = [
                 "description" => $item['name'],
-                "quantity" => $item['qty'],
-                "total" => round($item['price'], 2),
+                "quantity"    => $item['qty'],
+                "total"       => round($item['price'], 2),
+                'entity'      => $entity,
             ];
+
         }
 
         
         if ($quoteData['shipping_total'] > 0) {
             $items[] = [
                 'description' => 'Shipping Amount',
-                'total' => $quoteData['shipping_total'],
+                'total'       => $quoteData['shipping_total'],
             ];
         }elseif($quote_grand_total > $orderAmount){
             $shipping_amount = $quote_grand_total - $orderAmount;
             $items[] = [
                 'description' => 'Shipping Amount',
-                'total' => ($shipping_amount),
+                'total'       => ($shipping_amount),
             ];
             $orderAmount = $orderAmount + $shipping_amount;
         }
 
         $returnUrl = $this->urlBuilder->getUrl('webpay/payment/paymentreturn', [
-            '_secure' => true,
-            '_current' => true,
+            '_secure'      => true,
+            '_current'     => true,
             '_use_rewrite' => true,
-            '_query' => [
-                "quote_id" => $quoteData['entity_id']
+            '_query'       => [
+                "quote_id"   => $quoteData['entity_id']
             ],
         ]);
         $webhook = $this->urlBuilder->getUrl('webpay/payment/webhook', [
-            '_secure' => true,
-            '_current' => true,
+            '_secure'      => true,
+            '_current'     => true,
             '_use_rewrite' => true,
-            '_query' => [
-                "quote_id" => $quoteData['entity_id']
+            '_query'       => [
+                "quote_id"   => $quoteData['entity_id']
             ],
         ]);
 
@@ -408,29 +420,32 @@ class Mobbex extends AbstractHelper
 
         // Create data
         $data = [
-            'reference' => $this->getReference($quoteData['entity_id']),
-            'currency' => 'ARS',
-            'description' => $description,
-            // Test Mode
-            'test' => (bool) ($this->config->getTestMode()),
-            'return_url' => $returnUrl,
-            'items' => $items,
-            'webhook' => $webhook,
-            "options" => [
-                "button" => (bool) ($this->config->getEmbedPayment()),
-                "domain" => $domain,
-                "theme" => $this->getTheme(),
-                "redirect" => [
-                    "success" => true,
-                    "failure" => false,
+            'reference'    => $this->getReference($quoteData['entity_id']),
+            'currency'     => 'ARS',
+            'description'  => $description,
+            // Test Mode 
+            'test'         => (bool) ($this->config->getTestMode()),
+            'return_url'   => $returnUrl,
+            'items'        => $items,
+            'webhook'      => $webhook,
+            "options"      => [
+                "button"     => (bool) ($this->config->getEmbedPayment()),
+                "domain"     => $domain,
+                "theme"      => $this->getTheme(),
+                "redirect"   => [
+                    "success"  => true,
+                    "failure"  => false,
                 ],
-                "platform" => $this->getPlatform(),
+                "platform"   => $this->getPlatform(),
             ],
-            'total' => (float) $orderAmount,
-            'customer' => $customer,
+            "multicard"    => (bool) ($this->config->getMulticard()),
+            "multivendor"  => $this->config->getMultivendor() === 'disable' ? false : $this->config->getMultivendor(),
+            "merchants"    => $this->getMerchants($items),
+            'total'        => (float) $orderAmount,
+            'customer'     => $customer,
             'installments' => $this->getInstallments($quoteData['items'], true),
-            'timeout' => 5,
-            'wallet' => ($is_wallet_active),
+            'timeout'      => 5,
+            'wallet'       => ($is_wallet_active),
         ];
 
         if($this->config->getDebugMode()) {
@@ -451,7 +466,7 @@ class Mobbex extends AbstractHelper
         ]);
         
         $response = curl_exec($curl);
-        $err = curl_error($curl);
+        $err      = curl_error($curl);
 
         curl_close($curl);
 
@@ -506,8 +521,8 @@ class Mobbex extends AbstractHelper
     private function getPlatform()
     {
         return [
-            "name" => "magento_2",
-            "version" => Mobbex::VERSION,
+            "name"             => "magento_2",
+            "version"          => Mobbex::VERSION,
             "platform_version" => $this->productMetadata->getVersion() // TODO: test this
         ];
     }
@@ -605,6 +620,41 @@ class Mobbex extends AbstractHelper
     public function getReference($orderId)
     {
         return 'mag2_order_'.$orderId.'_time_'.time();
+	}
+  
+    /**
+     * Get yhe entity of a product
+     * @param object $product
+     * @return string $entity
+     */
+    public function getEntity($product)
+    {
+        if($this->customFields->getCustomField($product->getId(), 'product', 'entity'))
+            return $this->customFields->getCustomField($product->getId(), 'product', 'entity');
+
+        $categories = $product->getCategoryIds();
+        if($categories)
+            return $this->customFields->getCustomField($categories[0], 'category', 'entity'); 
+
+        return '';
+	}
+
+    /**
+     * Get the merchants from item list.
+     * @param array
+     * @return array
+     */
+    public function getMerchants($items)
+    {
+        $merchants = [];
+
+        //Get the merchants from items list
+        foreach ($items as $item) {
+            if (!empty($item['entity']))
+                $merchants[] = ['uid' => $item['entity']];
+        }
+
+        return $merchants;
 	}
 
     /**

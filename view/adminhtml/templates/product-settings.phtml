@@ -4,4 +4,12 @@
 <?php
 extract($this->helper->getPlansFilterFields(isset($this->params['id']) ? $this->params['id'] : 0));
 $form = 'product_form';
-include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');
+$entity = $this->helper->getEntity(isset($this->params['id']) ? $this->params['id'] : 0, 'product');
+include $this->getTemplateFile('Mobbex_Webpay::prod&cat-config.phtml');
+?>
+
+
+<?php
+
+
+

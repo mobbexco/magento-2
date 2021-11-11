@@ -120,6 +120,12 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
+                    <field id="multivendor" translate="label comment" sortOrder="19" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Allow multiple vendors</label>
+                        <source_model>Mobbex\Webpay\Model\Config\Source\MultivendorSelect</source_model>
+                    </field>
+
                     <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>

@@ -35,7 +35,10 @@ class ProductSaveObserver implements ObserverInterface
             }
         }
 
+        $entity = $this->params['entity'] ?: '';
+
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'common_plans', serialize($commonPlans));
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'advanced_plans', serialize($advancedPlans));
+        $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'entity', $entity);
     }
 }
