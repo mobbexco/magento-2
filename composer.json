@@ -20,7 +20,8 @@
         }
     ],
     "require": {
-        "magento/magento-composer-installer": "*"
+        "magento/magento-composer-installer": "*",
+        "laminas/laminas-log": "*"
     },
     "autoload": {
         "files": [
