@@ -31,6 +31,7 @@ class CustomConfigProvider implements ConfigProviderInterface
     ) {
         $this->_helper = $helper;
         $this->config = $config;
+        $this->checkoutData = $this->_helper->getCheckoutMockup();
     }
 
     /**
@@ -38,6 +39,7 @@ class CustomConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
+        $checkoutData = $this->checkoutData;
         $config = [
             'payment' => [
                 'webpay' => [
@@ -45,11 +47,14 @@ class CustomConfigProvider implements ConfigProviderInterface
                         'embed' => $this->config->getEmbedPayment(),
                         'wallet' => $this->config->getWalletActive()
                     ],
-                    'banner' => $this->config->getBannerCheckout()
+                    'banner'         => $this->config->getBannerCheckout(),
+                    'paymentMethods' => isset($this->checkoutData['paymentMethods']) ? $this->checkoutData['paymentMethods'] : [],
                 ]
             ]
         ];
 
         return $config;
     }
+
+
 }

@@ -1,3 +1,4 @@
+
 let embed = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
 let wallet = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
 // for wallet usage
@@ -11,7 +12,27 @@ let creditCards = [];
 // define global boolean variable to check if cards where alredy rendered
 let rendered = false;
 let walletReturnUrl;
+//Payment methods subdivision 
+let methods = window.checkoutConfig.payment.webpay['paymentMethods'];
+let mbbxItems = [];
+let mbbxCurrentMehtod = false;
 
+methods.forEach(method => {
+    mbbxItems.push(
+        {
+            id : method['subgroup'],
+            value : method['group'] + ':' + method['subgroup'],
+            name : method['subgroup_title'],
+            image : method['subgroup_logo'],
+        }
+    );
+});
+
+require(['jquery'], function($){
+    $(document).on('click', '.mbbx-payment-method-input', function(e) {
+        mbbxCurrentMehtod = $(this).attr('value');
+    });
+  });
 
 /**
  * Creates a custom Mobbex checkout using 
@@ -192,9 +213,6 @@ function executeWallet(checkoutBuilder) {
     }   
 } 
 
-
-
-
 // Add Mobbex script
 var script = document.createElement('script');
 script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.20.js`;
@@ -210,12 +228,18 @@ function htmlDecode(input)
 
 if (embed) {
 
+    let $ = jQuery;
+    $(document).on( "click", '.mbbx-payment-method-input', function() {
+        console.log( $( this ).text() );
+      });
+
     /**
      * Create checkout and init Mobbex Embed
      *  
      * */ 
     function createCheckoutEmbed(url)
     {
+
         jQuery.ajax({
             url: url,
             success: function(response) {
@@ -225,6 +249,7 @@ if (embed) {
                 var options = {
                     id: checkoutId,
                     type: 'checkout',
+                    paymentMethod: mbbxCurrentMehtod || '',
 
                     onResult: (data) => {
                         location.href = returnUrl + '&status=' + data.status.code
@@ -255,7 +280,6 @@ if (embed) {
 
 }
     
-
 define(
     [
         'jquery',
@@ -285,7 +309,7 @@ define(
                     createCheckoutEmbed(urlBuilder.build('webpay/payment/embedpayment/'));
                 }else{
                     window.location.replace(
-                        urlBuilder.build('webpay/payment/redirect/')
+                        urlBuilder.build('webpay/payment/redirect?paymentMethod=' + mbbxCurrentMehtod )
                     );
                 }
             },
@@ -301,7 +325,12 @@ define(
                     return mobbexConfig['banner'];
                 }
                 return '';
+            },
+            getPaymentMethods: function () {
+                let items = mbbxItems;
+                return items;
             }
         });
     }
 );
+

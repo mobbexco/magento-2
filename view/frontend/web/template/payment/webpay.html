@@ -23,6 +23,27 @@
           <!-- ko template: getTemplate() --><!-- /ko -->
           <!--/ko-->
         </div>
+        <div class="mobbex-payment-methods" style="margin-bottom: 10px;">
+            <h2>Selecciona un medio de pago.</h2>
+            <!-- ko foreach: { data: getPaymentMethods(), as: 'item' } -->
+            <div class="mbbx-payment-method-title field choice"
+                 style="display: flex;
+                        align-items: center;
+                        padding: 10px;">
+
+                <input type="radio"
+                       class="mbbx-payment-method-input"
+                       name="mbbx-method"
+                       data-bind="attr: {'id': item.id, value: item.value}"/>
+
+                <label data-bind="attr: {'for': item.id}" class="label" style="display: flex; align-items: center;">
+                    <img data-bind="attr: {'src': item.image}" alt="mobbex metodos de pago" style="width: 50px; margin-right: 10px;">
+                    <span data-bind="text: item.name" style="font-weight: bold;"></span>
+                </label>
+
+            </div>
+            <!-- /ko -->
+        </div>
         <div class="actions-toolbar">
             <div class="primary">
                 <button class="action primary checkout"
