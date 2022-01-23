@@ -1,5 +1,4 @@
 .DS_Store
-*.sh
 mobbex*.zip
 /.vscode
 /.idea
