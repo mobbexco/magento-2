@@ -62,6 +62,7 @@ class Financial extends \Magento\Framework\View\Element\Template
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\Registry $registry,
         \Mobbex\Webpay\Helper\Data $helper,
+        \Magento\Framework\Pricing\Helper\Data $priceHelper,
         array $data = [],
         Config $config
     ) {
@@ -69,6 +70,7 @@ class Financial extends \Magento\Framework\View\Element\Template
         parent::__construct($context, $data);
         $this->config = $config;
         $this->helper = $helper;
+        $this->priceHelper = $priceHelper;
         $sources = $this->getSources();
     }
 
