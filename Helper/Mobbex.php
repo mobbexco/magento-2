@@ -518,6 +518,7 @@ class Mobbex extends AbstractHelper
             'content-type: application/json',
             'x-api-key: ' . $this->config->getApiKey(),
             'x-access-token: ' . $this->config->getAccessToken(),
+            'x-ecommerce-agent: Magento/' . $this->productMetadata->getVersion() . ' Plugin/' . $this::VERSION,
         ];
     }
 

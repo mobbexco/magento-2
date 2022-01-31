@@ -29,7 +29,7 @@
                                             <tr>
                                                 <td><?= $installment['name'] ?></td>
                                                 <?php if (isset($installment['totals']['total'])) : ?>
-                                                    <td class="mbbxPlansPrice"><?= $installment['totals']['total'] ?></td>
+                                                    <td class="mbbxPlansPrice"><?= $block->priceHelper->currency($installment['totals']['total'], true, false) ?></td>
                                                 <?php else : ?>
                                                     <td></td>
                                                 <?php endif; ?>
