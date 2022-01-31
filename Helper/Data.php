@@ -90,10 +90,10 @@ class Data extends AbstractHelper
      */
     public static function log($mensaje, $archivo)
     {
-        $writer = new Stream(BP . '/var/log/' . $archivo);
-        $logger = new Logger();
-        $logger->addWriter($writer);
-        $logger->info($mensaje);
+        // $writer = new Stream(BP . '/var/log/' . $archivo);
+        // $logger = new Logger();
+        // $logger->addWriter($writer);
+        // $logger->info($mensaje);
     }
 
     /**
@@ -113,9 +113,10 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get a Mockup checkout that serves for extract some specific data.
      * @return bool
      */
-    public function getCheckoutWallet($quoteData)
+    public function getCheckoutMockup($quoteData)
     {
         // get checkout object
         $checkout = $this->mobbex->createCheckoutFromQuote($quoteData);
@@ -293,48 +294,6 @@ class Data extends AbstractHelper
         return compact('commonFields', 'advancedFields', 'sourceNames');
     }
 
-    /**
-     * Return a mockup checkout.
-     * 
-     * 
-     * @return array
-     */
-    public function getCheckoutMockup()
-    {
-        $curl = curl_init();
-
-        $data = [
-            'reference' => hash('md5', random_int(0, 100000) + random_int(0, 100000)),
-            'currency' => 'ARS',
-            'description' => 'description',
-            'total' => 100.00
-        ];
-
-        curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.mobbex.com/p/checkout",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => $this->mobbex->getHeaders(),
-        ]);
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-
-        if ($err) {
-            Data::log("Mockup Checkout Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
-            return false;
-        } else {
-            $res = json_decode($response, true);
-            Data::log("Mockup Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log"); 
-            return $res['data'];
-        }
-    }
-
+   
 }
 

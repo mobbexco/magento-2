@@ -64,8 +64,6 @@ class WalletPayment extends Action
             array_push($itemsOrden , ["product_id" => $item->product_id, "qty" => $item->qty,"price" => $item->price, "name" => $item->name]);
         }
 
-        
-        
         $quoteData=[
             'entity_id' => $quoteData->entity_id,
             'customer_id' => $customerData->id,
@@ -88,13 +86,13 @@ class WalletPayment extends Action
         ];
 
         //Make the Mobbex checkout using quote data
-        $checkout = $this->_helper->getCheckoutWallet($quoteData);
+        $checkout = $this->_helper->getCheckoutMockup($quoteData);
         $vac = [ 
-            'returnUrl' => $checkout['return_url'], 
-            'checkoutId' => $checkout['id'],
-            //array with the stored credit cards
-            'wallet' => $checkout['wallet'],
-            'paymentUrl' => $checkout['url'],
+            'returnUrl'      => $checkout['return_url'], 
+            'checkoutId'     => $checkout['id'],
+            'paymentMethods' => $checkout['paymentMethods'],
+            'wallet'         => $checkout['wallet'],
+            'paymentUrl'     => $checkout['url'],
         ];
 
         $resultJson->setData($vac);
