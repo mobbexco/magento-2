@@ -7,7 +7,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_API_KEY = 'payment/webpay/api_key';
     const PATH_ACCESS_TOKEN = 'payment/webpay/access_token';
 
-    const PATH_TAX_ID = 'payment/webpay/tax_id';
+    const PATH_ENTITY_DATA = 'payment/webpay/entity';
     const PATH_FINANCIAL_ACTIVE = 'payment/webpay/financial_active';
 
     const PATH_TEST_MODE = 'payment/webpay/test_mode';
@@ -32,6 +32,25 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_WALLET_ACTIVE = 'payment/webpay/checkout/wallet_active';
 
     const PATH_OWN_DNI_FIELD = 'payment/webpay/checkout/own_dni_field';
+
+    public function __construct(
+        \Magento\Framework\App\Helper\Context $context,
+        \Magento\Framework\App\Config\Storage\WriterInterface $configWriter
+    ) {
+        parent::__construct($context);
+        $this->configWriter = $configWriter;
+    }
+
+    /**
+     * Save a config value to db.
+     * 
+     * @param string $path Config identifier.
+     * @param mixed $value Value to set.
+     */
+    public function save($path, $value)
+    {
+        $this->configWriter->save($path, $value);
+    }
 
     public function getBannerCheckout($store = null)
     {
@@ -177,10 +196,10 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-    public function getCuit($store = null)
+    public function getEntityData($store = null)
     {
         return $this->scopeConfig->getValue(
-            self::PATH_TAX_ID,
+            self::PATH_ENTITY_DATA,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
