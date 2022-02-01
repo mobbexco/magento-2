@@ -9,6 +9,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
     const PATH_ENTITY_DATA = 'payment/webpay/entity';
     const PATH_FINANCIAL_ACTIVE = 'payment/webpay/financial_active';
+    const PATH_FINANCE_WIDGET_ON_CART = 'payment/webpay/finance_widget_on_cart';
 
     const PATH_TEST_MODE = 'payment/webpay/test_mode';
     const PATH_DEBUG_MODE = 'payment/webpay/debug_mode';
@@ -237,6 +238,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_DISABLE_INVOICES,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getFinanceWidgetOnCart($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_FINANCE_WIDGET_ON_CART,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
