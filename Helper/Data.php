@@ -129,47 +129,91 @@ class Data extends AbstractHelper
     
 
     /**
-     * Get sources with common plans and advanced plans filtered from mobbex.
-     * @param integer|null $total
-     * @param array|null $inactivePLans
-     * @param array|null $activePlans
+     * Get sources with common and advanced plans from mobbex.
+     * 
+     * @param int|float|null $total
+     * @param array $installments
+     * 
+     * @return array
      */
-    public function getSources($total = null, $inactivePlans = null, $activePlans = null)
+    public function getSources($total = null, $installments = [])
     {
+        $entityData = $this->getEntityData();
+
+        if (!$entityData)
+            return [];
+
         $curl = curl_init();
 
-        $data = $total ? '?total=' . $total : null;
-
-        $data .= self::getInstallmentsQuery($inactivePlans, $activePlans);
-
         curl_setopt_array($curl, [
-            CURLOPT_URL => 'https://api.mobbex.com/p/sources' . $data,
+            CURLOPT_URL            => "https://api.mobbex.com/p/sources/list/$entityData[countryReference]/$entityData[tax_id]" . ($total ? "?total=$total" : ''),
+            CURLOPT_HTTPHEADER     => $this->mobbex->getHeaders(),
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_HTTPHEADER => $this->mobbex->getHeaders(),
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'POST',
+            CURLOPT_POSTFIELDS     => json_encode(compact('installments')),
         ]);
 
         $response = curl_exec($curl);
-        $err = curl_error($curl);
+        $error    = curl_error($curl);
 
         curl_close($curl);
 
-        if ($err) {
-            d("cURL Error #:" . $err);
-        } else {
-            $response = json_decode($response, true);
-            $data = (isset($response['data'])?$response['data']:'');
+        if ($error)
+            self::log('Sources Obtaining cURL Error' . $error, "mobbex_error_" . date('m_Y') . ".log");
 
-            if (!empty($data)) {
-                return $data;
-            }
-        }
+        $result = json_decode($response, true);
 
-        return [];
+        if (empty($result['result']))
+            self::log('Sources Obtaining Error', "mobbex_error_" . date('m_Y') . ".log");
+
+        return isset($result['data']) ? $result['data'] : [];
+    }
+
+    /**
+     * Get entity data from Mobbex API or db if possible.
+     * 
+     * @return string[] 
+     */
+    public function getEntityData()
+    {
+        // First, try to get from db
+        $entityData = $this->mobbex->config->getEntityData();
+
+        if ($entityData)
+            return json_decode($entityData, true);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL            => "https://api.mobbex.com/p/entity/validate",
+            CURLOPT_HTTPHEADER     => $this->mobbex->getHeaders(),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING       => "",
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'GET',
+        ]);
+
+        $response = curl_exec($curl);
+        $error    = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($error)
+            return self::log('Entity Data Obtaining cURL Error' . $error, "mobbex_error_" . date('m_Y') . ".log");
+
+        $res = json_decode($response, true);
+
+        if (empty($res['data']))
+            return self::log('Entity Data Obtaining Error', "mobbex_error_" . date('m_Y') . ".log");
+
+        // Save data
+        $this->mobbex->config->save($this->mobbex->config::PATH_ENTITY_DATA, json_encode($res['data']));
+
+        return $res['data'];
     }
 
     /**
@@ -209,35 +253,6 @@ class Data extends AbstractHelper
 
         return [];
     }
-
-    /**
-     * Returns a query param with the installments of the product.
-     * @param array $inactivePlans
-     * @param array $activePlans
-     */
-    public static function getInstallmentsQuery($inactivePlans = null, $activePlans = null ) {
-        
-        $installments = [];
-        
-        //get plans
-        if($inactivePlans) {
-            foreach ($inactivePlans as $plan) {
-                $installments[] = "-$plan";
-            }
-        }
-
-        if($activePlans) {
-            foreach ($activePlans as $plan) {
-                $installments[] = "+uid:$plan";
-            } 
-        }
-
-        //Build query param
-        $query = http_build_query(['installments' => $installments]);
-        $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
-        
-        return $query;
-    }   
 
     /**
      * Retrieve plans filter fields data for product/category settings.

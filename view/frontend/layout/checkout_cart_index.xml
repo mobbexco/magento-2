@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceContainer name="product.info.extrahint">
+        <referenceContainer name="checkout.cart.methods">
             <block class="Mobbex\Webpay\Block\FinanceWidget"
                 name="mbbx.finance.widget"
                 cacheable="false"
                 template="Mobbex_Webpay::finance-widget.phtml"
-                ifconfig="payment/webpay/financial_active"/>
+                ifconfig="payment/webpay/finance_widget_on_cart"/>
         </referenceContainer>
     </body>
 </page>

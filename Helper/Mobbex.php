@@ -580,8 +580,10 @@ class Mobbex extends AbstractHelper
 
         // Get plans from order products
         foreach ($items as $item) {
-            $inactivePlans = array_merge($inactivePlans, $this->getInactivePlans($isQuote ? $item['product_id'] : $item->getProductId()));
-            $activePlans   = array_merge($activePlans, $this->getActivePlans($isQuote ? $item['product_id'] : $item->getProductId()));
+            $id = is_string($item) ? $item : ($isQuote ? $item['product_id'] : $item->getProductId());
+
+            $inactivePlans = array_merge($inactivePlans, $this->getInactivePlans($id));
+            $activePlans   = array_merge($activePlans, $this->getActivePlans($id));
         }
 
         // Add inactive (common) plans to installments
