@@ -47,9 +47,9 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         $product = $this->registry->registry('product');
         $quote   = $checkoutSession->getQuote();
 
-        // Exit if options are disabled or product is not salable
-        if ($action == 'catalog_product_view' ? !$this->config->getFinancialActive() || !$product->isSaleable() : !$this->config->getFinanceWidgetOnCart())
-            return $this->getLayout()->unsetElement($this->getNameInLayout());
+        // Exit if quote is empty or product cannot be sold
+        if ($action == 'catalog_product_view' ? !$product->isSaleable() : !$quote->hasItems())
+            return $this->getLayout()->unsetElement('mbbx.finance.widget');
 
         $this->total    = $action == 'catalog_product_view' ? $product->getPrice() : $quote->getGrandTotal();
         $this->products = $action == 'catalog_product_view' ? [$product->getId()] : $quote->getAllVisibleItems();

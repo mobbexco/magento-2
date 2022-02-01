@@ -44,7 +44,7 @@
 
                 <field id="financial_active" translate="label comment" sortOrder="8" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Mostrar financiación en el producto.</label>
+                    <label>Mostrar financiación en productos.</label>
                     <comment>Mostrar el botón de financiación en la página de cada producto.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>

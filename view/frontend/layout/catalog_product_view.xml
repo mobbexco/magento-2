@@ -3,9 +3,10 @@
     <body>
         <referenceContainer name="product.info.extrahint">
             <block class="Mobbex\Webpay\Block\FinanceWidget"
-                name="product.info.financialinfo"
-                cacheable="true"
-                template="Mobbex_Webpay::finance-widget.phtml"/>
+                name="mbbx.finance.widget"
+                cacheable="false"
+                template="Mobbex_Webpay::finance-widget.phtml"
+                ifconfig="payment/webpay/financial_active"/>
         </referenceContainer>
     </body>
 </page>

@@ -3,9 +3,10 @@
     <body>
         <referenceContainer name="checkout.cart.methods">
             <block class="Mobbex\Webpay\Block\FinanceWidget"
-                name="cart.finance.widget"
-                cacheable="true"
-                template="Mobbex_Webpay::finance-widget.phtml"/>
+                name="mbbx.finance.widget"
+                cacheable="false"
+                template="Mobbex_Webpay::finance-widget.phtml"
+                ifconfig="payment/webpay/finance_widget_on_cart"/>
         </referenceContainer>
     </body>
 </page>
