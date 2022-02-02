@@ -102,9 +102,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ->addColumn('data', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
             ), 'Data')
-            ->addColumn('risk_analysis', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-            ), 'Risk analysis')
             ->addColumn('created', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
             ), 'Created')
