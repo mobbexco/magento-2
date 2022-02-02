@@ -180,7 +180,7 @@ class Webhook extends WebhookBase
             'entity_uid'         => isset($webhookData['entity']['uid']) ? $webhookData['entity']['uid'] : '',
             'customer'           => isset($webhookData['customer']) ? json_encode($webhookData['customer']) : '',
             'checkout_uid'       => isset($webhookData['checkout']['uid']) ? $webhookData['checkout']['uid'] : '',
-            'total'              => isset($res['payment']['total']) ? $res['payment']['total'] : '',
+            'total'              => isset($webhookData['payment']['total']) ? $webhookData['payment']['total'] : '',
             'currency'           => isset($webhookData['checkout']['currency']) ? $webhookData['checkout']['currency'] : '',
             'risk_analysis'      => isset($webhookData['payment']['riskAnalysis']['level']) ? $webhookData['payment']['riskAnalysis']['level'] : '',
             'data'               => json_encode($webhookData),
