@@ -180,8 +180,7 @@ class Webhook extends WebhookBase
             'entity_uid'         => isset($webhookData['entity']['uid']) ? $webhookData['entity']['uid'] : '',
             'customer'           => isset($webhookData['customer']) ? json_encode($webhookData['customer']) : '',
             'checkout_uid'       => isset($webhookData['checkout']['uid']) ? $webhookData['checkout']['uid'] : '',
-            'total'              => isset($webhookData['checkout']['total']) ? $webhookData['checkout']['total'] : '',
-            'total_webhook'      => isset($webhookData['payment']['total']) ? $webhookData['payment']['total'] : '',
+            'total'              => isset($res['payment']['total']) ? $res['payment']['total'] : '',
             'currency'           => isset($webhookData['checkout']['currency']) ? $webhookData['checkout']['currency'] : '',
             'risk_analysis'      => isset($webhookData['payment']['riskAnalysis']['level']) ? $webhookData['payment']['riskAnalysis']['level'] : '',
             'data'               => json_encode($webhookData),
@@ -204,9 +203,8 @@ class Webhook extends WebhookBase
      */
     public function isParent($operationType, $multicard, $multivendor)
     {
-        if ($operationType === "payment.v2") {
-            if ($multicard || $multivendor)
-                return false;
+        if ($operationType === "payment.v2" && ($multicard || $multivendor)) {
+            return false;
         }
         return true;
     }

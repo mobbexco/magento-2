@@ -15,7 +15,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $connection = $setup->getConnection();
 
         /* Add mobbex transaction table */
-
         if (!$setup->tableExists('mobbex_transaction')) {
             $table = $connection
             ->newTable($setup->getTable('mobbex_transaction'))
@@ -25,7 +24,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'nullable'  => false,
                 'primary'   => true,
                 ), 'Id')
-            ->addColumn('order_id', Table::TYPE_INTEGER, null, array(
+            ->addColumn('order_id', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Order id')
             ->addColumn('parent', Table::TYPE_BOOLEAN, null, array(
@@ -91,12 +90,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ->addColumn('checkout_uid', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Checkout uid')
-            ->addColumn('total', Table::TYPE_DECIMAL, null, array(
+            ->addColumn('total', Table::TYPE_DECIMAL, '18,2', array(
                 'nullable'  => false,
                 ), 'Total')
-            ->addColumn('total_webhooks', Table::TYPE_DECIMAL, null, array(
-                'nullable'  => false,
-                ), 'Total webhook')
             ->addColumn('currency', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Currency')
