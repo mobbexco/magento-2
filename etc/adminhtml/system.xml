@@ -44,18 +44,19 @@
 
                 <field id="financial_active" translate="label comment" sortOrder="8" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Activar Info. Financiación</label>
-                    <comment>Activar botón de "Ver Financiaciones" en productos</comment>
+                    <label>Mostrar financiación en productos.</label>
+                    <comment>Mostrar el botón de financiación en la página de cada producto.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="tax_id" translate="label comment" sortOrder="9" type="text" showInDefault="1"
+                <field id="finance_widget_on_cart" translate="label comment" sortOrder="9" type="select" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Cuit</label>
-                    <comment>Cuit para mostrar las financiaciones de productos</comment>
+                    <label>Mostrar financiación en el carrito.</label>
+                    <comment>Mostrar el botón de financiación en la página del carrito.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="title" translate="label comment" sortOrder="10" type="text" showInDefault="1"
+                <field id="title" translate="label comment" sortOrder="11" type="text" showInDefault="1"
                     showInWebsite="1" showInStore="1">
                     <label>Título en el checkout</label>
                 </field>

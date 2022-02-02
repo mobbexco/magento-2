@@ -27,6 +27,9 @@
 
 ## Changelog:
 
+2021-11-30: 2.2.2
+- Require laminas log package to support new magento versions
+
 2021-10-21: 2.2.1
 - Fix checkout body generation
 
