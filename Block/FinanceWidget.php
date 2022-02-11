@@ -51,7 +51,7 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         if ($action == 'catalog_product_view' ? !$product->isSaleable() : !$quote->hasItems())
             return $this->getLayout()->unsetElement('mbbx.finance.widget');
 
-        $this->total    = $action == 'catalog_product_view' ? $product->getPrice() : $quote->getGrandTotal();
+        $this->total    = $action == 'catalog_product_view' ? $product->getFinalPrice() : $quote->getGrandTotal();
         $this->products = $action == 'catalog_product_view' ? [$product->getId()] : $quote->getAllVisibleItems();
         $this->sources  = $this->helper->getSources($this->total, $this->helper->mobbex->getInstallments($this->products));
     }
