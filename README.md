@@ -27,6 +27,12 @@
 
 ## Changelog:
 
+2021-02-11: 2.3.0
+- Add option to show finance widget on cart page
+- Improve widget view and show installments amount
+- Format widget prices using platform configuration
+- Fix product price obtained in finance widget
+
 2021-11-30: 2.2.2
 - Require laminas log package to support new magento versions
 
