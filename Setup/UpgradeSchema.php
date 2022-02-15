@@ -72,7 +72,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ->addColumn('installment_count', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Installment count')
-            ->addColumn('Source_url', Table::TYPE_TEXT, null, array(
+            ->addColumn('source_url', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Source url')
             ->addColumn('cardholder', Table::TYPE_TEXT, null, array(
