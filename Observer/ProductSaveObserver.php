@@ -22,7 +22,9 @@ class ProductSaveObserver implements ObserverInterface
      */
     public function execute($observer)
     {
-        $commonPlans = $advancedPlans = [];
+        $commonPlans      = $advancedPlans = [];
+        $is_subscription  = $this->params['enable_sub'] ?: 'no';
+        $subscription_uid = $this->params['sub_uid'] ?: '';
 
         // Get plans selected
         foreach ($this->params as $key => $value) {
@@ -37,5 +39,7 @@ class ProductSaveObserver implements ObserverInterface
 
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'common_plans', serialize($commonPlans));
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'advanced_plans', serialize($advancedPlans));
+        $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'is_subscription', $is_subscription);
+        $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'subscription_uid', $subscription_uid);
     }
 }

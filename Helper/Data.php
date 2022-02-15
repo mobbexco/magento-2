@@ -307,5 +307,17 @@ class Data extends AbstractHelper
 
         return compact('commonFields', 'advancedFields', 'sourceNames');
     }
+
+    /**
+     * Retrieve product subscription data.
+     * 
+     * @param int|string $id
+     * 
+     * @return array
+     */
+    public function getProductSubscription($id)
+    {
+        $this->mobbex->getProductSubscription($id);
+    }
 }
 

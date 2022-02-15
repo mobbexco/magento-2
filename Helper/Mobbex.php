@@ -221,13 +221,21 @@ class Mobbex extends AbstractHelper
         foreach ($orderedItems as $item) {
             $product = $item->getProduct();
             $price = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
+            $subscription = $this->getProductSubscription($product->getId());
 
-            $items[] = [
-                "image" => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
-                "description" => $product->getName(),
-                "quantity" => $item->getQtyOrdered(),
-                "total" => round($price, 2),
-            ];
+            if($subscription['enable'] === 'yes') {
+                $items[] = [
+                    'type'      => 'subscription',
+                    'reference' => $subscription['uid']
+                ];
+            } else {
+                $items[] = [
+                    "image" => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
+                    "description" => $product->getName(),
+                    "quantity" => $item->getQtyOrdered(),
+                    "total" => round($price, 2),
+                ];
+            }
         }
 
         if (!empty($this->order->getShippingDescription())) {
@@ -364,14 +372,23 @@ class Mobbex extends AbstractHelper
         $items = [];
 
         foreach ($quoteData['items'] as $item) {
-            $items[] = [
-                "description" => $item['name'],
-                "quantity" => $item['qty'],
-                "total" => round($item['price'], 2),
-            ];
+
+            $subscription = $this->getProductSubscription($item['id']);
+
+            if($subscription['enable'] === 'yes') {
+                $items[] = [
+                    'type'      => 'subscription',
+                    'reference' => $subscription['uid']
+                ];
+            } else {
+                $items[] = [
+                    "description" => $item['name'],
+                    "quantity" => $item['qty'],
+                    "total" => round($item['price'], 2),
+                ];
+            }
         }
 
-        
         if ($quoteData['shipping_total'] > 0) {
             $items[] = [
                 'description' => 'Shipping Amount',
@@ -656,5 +673,20 @@ class Mobbex extends AbstractHelper
         $this->session->setMobbexData(null);
 
         return $response;
+    }
+
+    /**
+     * Retrieve product subscription data.
+     * 
+     * @param int|string $id
+     * 
+     * @return array
+     */
+    public function getProductSubscription($id)
+    {
+        $is_subscription  = $this->customFields->getCustomField($id, 'product', 'is_subscription') ?: false;
+        $subscription_uid = $this->customFields->getCustomField($id, 'product', 'subscription_uid') ?: '';
+
+        return ['enable' => $is_subscription, 'uid' => $subscription_uid];
     }
 }

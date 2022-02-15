@@ -4,4 +4,6 @@
 <?php
 extract($this->helper->getPlansFilterFields(isset($this->params['id']) ? $this->params['id'] : 0));
 $form = 'product_form';
+$subscription = $this->helper->getProductSubscription(isset($this->params['id']) ? $this->params['id'] : 0, 'product');
+$isProduct = true;
 include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');
