@@ -14,6 +14,104 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $setup->startSetup();
         $connection = $setup->getConnection();
 
+        /* Add mobbex transaction table */
+        if (!$setup->tableExists('mobbex_transaction')) {
+            $table = $connection
+            ->newTable($setup->getTable('mobbex_transaction'))
+            ->addColumn('id', Table::TYPE_INTEGER, null, array(
+                'identity'  => true,
+                'unsigned'  => true,
+                'nullable'  => false,
+                'primary'   => true,
+                ), 'Id')
+            ->addColumn('order_id', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Order id')
+            ->addColumn('parent', Table::TYPE_BOOLEAN, null, array(
+                'nullable'  => false,
+                ), 'Parent')
+            ->addColumn('operation_type', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Operation type')
+            ->addColumn('payment_id', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Payment id')
+            ->addColumn('description', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Description')
+            ->addColumn('status_code', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Status code')
+            ->addColumn('status_message', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Status message')
+            ->addColumn('source_name', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Source name')
+            ->addColumn('source_type', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Source type')
+            ->addColumn('source_reference', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Source reference')
+            ->addColumn('source_number', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Source number')
+            ->addColumn('source_expiration', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'source expiration')
+            ->addColumn('source_installment', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Source installment')
+            ->addColumn('installment_name', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Installment name')
+            ->addColumn('installment_amount', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Installment amount')
+            ->addColumn('installment_count', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Installment count')
+            ->addColumn('source_url', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Source url')
+            ->addColumn('cardholder', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Cardholder')
+            ->addColumn('entity_name', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Entity name')
+            ->addColumn('entity_uid', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Entity uid')
+            ->addColumn('customer', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Customer')
+            ->addColumn('checkout_uid', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Checkout uid')
+            ->addColumn('total', Table::TYPE_DECIMAL, '18,2', array(
+                'nullable'  => false,
+                ), 'Total')
+            ->addColumn('currency', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Currency')
+            ->addColumn('risk_analysis', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Risk analysis')
+            ->addColumn('data', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+            ), 'Data')
+            ->addColumn('created', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+            ), 'Created')
+            ->addColumn('updated', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+            ), 'Updated');
+        
+            $connection->createTable($table);
+        }
+
         /* Add mobbex custom field table */
 
         if (version_compare($context->getVersion(), '1.3.0', '<=')) {

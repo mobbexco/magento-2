@@ -43,7 +43,7 @@ class OrderUpdate
      */
     public function updateStatus($order, $data)
     {
-        $statusName  = $this->getStatusConfigName($order, $data['payment']['status']['code']);
+        $statusName  = $this->getStatusConfigName($order, $data['status_code']);
         $orderStatus = $this->config->{"getOrderStatus$statusName"}();
 
         if ($orderStatus == $order->getStatus())
@@ -55,11 +55,11 @@ class OrderUpdate
             $order->cancel();
 
         // Notify the customer
-        $notified = $this->sendOrderEmail($order, $data['payment']['status']['message']);
+        $notified = $this->sendOrderEmail($order, $data['status_message']);
 
         if ($statusName == 'Approved') {
-            $this->generateTransaction($order, $data['payment']['status']['message'], $notified);
-            $this->generateInvoice($order, $data['payment']['status']['message']);
+            $this->generateTransaction($order, $data['status_message'], $notified);
+            $this->generateInvoice($order, $data['status_message']);
         }
 
         $order->save();
@@ -74,7 +74,7 @@ class OrderUpdate
     public function updateTotals($order, $data)
     {
         $orderTotal = $order->getGrandTotal();
-        $totalPaid  = isset($data['payment']['total']) ? $data['payment']['total'] : $orderTotal;
+        $totalPaid  = isset($data['total_webhook']) ? $data['total_webhook'] : $orderTotal;
         $paidDiff   = $totalPaid - $orderTotal;
 
         if ($paidDiff > 0) {
@@ -87,28 +87,6 @@ class OrderUpdate
         $order->setTotalPaid($totalPaid);
 
         $order->save();
-    }
-
-    /**
-     * Save webhook data to order.
-     * 
-     * @param OrderInterface $order
-     * @param array $data
-     */
-    public function saveWebhookData($order, $data)
-    {
-        $payment = $order->getPayment();
-
-        $payment->setAdditionalInformation('mobbex_data', $data);
-        $payment->setAdditionalInformation('mobbex_order_url', "https://mobbex.com/console/{$data['entity']['uid']}/operations/?oid={$data['payment']['id']}");
-        $payment->setAdditionalInformation('mobbex_payment_method', isset($data['payment']['source']['name']) ? $data['payment']['source']['name'] : '');
-
-        if ($data['payment']['source']['type'] == 'card') {
-            $payment->setAdditionalInformation('mobbex_card_info', "{$data['payment']['source']['name']} ({$data['payment']['source']['number']})");
-            $payment->setAdditionalInformation('mobbex_card_plan', "{$data['payment']['source']['installment']['description']}. {$data['payment']['source']['installment']['count']} Cuota/s de {$data['payment']['source']['installment']['amount']}");
-        }
-
-        $payment->save();
     }
 
     /**

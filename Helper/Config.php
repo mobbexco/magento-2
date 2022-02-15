@@ -14,6 +14,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_TEST_MODE = 'payment/webpay/test_mode';
     const PATH_DEBUG_MODE = 'payment/webpay/debug_mode';
     const PATH_EMBED_PAYMENT = 'payment/webpay/checkout/embed_payment';
+    const PATH_MULTICARD = 'payment/webpay/checkout/multicard';
 
     const PATH_THEME_TYPE = 'payment/webpay/checkout/theme';
     const PATH_BACKGROUND_COLOR = 'payment/webpay/checkout/background_color';
@@ -156,6 +157,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_EMBED_PAYMENT,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getMulticard($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_MULTICARD,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
