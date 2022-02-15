@@ -59,7 +59,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 ), 'Source number')
             ->addColumn('source_expiration', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
-                ), 'Source expiration')
+                ), 'source expiration')
             ->addColumn('source_installment', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Source installment')
