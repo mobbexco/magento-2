@@ -5,7 +5,7 @@ namespace Mobbex\Webpay\Model;
 use Magento\Framework\Model\AbstractModel;
 
 /**
- * Class CustomField
+ * Class Mobbex Transaction
  * @package Mobbex\Webpay\Model
  */
 class MobbexTransaction extends AbstractModel
@@ -32,12 +32,13 @@ class MobbexTransaction extends AbstractModel
             $collection = $this->getCollection()
                 ->addToFilter('order_id', $order_id)
                 ->addToFilter('parent', 1);
+
             return !empty($collection[0]) ? $collection[0] : false;
         }
         $collection = $this->getCollection()
-        ->addToFilter('order_id', $order_id);
+            ->addToFilter('order_id', $order_id);
+
         return !empty($collection) ? $collection : false;
-        
     }
 
     /**
@@ -73,7 +74,6 @@ class MobbexTransaction extends AbstractModel
         $this->setData('customer', $data['customer']);
         $this->setData('checkout_uid', $data['checkout_uid']);
         $this->setData('total', $data['total']);
-        $this->setData('total_webhook', $data['total_webhook']);
         $this->setData('currency', $data['currency']);
         $this->setData('risk_analysis', $data['risk_analysis']);
         $this->setData('data', $data['data']);

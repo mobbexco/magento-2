@@ -27,7 +27,7 @@ use Magento\Catalog\Model\ProductRepository;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '2.2.1';
+    const VERSION = '2.3.0';
 
     /**
      * @var Config
@@ -537,6 +537,7 @@ class Mobbex extends AbstractHelper
             'content-type: application/json',
             'x-api-key: ' . $this->config->getApiKey(),
             'x-access-token: ' . $this->config->getAccessToken(),
+            'x-ecommerce-agent: Magento/' . $this->productMetadata->getVersion() . ' Plugin/' . $this::VERSION,
         ];
     }
 
@@ -595,8 +596,10 @@ class Mobbex extends AbstractHelper
 
         // Get plans from order products
         foreach ($items as $item) {
-            $inactivePlans = array_merge($inactivePlans, $this->getInactivePlans($isQuote ? $item['product_id'] : $item->getProductId()));
-            $activePlans   = array_merge($activePlans, $this->getActivePlans($isQuote ? $item['product_id'] : $item->getProductId()));
+            $id = is_string($item) ? $item : ($isQuote ? $item['product_id'] : $item->getProductId());
+
+            $inactivePlans = array_merge($inactivePlans, $this->getInactivePlans($id));
+            $activePlans   = array_merge($activePlans, $this->getActivePlans($id));
         }
 
         // Add inactive (common) plans to installments

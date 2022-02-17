@@ -15,7 +15,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $connection = $setup->getConnection();
 
         /* Add mobbex transaction table */
-
         if (!$setup->tableExists('mobbex_transaction')) {
             $table = $connection
             ->newTable($setup->getTable('mobbex_transaction'))
@@ -25,7 +24,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'nullable'  => false,
                 'primary'   => true,
                 ), 'Id')
-            ->addColumn('order_id', Table::TYPE_INTEGER, null, array(
+            ->addColumn('order_id', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Order id')
             ->addColumn('parent', Table::TYPE_BOOLEAN, null, array(
@@ -60,7 +59,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 ), 'Source number')
             ->addColumn('source_expiration', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
-                ), 'Source expiration')
+                ), 'source expiration')
             ->addColumn('source_installment', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Source installment')
@@ -73,7 +72,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ->addColumn('installment_count', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Installment count')
-            ->addColumn('Source_url', Table::TYPE_TEXT, null, array(
+            ->addColumn('source_url', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Source url')
             ->addColumn('cardholder', Table::TYPE_TEXT, null, array(
@@ -91,12 +90,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ->addColumn('checkout_uid', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Checkout uid')
-            ->addColumn('total', Table::TYPE_DECIMAL, null, array(
+            ->addColumn('total', Table::TYPE_DECIMAL, '18,2', array(
                 'nullable'  => false,
                 ), 'Total')
-            ->addColumn('total_webhooks', Table::TYPE_DECIMAL, null, array(
-                'nullable'  => false,
-                ), 'Total webhook')
             ->addColumn('currency', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Currency')
@@ -106,9 +102,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ->addColumn('data', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
             ), 'Data')
-            ->addColumn('risk_analysis', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-            ), 'Risk analysis')
             ->addColumn('created', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
             ), 'Created')

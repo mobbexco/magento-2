@@ -5,7 +5,7 @@ namespace Mobbex\Webpay\Model\Resource;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
- * MobbexTransaction Resource Model
+ * Mobbex Transaction Resource Model
  * @package Mobbex\Webpay\Model\Resource
  */
 class MobbexTransaction extends AbstractDb

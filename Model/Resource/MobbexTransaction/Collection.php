@@ -5,7 +5,7 @@ namespace Mobbex\Webpay\Model\Resource\MobbexTransaction;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
- * Transaction Resource Model Collection
+ * Mobbex Transaction Resource Model Collection
  * @package Mobbex\Webpay\Model\Resource
  */
 class Collection extends AbstractCollection
