@@ -317,7 +317,7 @@ class Data extends AbstractHelper
      */
     public function getProductSubscription($id)
     {
-        $this->mobbex->getProductSubscription($id);
+        return $this->mobbex->getProductSubscription($id);
     }
 }
 
