@@ -22,10 +22,11 @@ class ProductSaveObserver implements ObserverInterface
      */
     public function execute($observer)
     {
+        error_log('coso: ' . "\n" . json_encode($this->params, JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         $commonPlans      = $advancedPlans = [];
+        $entity           = $this->params['entity'] ?: '';
         $is_subscription  = $this->params['enable_sub'] ?: 'no';
         $subscription_uid = $this->params['sub_uid'] ?: '';
-
         // Get plans selected
         foreach ($this->params as $key => $value) {
             if (strpos($key, 'common_plan_') !== false && $value === '0') {
@@ -37,12 +38,10 @@ class ProductSaveObserver implements ObserverInterface
             }
         }
 
-        $entity = $this->params['entity'] ?: '';
-
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'common_plans', serialize($commonPlans));
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'advanced_plans', serialize($advancedPlans));
+        $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'entity', $entity);
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'is_subscription', $is_subscription);
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'subscription_uid', $subscription_uid);
-        $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'entity', $entity);
     }
 }

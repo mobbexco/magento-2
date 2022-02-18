@@ -4,5 +4,6 @@
 <?php
 extract($this->helper->getPlansFilterFields(isset($this->params['id']) ? $this->params['id'] : 0, 'category'));
 $form = 'category_form';
-$entity = $this->helper->getEntity(isset($this->params['id']) ? $this->params['id'] : 0, 'category');
+$entity = $this->helper->getProductEntity(isset($this->params['id']) ? $this->params['id'] : 0, 'category');
 include $this->getTemplateFile('Mobbex_Webpay::prod&cat-config.phtml');
+include $this->getTemplateFile('Mobbex_Webpay::multivendor.phtml');

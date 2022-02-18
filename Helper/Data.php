@@ -315,6 +315,18 @@ class Data extends AbstractHelper
      * 
      * @return array
      */
+    public function getProductEntity($id, $catalogType = 'product')
+    {
+        return $this->customFields->getCustomField($id, $catalogType, 'entity') ?: '';
+    }
+
+    /**
+     * Retrieve product subscription data.
+     * 
+     * @param int|string $id
+     * 
+     * @return array
+     */
     public function getProductSubscription($id)
     {
         return $this->mobbex->getProductSubscription($id);
