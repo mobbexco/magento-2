@@ -1,199 +1,6 @@
-let embed = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
-let wallet = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
-// for wallet usage
-let walletEmpty = true;
-let wallet_checkout_used = false;
-let wallet_response = null;
-let wallet_url_payment = null;
-let wallet_checkout_id = null;
-// define global array for credit cards
-let creditCards = [];
-// define global boolean variable to check if cards where alredy rendered
-let rendered = false;
-let walletReturnUrl;
-
-
-/**
- * Creates a custom Mobbex checkout using 
- * a quote and customer data when the wallet is active
- * and the customer is logged in
- * @param {*} url
- * @return array
- */
-function createCheckoutWallet(url)
-{
-    jQuery("body").trigger('processStart');
-
-    var customerData = JSON.stringify(window.customerData);
-    var orderData = JSON.stringify(window.checkoutConfig.quoteData);
-    var itemsData = JSON.stringify(window.checkoutConfig.quoteItemData);
-    var totalAmount = JSON.stringify(window.checkoutConfig.totalsData);
-
-    jQuery.ajax({
-        context: '#ajaxresponse',
-        url: url,
-        type: "POST",
-        data: {customer: customerData , quote: orderData, items:itemsData, totals: totalAmount, type: 'wallet'},
-    }).done(function (data) {
-        // if no wallets, do not execute rendering
-        if (data.length < 1) return
-        //use data['wallet'][0] to retrieve the first card data in case it exist
-        creditCards = data.wallet
-        //in case wallet is undefined 
-        if(creditCards)
-        {
-            walletEmpty = false;
-        }else
-        {
-            creditCards = [];
-        }
-
-        walletReturnUrl = data.returnUrl;
-        // for each card add onClick function to show form (only if wasn't rendered yet)
-        if (!rendered) {
-            rendered = true
-            renderWallet()
-        }
-        //if wallet checkout is created
-        wallet_checkout_used = true;
-        wallet_url_payment = data.paymentUrl;
-        wallet_checkout_id = data.checkoutId;
-        return JSON.stringify(data);
-    });
-}
-
-/**
- * Another option: pass the wallet throw function arguments instead of global var
- *  */ 
-function renderWallet() {
-    let $ = jQuery
-    // Add mobbex wallet SDK script
-    var script = document.createElement('script');
-    script.src = `https://res.mobbex.com/js/sdk/mobbex@1.0.0.js`;
-    script.async = true;
-    document.body.appendChild(script);
-    // get .mobbex-content && get the parent to inject HTML after div.checkout-messages
-    let mobbexContainer = $(".mobbex-content").parent()
-    // add id to parent, with this we can inject html AFTER checkout-messages
-    mobbexContainer.attr("id", "mobbex-container")
-
-    // Inject wallet container after billing adress form
-    $("#mobbex-container .payment-method-billing-address").after(`<div id="wallet-cards-container"><ul id="wallet-cards" style="padding: 0;"></ul></div>`)
-
-    renderCreditCards()
-}
-
-function renderCreditCards() {
-    let $ = jQuery
-    // get ul for credit cards
-    let walletContainer = $("#wallet-cards")
-    // for each card render form, inside a div with display hidden by default (must have same class and unique id)
-    creditCards.forEach((card, i) => {
-        let installments = card.installments;
-
-        // Only if the card have plans available
-        if (installments.length > 0) {
-            // Add card form
-            walletContainer.append(`
-            <li style="display: block;">
-                <div style="display: flex; align-items: center;">
-                    <input name="wallet-option" id="wallet-card-${i}" type="radio" value="card-${i}">
-                    <img width="30" style="border-radius: 100%;margin: 0px 10px 0px 0px;" src="${card.source.card.product.logo}">
-                    <label for="wallet-card-${i}">${card.name}</label>
-                </div>
-                <div class="mobbex-wallet-form" id="card-${i}" style="display: none; margin-left: 25px;">
-                    <select name="installment" style="max-width: 100px; padding: 0 9px;"></select>
-                    <input style="margin: 20px 0; max-width: 100px;" type="password" maxlength="${card.source.card.product.code.length}" name="security-code" placeholder="${card.source.card.product.code.name}" required>
-                    <input type="hidden" name="intent-token" value="${card.it}">
-                </div>
-            </li>
-            `)
-
-            // Add installments options to select
-            installments.forEach(installment => {
-                $(`#card-${i} select`).append(`<option value="${installment.reference}">${installment.name}</option>`)
-            })
-        }
-    })
-
-    // Add new card method
-    walletContainer.append(`
-    <li style="display: block;margin-bottom: 20px;">
-        <input name="wallet-option" id="wallet-new-card" type="radio" value="new-card">
-        <label for="wallet-new-card">Nueva tarjeta / Otro medio de pago</label>
-    </li>
-    `)
-
-    // Show card form if it is selected and hide it if is not
-    $("input[name=wallet-option]").on("click", () => {
-        // hide all forms
-        $(".mobbex-wallet-form").hide()
-        let selectedCard = $("input[name=wallet-option]:checked").val()
-        $(`#${selectedCard}`).show()
-    })
-
-    //Hide loader (?)
-    jQuery("body").trigger('processStop');
-}
-
-/**
- * Call Mobbex API using sdk to make the payment
- * with wallet card
- * @param {*} checkoutBuilder 
- */
-function executeWallet(checkoutBuilder) {
-    let $ = jQuery
-    let card = $("input[name=wallet-option]:checked").val()
-    if (card && card !== "new-card") {
-        let installment = $(`#${card} select`).val()
-        let securityCode = $(`#${card} input[name=security-code]`).val()
-        let intentToken = $(`#${card} input[name=intent-token]`).val()
-        
-        window.MobbexJS.operation.process({
-            intentToken: intentToken,
-            installment: installment,
-            securityCode: securityCode
-        })
-        .then(data => {
-            location.href = walletReturnUrl+ '&status=' + data.data.status.code ;
-        })
-        .catch(error => {
-            $("body").trigger('processStop');
-            location.href =  walletReturnUrl;
-        })
-    }else{
-        //if new-card or none option is selected, then proced to normal checkout using quote checkout data
-        if(wallet_url_payment && embed)
-        {
-            var options = {
-                id: wallet_checkout_id,
-                type: 'checkout',
-                
-                onResult: (data) => {
-                    location.href = walletReturnUrl + '&status=' + data.status.code
-                },
-
-                onClose: () => {
-                    jQuery("body").trigger('processStop');
-                    location.href = walletReturnUrl
-                },
-
-                onError: (error) => {
-                    jQuery("body").trigger('processStop');
-                    location.href = walletReturnUrl
-                }
-            };
-            var mbbxButton = window.MobbexEmbed.init(options);
-            mbbxButton.open();
-        }else if(wallet_url_payment) 
-        {
-            window.location.href =  wallet_url_payment;
-        }
-    }   
-} 
-
-
-
+let embed     = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
+let wallet    = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
+let returnUrl = window.checkoutConfig.payment.webpay.returnUrl;
 
 // Add Mobbex script
 var script = document.createElement('script');
@@ -202,59 +9,150 @@ script.async = true;
 document.body.appendChild(script);
 
 // Remove HTML entities
-function htmlDecode(input)
-{
-  var doc = new DOMParser().parseFromString(input, "text/html");
-  return doc.documentElement.textContent;
+function htmlDecode(input) {
+    var doc = new DOMParser().parseFromString(input, "text/html");
+    return doc.documentElement.textContent;
 }
 
-if (embed) {
+/** PAYMENT METHODS SUBDIVISION EVENTS */
 
-    /**
-     * Create checkout and init Mobbex Embed
-     *  
-     * */ 
-    function createCheckoutEmbed(url)
-    {
-        jQuery.ajax({
-            url: url,
-            success: function(response) {
-                var checkoutId = response.checkoutId;
-                var returnUrl = response.returnUrl;
+//Current payment method & card
+let mbbxCurrentMehtod = '';
+let mbbxCurrentCard = false;
 
-                var options = {
-                    id: checkoutId,
-                    type: 'checkout',
+require(['jquery'], function ($) {
+    $(document).on('click', '.mbbx-payment-method-input', function (e) {
+        $(".mobbex-wallet-form").hide()
+        mbbxCurrentMehtod = $(this).attr('value');
+        if ($(this).hasClass("mbbx-card")) {
+            mbbxCurrentMehtod = '';
+            mbbxCurrentCard = $(this).attr('value');
+            $(`#${mbbxCurrentCard}`).show()
+        }
+    });
+});
 
-                    onResult: (data) => {
-                        location.href = returnUrl + '&status=' + data.status.code
-                    },
+/** MOBBEX EMBED */
 
-                    onClose: () => {
-                        jQuery("body").trigger('processStop');
-                        location.href = returnUrl
-                    },
+/**
+ * Create checkout and init Mobbex Embed
+ *  
+ * */
+ function createCheckoutEmbed(url) {
 
-                    onError: (error) => {
-                        jQuery("body").trigger('processStop');
-                        location.href = returnUrl
-                    }
+    jQuery.ajax({
+        url: url,
+        success: function (response) {
+            
+            var checkoutId = response.checkoutId;
+            returnUrl = response.returnUrl;
+
+            var options = {
+                id: checkoutId,
+                type: 'checkout',
+                paymentMethod: mbbxCurrentMehtod || '',
+
+                onResult: (data) => {
+                    location.href = returnUrl + '&status=' + data.status.code
+                },
+
+                onClose: () => {
+                    jQuery("body").trigger('processStop');
+                    location.href = returnUrl
+                },
+
+                onError: (error) => {
+                    jQuery("body").trigger('processStop');
+                    location.href = returnUrl
                 }
-
-                // Init Mobbex Embed
-                var mbbxButton = window.MobbexEmbed.init(options);
-                mbbxButton.open();
-            },
-            error: function() {
-                console.log("No se ha podido obtener la información");
-                return false;
             }
-        });
 
+            // Init Mobbex Embed
+            var mbbxButton = window.MobbexEmbed.init(options);
+            mbbxButton.open();
+        },
+        error: function () {
+            console.log("No se ha podido obtener la información");
+            return false;
+        }
+    });
+
+}
+
+/** MOBBEX WALLET */
+
+/**
+ * Add Mobbex Wallet SDK script 
+ */
+function insertWalletSdk() {
+    // Add mobbex wallet SDK script
+    var script = document.createElement('script');
+    script.src = `https://res.mobbex.com/js/sdk/mobbex@1.0.0.js`;
+    script.async = true;
+    document.body.appendChild(script);
+}
+
+/**
+ * Call Mobbex API using sdk to make the payment
+ * with wallet card
+ * @param {*} checkoutBuilder 
+ */
+function executeWallet(url) {
+    let $ = jQuery
+
+    if(!returnUrl.includes(url)) {
+        returnUrl = url+'?quote_id=' + window.checkoutConfig.quoteData.entity_id;
     }
 
+    if (mbbxCurrentCard) {
+        let installment  = $(`#${mbbxCurrentCard} select`).val()
+        let securityCode = $(`#${mbbxCurrentCard} input[name=security-code]`).val()
+        let intentToken  = $(`#${mbbxCurrentCard} input[name=intent-token]`).val()
+
+        window.MobbexJS.operation.process({
+                intentToken: intentToken,
+                installment: installment,
+                securityCode: securityCode
+            })
+            .then(data => {
+                window.top.location = returnUrl + '&status=' + data.data.status.code;
+            })
+            .catch(error => {
+                $("body").trigger('processStop');
+                location.href = returnUrl;
+            })
+
+    } else {
+        //if new-card or none option is selected, then proced to normal checkout using quote checkout data
+        if (window.checkoutConfig.payment.webpay.paymentUrl && embed) {
+            var options = {
+                id: window.checkoutConfig.payment.webpay.checkoutId,
+                type: 'checkout',
+                paymentMethod: mbbxCurrentMehtod || '',
+
+                onResult: (data) => {
+                    location.href = returnUrl + '&status=' + data.status.code
+                },
+
+                onClose: () => {
+                    jQuery("body").trigger('processStop');
+                    location.href = returnUrl
+                },
+
+                onError: (error) => {
+                    jQuery("body").trigger('processStop');
+                    location.href = returnUrl
+                }
+            };
+            var mbbxButton = window.MobbexEmbed.init(options);
+            mbbxButton.open();
+        } else if (window.checkoutConfig.payment.webpay.paymentUrl) {
+            window.location.href = window.checkoutConfig.payment.webpay.paymentUrl + '?paymentMethod=' + mbbxCurrentMehtod;
+        }
+    }
 }
-    
+
+/** DISPLAY & EXECUTE FUNCTIONS */
 
 define(
     [
@@ -270,22 +168,21 @@ define(
                 redirectAfterPlaceOrder: false
             },
             onSelect: function () {
-                if (wallet && window.isCustomerLoggedIn && !wallet_url_payment)
-                    wallet_response = createCheckoutWallet(urlBuilder.build('webpay/payment/walletpayment/'));
-
+                if(wallet) {
+                    insertWalletSdk();
+                }
                 return true;
             },
             afterPlaceOrder: function () {
-                if  (wallet && wallet_url_payment != null) {
+                if (wallet && window.checkoutConfig.payment.webpay.paymentUrl != null) {
                     //only use wallet payment if there is at least one card stored
-                    executeWallet(urlBuilder.build('webpay/payment/walletpayment/'))
-                }
-                else if(embed) {
+                    executeWallet(urlBuilder.build('webpay/payment/paymentreturn'))
+                } else if (embed) {
                     $("body").trigger('processStart');
                     createCheckoutEmbed(urlBuilder.build('webpay/payment/embedpayment/'));
-                }else{
+                } else {
                     window.location.replace(
-                        urlBuilder.build('webpay/payment/redirect/')
+                        urlBuilder.build('webpay/payment/redirect?paymentMethod=' + mbbxCurrentMehtod)
                     );
                 }
             },
@@ -301,6 +198,12 @@ define(
                     return mobbexConfig['banner'];
                 }
                 return '';
+            },
+            getPaymentMethods: function () {
+                return window.checkoutConfig.payment.webpay['paymentMethods'];
+            },
+            getWalletCards: function () {
+                return window.checkoutConfig.payment.webpay['walletCreditCards'];
             }
         });
     }

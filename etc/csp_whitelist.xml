@@ -6,6 +6,11 @@
                 <value id="mobbex" type="host">*.mobbex.com</value>
             </values>
         </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="mobbex" type="host">*.mobbex.com</value>
+            </values>
+        </policy>
         <policy id="frame-src">
             <values>
                 <value id="mobbex" type="host">https://mobbex.com</value>
