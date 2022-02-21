@@ -60,10 +60,10 @@ class Redirect extends Template
     }
 
     /**
-     * @return bool
+     * @return array
      */
     public function getCheckoutUrl()
     {
-        return $this->_helper->getCheckout()['url'] . '?paymentMethod=' . $_GET['paymentMethod'];;
+        return ['url' => $this->_helper->getCheckout()['url'], 'method' => $_GET['paymentMethod']];
     }
 }
