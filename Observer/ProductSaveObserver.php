@@ -22,7 +22,6 @@ class ProductSaveObserver implements ObserverInterface
      */
     public function execute($observer)
     {
-        error_log('coso: ' . "\n" . json_encode($this->params, JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         $commonPlans      = $advancedPlans = [];
         $entity           = $this->params['entity'] ?: '';
         $is_subscription  = $this->params['enable_sub'] ?: 'no';

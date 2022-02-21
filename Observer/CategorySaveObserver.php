@@ -35,10 +35,10 @@ class CategorySaveObserver implements ObserverInterface
             }
         }
 
-        $entity = $this->params['entity'] ?: '';
+        $entity = isset($this->params['entity']) ? $this->params['entity'] : '';
 
         $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'common_plans', serialize($commonPlans));
         $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'advanced_plans', serialize($advancedPlans));
-        $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'entity', $this->params['entity']);
+        $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'entity', $entity);
     }
 }

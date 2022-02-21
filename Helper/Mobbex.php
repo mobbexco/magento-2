@@ -223,6 +223,7 @@ class Mobbex extends AbstractHelper
             $product = $item->getProduct();
             $price = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
             $subscription = $this->getProductSubscription($product->getId());
+            $entity  = $this->getEntity($product);
 
             if($subscription['enable'] === 'yes') {
                 $items[] = [
@@ -231,10 +232,11 @@ class Mobbex extends AbstractHelper
                 ];
             } else {
                 $items[] = [
-                    "image" => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
+                    "image"       => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
                     "description" => $product->getName(),
-                    "quantity" => $item->getQtyOrdered(),
-                    "total" => round($price, 2),
+                    "quantity"    => $item->getQtyOrdered(),
+                    "total"       => round($price, 2),
+                    "entity"      => $entity
                 ];
             }
         }
@@ -376,7 +378,10 @@ class Mobbex extends AbstractHelper
 
         foreach ($quoteData['items'] as $item) {
 
-            $subscription = $this->getProductSubscription($item['id']);
+            $subscription  = $this->getProductSubscription($item['product_id']);
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $product       = $objectManager->get('Magento\Catalog\Model\Product')->load($item['product_id']);
+            $entity        = $this->getEntity($product);
 
             if($subscription['enable'] === 'yes') {
                 $items[] = [
@@ -386,8 +391,9 @@ class Mobbex extends AbstractHelper
             } else {
                 $items[] = [
                     "description" => $item['name'],
-                    "quantity" => $item['qty'],
-                    "total" => round($item['price'], 2),
+                    "quantity"    => $item['qty'],
+                    "total"       => round($item['price'], 2),
+                    "entity"      => $entity
                 ];
             }
         }
