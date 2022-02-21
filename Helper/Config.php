@@ -16,13 +16,16 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_EMBED_PAYMENT = 'payment/webpay/checkout/embed_payment';
     const PATH_MULTICARD = 'payment/webpay/checkout/multicard';
 
-    const PATH_THEME_TYPE = 'payment/webpay/checkout/theme';
-    const PATH_BACKGROUND_COLOR = 'payment/webpay/checkout/background_color';
-    const PATH_PRIMARY_COLOR = 'payment/webpay/checkout/primary_color';
-    const PATH_BANNER_CHECKOUT = 'payment/webpay/checkout/checkout_banner';
+    const PATH_THEME_TYPE             = 'payment/webpay/appareance/theme';
+    const PATH_BACKGROUND_COLOR       = 'payment/webpay/checkout/background_color';
+    const PATH_PRIMARY_COLOR          = 'payment/webpay/checkout/primary_color';
+    const PATH_BANNER_CHECKOUT        = 'payment/webpay/checkout/checkout_banner';
+    const PATH_WIDGET_STYLE           = 'payment/webpay/appareance/widget_style';
+    const PATH_WIDGET_BUTTON_LOGO     = 'payment/webpay/appareance/button_logo';
+    const PATH_WIDGET_BUTTON_TEXT     = 'payment/webpay/appareance/button_text';
 
-    const PATH_CREATE_ORDER_EMAIL = 'payment/webpay/checkout/email_settings/create_order_email';
-    const PATH_UPDATE_ORDER_EMAIL = 'payment/webpay/checkout/email_settings/update_order_email';
+    const PATH_CREATE_ORDER_EMAIL   = 'payment/webpay/checkout/email_settings/create_order_email';
+    const PATH_UPDATE_ORDER_EMAIL   = 'payment/webpay/checkout/email_settings/update_order_email';
     const PATH_CREATE_INVOICE_EMAIL = 'payment/webpay/checkout/email_settings/create_invoice_email';
 
     const PATH_ORDER_STATUS_APPROVED = 'payment/webpay/checkout/order_status_settings/order_status_approved';
@@ -257,6 +260,32 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_FINANCE_WIDGET_ON_CART,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getWidgetStyle($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_WIDGET_STYLE,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getButtonLogo($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_WIDGET_BUTTON_LOGO,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+    public function getButtonText($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_WIDGET_BUTTON_TEXT,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
