@@ -90,10 +90,10 @@ class Data extends AbstractHelper
      */
     public static function log($mensaje, $archivo)
     {
-        // $writer = new Stream(BP . '/var/log/' . $archivo);
-        // $logger = new Logger();
-        // $logger->addWriter($writer);
-        // $logger->info($mensaje);
+        $writer = new Stream(BP . '/var/log/' . $archivo);
+        $logger = new Logger();
+        $logger->addWriter($writer);
+        $logger->info($mensaje);
     }
 
     /**
