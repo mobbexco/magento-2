@@ -23,9 +23,9 @@ class ProductSaveObserver implements ObserverInterface
     public function execute($observer)
     {
         $commonPlans      = $advancedPlans = [];
-        $entity           = $this->params['entity'] ?: '';
-        $is_subscription  = $this->params['enable_sub'] ?: 'no';
-        $subscription_uid = $this->params['sub_uid'] ?: '';
+        $entity           = isset($this->params['entity']) ? $this->params['entity'] : '';
+        $is_subscription  = isset($this->params['enable_sub']) ? $this->params['enable_sub'] : 'no';
+        $subscription_uid = isset($this->params['sub_uid']) ? $this->params['sub_uid'] : '';
         // Get plans selected
         foreach ($this->params as $key => $value) {
             if (strpos($key, 'common_plan_') !== false && $value === '0') {
