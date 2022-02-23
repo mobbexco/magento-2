@@ -41,7 +41,7 @@ class EmbedPayment extends Action
         ];
 
         $resultJson->setData($vac);
-
+    
         return $resultJson;
     }
 }

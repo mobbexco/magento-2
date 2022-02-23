@@ -417,15 +417,16 @@ class Mobbex extends AbstractHelper
             '_current'     => true,
             '_use_rewrite' => true,
             '_query'       => [
-                "quote_id"   => $quoteData['entity_id']
+                "quote_id" => $quoteData['entity_id']
             ],
         ]);
+
         $webhook = $this->urlBuilder->getUrl('webpay/payment/webhook', [
             '_secure'      => true,
             '_current'     => true,
             '_use_rewrite' => true,
             '_query'       => [
-                "quote_id"   => $quoteData['entity_id']
+                "quote_id" => $quoteData['entity_id']
             ],
         ]);
 

@@ -113,9 +113,10 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Get a Mockup checkout that serves for extract some specific data.
      * @return bool
      */
-    public function getCheckoutWallet($quoteData)
+    public function getCheckoutMockup($quoteData)
     {
         // get checkout object
         $checkout = $this->mobbex->createCheckoutFromQuote($quoteData);
