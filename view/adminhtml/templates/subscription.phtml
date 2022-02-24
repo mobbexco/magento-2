@@ -1,0 +1,25 @@
+<!-- Subscriptions -->
+<div class="mbbx-subscription">
+    <h3><?= __('Activar tipo suscripcion') ?></h3>
+    <p><?= __('Activa si el producto es de tipo suscripción') ?></p>
+
+    <label for="enable_sub" style="margin-right: 20px;"><?= __('Es suscripcion') ?></label>
+    <select id="enable_sub" name="enable_sub" data-form-part="<?= $form ?>" onchange="document.querySelector('#subscription_uid').classList.toggle('hidden')">
+        <option value="no" <?= $subscription['enable'] === 'no' ? 'selected' : '' ?>>No</option>
+        <option value="yes" <?= $subscription['enable'] === 'yes' ? 'selected' : '' ?>>Yes</option>
+    </select>
+    <div class="<?= $subscription['enable'] === 'no' ? 'hidden' : '' ?>" id="subscription_uid" style="margin-top: 20px;">
+        <label style="margin-right: 10px;" for="sub_uid"><?= __('UID de la Suscripción') ?></label>
+        <input type="text" name="sub_uid" id="sub_uid" value="<?= $subscription['uid'] ?>" data-form-part="<?= $form ?>">
+    </div>
+</div>
+
+<style>
+    .hidden {
+        display: none;
+    }
+
+    .mbbx-subscription {
+        margin-top: 20px;
+    }
+</style>
