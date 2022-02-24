@@ -54,11 +54,6 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         $this->total    = $action == 'catalog_product_view' ? $product->getFinalPrice() : $quote->getGrandTotal();
         $this->products = $action == 'catalog_product_view' ? [$product->getId()] : $quote->getAllVisibleItems();
         $this->sources  = $this->helper->getSources($this->total, $this->helper->mobbex->getInstallments($this->products));
-       
-        //styles
-        $this->theme        = $this->config->getThemeType();
-        $this->button_text = $this->config->getButtonText();
-        $this->button_style = $this->config->getWidgetStyle();
-        $this->button_logo  = $this->config->getButtonLogo();
+
     }
 }

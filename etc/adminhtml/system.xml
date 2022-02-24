@@ -151,9 +151,9 @@
                         </field>
                     </group>
                 </group>
-                <group id="appareance" translate="label" sortOrder="31" showInDefault="1" showInWebsite="1"
+                <group id="appearance" translate="label" sortOrder="31" showInDefault="1" showInWebsite="1"
                     showInStore="1">
-                    <label>Appareance</label>
+                    <label>Appearance</label>
                    
                     <field id="theme" translate="label comment" sortOrder="32" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="0">

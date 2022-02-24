@@ -30,7 +30,7 @@
                         <create_order_email>1</create_order_email>
                     </email_settings>
                 </checkout>
-                <appareance>
+                <appearance>
                     <button_text>Ver formas de pago</button_text>
                     <widget_style>/* Modifica los valores para cambiar el estilo deseado. */
 #mbbxProductBtn {
@@ -55,7 +55,7 @@ background-color: #6f00ff;
 /* Para que los estilos funcionen deben respetar la sintaxys de CSS.*/
                     </widget_style>
                     <button_logo>https://res.mobbex.com/images/sources/mobbex.png</button_logo>
-                </appareance>
+                </appearance>
             </webpay>
         </payment>
     </default>
