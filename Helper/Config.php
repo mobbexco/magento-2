@@ -17,13 +17,13 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_MULTICARD = 'payment/webpay/checkout/multicard';
     const PATH_MULTIVENDOR = 'payment/webpay/checkout/multivendor';
 
-    const PATH_THEME_TYPE             = 'payment/webpay/appearance/theme';
-    const PATH_BACKGROUND_COLOR       = 'payment/webpay/appearance/background_color';
-    const PATH_PRIMARY_COLOR          = 'payment/webpay/appearance/primary_color';
-    const PATH_BANNER_CHECKOUT        = 'payment/webpay/appearance/checkout_banner';
-    const PATH_WIDGET_STYLE           = 'payment/webpay/appearance/widget_style';
-    const PATH_WIDGET_BUTTON_LOGO     = 'payment/webpay/appearance/button_logo';
-    const PATH_WIDGET_BUTTON_TEXT     = 'payment/webpay/appearance/button_text';
+    const PATH_THEME_TYPE          = 'payment/webpay/appearance/theme';
+    const PATH_BACKGROUND_COLOR    = 'payment/webpay/appearance/background_color';
+    const PATH_PRIMARY_COLOR       = 'payment/webpay/appearance/primary_color';
+    const PATH_BANNER_CHECKOUT     = 'payment/webpay/appearance/checkout_banner';
+    const PATH_WIDGET_STYLE        = 'payment/webpay/appearance/widget_style';
+    const PATH_WIDGET_BUTTON_LOGO  = 'payment/webpay/appearance/button_logo';
+    const PATH_WIDGET_BUTTON_TEXT  = 'payment/webpay/appearance/button_text';
 
     const PATH_CREATE_ORDER_EMAIL   = 'payment/webpay/checkout/email_settings/create_order_email';
     const PATH_UPDATE_ORDER_EMAIL   = 'payment/webpay/checkout/email_settings/update_order_email';
