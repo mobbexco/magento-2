@@ -15,10 +15,6 @@
                 <title>Mobbex</title>
                 <checkout>
                     <embed_payment>1</embed_payment>
-                    <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
-                    <theme>light</theme>
-                    <background_color>#ECF2F6</background_color>
-                    <primary_color>#6f00ff</primary_color>
                     <order_status_settings>
                         <order_status_approved>processing</order_status_approved>
                         <order_status_in_process>pending</order_status_in_process>
@@ -31,6 +27,10 @@
                     </email_settings>
                 </checkout>
                 <appearance>
+                    <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
+                    <theme>light</theme>
+                    <background_color>#ECF2F6</background_color>
+                    <primary_color>#6f00ff</primary_color>
                     <button_text>Ver formas de pago</button_text>
                     <widget_style>/* Modifica los valores para cambiar el estilo deseado. */
 #mbbxProductBtn {
