@@ -510,7 +510,7 @@ class Mobbex extends AbstractHelper
         $url = str_replace(['http://', 'https://'], '', $url);
 
         // Remove empty path
-        if (str_contains(substr($url,-1),'/'))
+        if (strpos(substr($url,-1),'/') !== 'false')
             $url = substr($url,0,-1);
 
         return $url;
