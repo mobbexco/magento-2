@@ -651,7 +651,7 @@ class Mobbex extends AbstractHelper
             return $this->customFields->getCustomField($product->getId(), 'product', 'entity');
 
         $categories = $product->getCategoryIds();
-        if($categories)
+        if($this->customFields->getCustomField($categories[0], 'category', 'entity'))
             return $this->customFields->getCustomField($categories[0], 'category', 'entity'); 
 
         return '';
