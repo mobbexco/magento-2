@@ -637,7 +637,7 @@ class Mobbex extends AbstractHelper
      */
     public function getReference($orderId)
     {
-        return 'mag2_order_'.$orderId.'_time_'.time();
+        return 'mag2_order_'.$orderId;
 	}
   
     /**
