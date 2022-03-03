@@ -172,7 +172,7 @@
                         <label>Banner Checkout</label>
                         <comment>
                             <![CDATA[
-                                Otros ejemplos:<br/>
+                                Ejemplos:<br/>
                                 https://res.mobbex.com/ecommerce/mobbex_2.png<br/>
                                 https://res.mobbex.com/ecommerce/mobbex_3.png
                             ]]>
@@ -193,26 +193,25 @@
 
                     <field id="button_logo" translate="label comment" sortOrder="35" type="text"
                     showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Logo del boton de financiacion</label>
+                        <label>Logo del botón de financiación</label>
                         <comment>
                             <![CDATA[
-                                    Dejalo vacio para quitar el logo por defecto<br/>
-                                    Mobbex button default logo:<br/>
-                                    https://res.mobbex.com/images/sources/mobbex.png<br/>
-                                ]]>
+                                Opcional. Ejemplo:<br/>
+                                https://res.mobbex.com/images/sources/mobbex.png<br/>
+                            ]]>
                         </comment>
                     </field>
                     
                     <field id="button_text" translate="label comment" sortOrder="36" type="text"
                         showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Texto del boton de financiación</label>
-                        <comment>Modifica el texto del boton de financiacion.</comment>
+                        <label>Texto del botón de financiación</label>
+                        <comment>Modifica el texto del botón de financiación.</comment>
                     </field>
 
                     <field id="widget_style" translate="label comment" sortOrder="37" type="textarea"
                         showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Estilos del boton de financiación</label>
-                        <comment>Modifica los estilos del boton de financiacion respetando la sintaxys de CSS.</comment>
+                        <label>Estilos del botón de financiación</label>
+                        <comment>Modifica los estilos del botón de financiación respetando la sintaxis de CSS.</comment>
                     </field>
 
                 </group>
