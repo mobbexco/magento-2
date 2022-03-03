@@ -15,10 +15,6 @@
                 <title>Mobbex</title>
                 <checkout>
                     <embed_payment>1</embed_payment>
-                    <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
-                    <theme>light</theme>
-                    <background_color>#ECF2F6</background_color>
-                    <primary_color>#6f00ff</primary_color>
                     <order_status_settings>
                         <order_status_approved>processing</order_status_approved>
                         <order_status_in_process>pending</order_status_in_process>
@@ -30,6 +26,32 @@
                         <create_order_email>1</create_order_email>
                     </email_settings>
                 </checkout>
+                <appearance>
+                    <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
+                    <theme>light</theme>
+                    <background_color>#ECF2F6</background_color>
+                    <primary_color>#6f00ff</primary_color>
+                    <button_text>Ver formas de pago</button_text>
+                    <widget_style>
+#mbbxProductBtn {
+    width: fit-content;
+    min-height: 40px;
+    border-radius: 6px;
+    padding: 8px 18px; /*El primer valor establece 'arriba/abajo' el segundo 'izquierda/derecha'*/
+    font-size: 16px;
+    color: #6f00ff; 
+    background-color: #ffffff;
+    border: 1.5px solid #6f00ff; /* Grosor de linea, estilo de linea, color. */
+    /*box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, .2);*/
+}
+
+#mbbxProductBtn:hover {
+    color: #ffffff;
+    background-color: #6f00ff;
+}
+                    </widget_style>
+                    <button_logo>https://res.mobbex.com/images/sources/mobbex.png</button_logo>
+                </appearance>
             </webpay>
         </payment>
     </default>

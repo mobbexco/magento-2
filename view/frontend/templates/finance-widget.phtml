@@ -1,4 +1,4 @@
-<div id="mbbxProductModal"> 
+<div id="mbbxProductModal" class="<?= $this->config->getThemeType() ?>"> 
     <div id="mbbxProductModalContent">
         <div id="mbbxProductModalHeader">
             <select name="mbbx-method-select" id="mbbx-method-select">
@@ -45,11 +45,21 @@
         </div>
     </div>
 </div>
-<button type="button" class="action secondary" id="mbbxProductBtn">
-    <?= $block->escapeHtml(__('Ver formas de pago')) ?>
+<button type="button" class="action secondary" id="mbbxProductBtn" 
+    style="display: flex;align-items: center;">
+    <?php if($this->config->getButtonLogo()):?>
+    <img src="<?=$this->config->getButtonLogo()?>" alt="mobbex logo"
+        width="40" 
+        height="40"
+        style="margin-right: 10px; border-radius: 40px;">
+    <?php endif; ?>
+    <?= $this->config->getButtonText() ?>
 </button>
 
 <style>
+    /* Open Button Style */
+    <?= $this->config->getWidgetStyle() ?>
+    
     /* The Modal (background) */
     #mbbxProductModal {
         display: none; /* Hidden by default */
