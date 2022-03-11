@@ -266,6 +266,11 @@ class Mobbex extends AbstractHelper
             ],
         ]);
 
+        //wallet
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $userSession = $objectManager->get('Magento\Customer\Model\Session');
+        $is_wallet_active = ((bool) ($this->config->getWalletActive()) && $userSession->isLoggedIn());
+
         // Create data
         $data = [
             'reference'    => $this->getReference($orderId),
@@ -292,6 +297,7 @@ class Mobbex extends AbstractHelper
             'customer'     => $customer,
             'installments' => $this->getInstallments($orderedItems),
             'timeout'      => 5,
+            'wallet'       => $is_wallet_active
         ];
 
         // Init session to get event response
