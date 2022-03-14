@@ -64,6 +64,6 @@ class Redirect extends Template
      */
     public function getCheckoutUrl()
     {
-        return ['url' => $this->_helper->getCheckout()['url'], 'method' => $_GET['paymentMethod']];
+        return ['url' => htmlspecialchars(urldecode($_GET['checkoutUrl'])), 'method' => $_GET['paymentMethod']];
     }
 }

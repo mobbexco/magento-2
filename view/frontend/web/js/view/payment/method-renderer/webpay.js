@@ -63,22 +63,22 @@ require(['jquery'], function ($) {
 /** MOBBEX EMBED */
 function embedPayment(response){
     var options = {
-        id: response.checkoutId,
+        id: response.id,
         type: 'checkout',
         paymentMethod: mbbxCurrentMehtod || '',
 
         onResult: (data) => {
-            location.href = response.returnUrl + '&status=' + data.status.code
+            location.href = response.return_url + '&status=' + data.status.code
         },
 
         onClose: () => {
             jQuery("body").trigger('processStop');
-            location.href = response.returnUrl
+            location.href = response.return_url
         },
 
         onError: (error) => {
             jQuery("body").trigger('processStop');
-            location.href = response.returnUrl
+            location.href = response.return_url
         }
     }
 
@@ -107,8 +107,8 @@ function insertWalletSdk() {
  * @param {*} checkoutBuilder 
  */
 function executeWallet(response) {
+    $("body").trigger('processStart');
     let $ = jQuery
-
     let updatedCard = response.wallet.find(card => card.card.card_number == $(`#${mbbxCurrentCard} input[name=card-number]`).val());
     
     var options = {
@@ -119,11 +119,11 @@ function executeWallet(response) {
     
     window.MobbexJS.operation.process(options)
         .then(data => {
-            window.top.location = response.returnUrl + '&status=' + data.data.status.code;
+            window.top.location = response.return_url + '&status=' + data.data.status.code;
         })
         .catch(error => {
             $("body").trigger('processStop');
-            location.href = response.returnUrl;
+            location.href = response.return_url;
         })
 }
 
@@ -149,17 +149,14 @@ define(
                 return true;
             },
             afterPlaceOrder: function () {
-
+                $("body").trigger('processStart');
                 createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
                     if(wallet && mbbxCurrentCard){
                         executeWallet(response)
                     }else if(embed){
-                        $("body").trigger('processStart');
                         embedPayment(response)
                     } else {
-                        window.location.replace(
-                            urlBuilder.build('webpay/payment/redirect?paymentMethod=' + mbbxCurrentMehtod)
-                        );
+                        window.top.location.href = urlBuilder.build('webpay/payment/redirect') + '?paymentMethod=' + mbbxCurrentMehtod + '&checkoutUrl=' + encodeURIComponent(response.url);
                     }
                 })
             },
