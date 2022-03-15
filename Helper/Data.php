@@ -71,9 +71,7 @@ class Data extends AbstractHelper
         ObjectManagerInterface $_objectManager,
         LoggerInterface $logger,
         Mobbex $mobbex,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        \Magento\Framework\Event\ConfigInterface $eventConfig,
-        \Magento\Framework\Event\ObserverFactory $observerFactory
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         $this->order = $order;
         $this->modelOrder = $modelOrder;
@@ -84,8 +82,6 @@ class Data extends AbstractHelper
         $this->_objectManager = $_objectManager;
         $this->log = $logger;
         $this->customFields = $customFieldFactory->create();
-        $this->eventConfig     = $eventConfig;
-        $this->observerFactory = $observerFactory;
     }
 
     /**
@@ -334,48 +330,5 @@ class Data extends AbstractHelper
     public function getProductSubscription($id)
     {
         return $this->mobbex->getProductSubscription($id);
-    }
-
-    /**
-     * Execute a hook and retrieve the response.
-     * 
-     * @param string $name The hook name (in camel case).
-     * @param bool $filter Filter first arg in each execution.
-     * @param mixed ...$args Arguments to pass.
-     * 
-     * @return mixed Last execution response or value filtered. Null on exceptions.
-     */
-    public function executeHook($name, $filter = false, ...$args)
-    {
-        try {
-            // Use snake case to search event
-            $eventName = ltrim(strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', '_$0', $name)), '_');
-
-            // Get registered observers and first arg to return as default
-            $observers = $this->eventConfig->getObservers($eventName) ?: [];
-            $value     = $filter ? reset($args) : false;
-
-            foreach ($observers as $observerData) {
-                // Instance observer
-                $instanceMethod = !empty($observerData['shared']) ? 'get' : 'create';
-                $observer       = $this->observerFactory->$instanceMethod($observerData['instance']);
-
-                // Get method to execute
-                $method = [$observer, $name];
-
-                // Only execute if is callable
-                if (!empty($observerData['disabled']) || !is_callable($method))
-                    continue;
-
-                $value = call_user_func_array($method, $args);
-
-                if ($filter)
-                    $args[0] = $value;
-            }
-
-            return $value;
-        } catch (\Exception $e) {
-            self::log('Mobbex Hook Error: ' . $e->getMessage(), 'mobbex_error.log');
-        }
     }
 }
