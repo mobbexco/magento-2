@@ -108,7 +108,6 @@ class Data extends AbstractHelper
         // get checkout object
         $checkout = $this->mobbex->createCheckout();
         
-
         if ($checkout != false) {
             return $checkout;
         } else {

@@ -21,61 +21,70 @@ let mbbxCurrentMehtod = '';
 let mbbxCurrentCard = false;
 
 require(['jquery'], function ($) {
-    $(document).on('click', '.mbbx-payment-method-input', function (e) {
+    $(document).on('click', '[name="payment[method]"]', function (e) {
         $(".mobbex-wallet-form").hide()
-        mbbxCurrentMehtod = $(this).attr('value');
-        if ($(this).hasClass("mbbx-card")) {
-            mbbxCurrentMehtod = '';
-            mbbxCurrentCard = $(this).attr('value');
-            $(`#${mbbxCurrentCard}`).show()
+        mbbxCurrentMehtod = '';
+        mbbxCurrentCard = '';
+        if($(this).hasClass('mbbx-payment-method-input')){
+            if ($(this).hasClass("mbbx-card")) {
+                mbbxCurrentCard = $(this).attr('value');
+                $(`#${mbbxCurrentCard}`).show()
+            } else {
+                mbbxCurrentMehtod = $(this).attr('value');
+            }
+            $('#webpay').trigger('click');
+            $(this).closest(".payment-method").after($('#mbbx-place-order'));
         }
     });
 });
 
-/** MOBBEX EMBED */
 
 /**
- * Create checkout and init Mobbex Embed
+ * Create checkout and call a callback
  *  
  * */
- function createCheckoutEmbed(url) {
+ function createCheckout(url, callback) {
 
     jQuery.ajax({
+        dataType: 'json',
+        method: 'POST',
         url: url,
         success: function (response) {
-            
-            var checkoutId = response.checkoutId;
-            returnUrl = response.returnUrl;
-
-            var options = {
-                id: checkoutId,
-                type: 'checkout',
-                paymentMethod: mbbxCurrentMehtod || '',
-
-                onResult: (data) => {
-                    location.href = returnUrl + '&status=' + data.status.code
-                },
-
-                onClose: () => {
-                    jQuery("body").trigger('processStop');
-                    location.href = returnUrl
-                },
-
-                onError: (error) => {
-                    jQuery("body").trigger('processStop');
-                    location.href = returnUrl
-                }
-            }
-
-            // Init Mobbex Embed
-            var mbbxButton = window.MobbexEmbed.init(options);
-            mbbxButton.open();
+            callback(response);
         },
         error: function () {
             console.log("No se ha podido obtener la información");
             return false;
         }
     });
+
+}
+
+/** MOBBEX EMBED */
+function embedPayment(response){
+    var options = {
+        id: response.id,
+        type: 'checkout',
+        paymentMethod: mbbxCurrentMehtod || '',
+
+        onResult: (data) => {
+            location.href = response.return_url + '&status=' + data.status.code
+        },
+
+        onClose: () => {
+            jQuery("body").trigger('processStop');
+            location.href = response.return_url
+        },
+
+        onError: (error) => {
+            jQuery("body").trigger('processStop');
+            location.href = response.return_url
+        }
+    }
+
+    // Init Mobbex Embed
+    var mbbxButton = window.MobbexEmbed.init(options);
+    mbbxButton.open();
 
 }
 
@@ -97,59 +106,25 @@ function insertWalletSdk() {
  * with wallet card
  * @param {*} checkoutBuilder 
  */
-function executeWallet(url) {
+function executeWallet(response) {
+    $("body").trigger('processStart');
     let $ = jQuery
-
-    if(!returnUrl.includes(url)) {
-        returnUrl = url+'?quote_id=' + window.checkoutConfig.quoteData.entity_id;
-    }
-
-    if (mbbxCurrentCard) {
-        let installment  = $(`#${mbbxCurrentCard} select`).val()
-        let securityCode = $(`#${mbbxCurrentCard} input[name=security-code]`).val()
-        let intentToken  = $(`#${mbbxCurrentCard} input[name=intent-token]`).val()
-
-        window.MobbexJS.operation.process({
-                intentToken: intentToken,
-                installment: installment,
-                securityCode: securityCode
-            })
-            .then(data => {
-                window.top.location = returnUrl + '&status=' + data.data.status.code;
-            })
-            .catch(error => {
-                $("body").trigger('processStop');
-                location.href = returnUrl;
-            })
-
-    } else {
-        //if new-card or none option is selected, then proced to normal checkout using quote checkout data
-        if (window.checkoutConfig.payment.webpay.paymentUrl && embed) {
-            var options = {
-                id: window.checkoutConfig.payment.webpay.checkoutId,
-                type: 'checkout',
-                paymentMethod: mbbxCurrentMehtod || '',
-
-                onResult: (data) => {
-                    location.href = returnUrl + '&status=' + data.status.code
-                },
-
-                onClose: () => {
-                    jQuery("body").trigger('processStop');
-                    location.href = returnUrl
-                },
-
-                onError: (error) => {
-                    jQuery("body").trigger('processStop');
-                    location.href = returnUrl
-                }
-            };
-            var mbbxButton = window.MobbexEmbed.init(options);
-            mbbxButton.open();
-        } else if (window.checkoutConfig.payment.webpay.paymentUrl) {
-            window.location.href = window.checkoutConfig.payment.webpay.paymentUrl + '?paymentMethod=' + mbbxCurrentMehtod;
-        }
-    }
+    let updatedCard = response.wallet.find(card => card.card.card_number == $(`#${mbbxCurrentCard} input[name=card-number]`).val());
+    
+    var options = {
+        intentToken: updatedCard.it,
+        installment: $(`#${mbbxCurrentCard} select`).val(),
+        securityCode: $(`#${mbbxCurrentCard} input[name=security-code]`).val()
+    };
+    
+    window.MobbexJS.operation.process(options)
+        .then(data => {
+            window.top.location = response.return_url + '&status=' + data.data.status.code;
+        })
+        .catch(error => {
+            $("body").trigger('processStop');
+            location.href = response.return_url;
+        })
 }
 
 /** DISPLAY & EXECUTE FUNCTIONS */
@@ -174,30 +149,22 @@ define(
                 return true;
             },
             afterPlaceOrder: function () {
-                if (wallet && window.checkoutConfig.payment.webpay.paymentUrl != null) {
-                    //only use wallet payment if there is at least one card stored
-                    executeWallet(urlBuilder.build('webpay/payment/paymentreturn'))
-                } else if (embed) {
-                    $("body").trigger('processStart');
-                    createCheckoutEmbed(urlBuilder.build('webpay/payment/embedpayment/'));
-                } else {
-                    window.location.replace(
-                        urlBuilder.build('webpay/payment/redirect?paymentMethod=' + mbbxCurrentMehtod)
-                    );
-                }
-            },
-            getData: function () {
-                return {
-                    'method': this.item.method,
-                    'additional_data': {}
-                };
+                $("body").trigger('processStart');
+                createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
+                    if(wallet && mbbxCurrentCard){
+                        executeWallet(response)
+                    }else if(embed){
+                        embedPayment(response)
+                    } else {
+                        window.top.location.href = urlBuilder.build('webpay/payment/redirect') + '?paymentMethod=' + mbbxCurrentMehtod + '&checkoutUrl=' + encodeURIComponent(response.url);
+                    }
+                })
             },
             getBanner: function () {
-                let mobbexConfig = window.checkoutConfig.payment.webpay;
-                if (mobbexConfig !== undefined) {
-                    return mobbexConfig['banner'];
-                }
-                return '';
+                if (window.checkoutConfig.payment.webpay['banner'] !== undefined) 
+                    return window.checkoutConfig.payment.webpay['banner'];
+
+                return false;
             },
             getPaymentMethods: function () {
                 return window.checkoutConfig.payment.webpay['paymentMethods'];
