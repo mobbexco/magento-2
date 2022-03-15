@@ -148,7 +148,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'img'          => $card['source']['card']['product']['logo'],
                     'maxlength'    => $card['source']['card']['product']['code']['length'],
                     'placeholder'  => $card['source']['card']['product']['code']['name'],
-                    'hiddenValue'  => $card['it'],
+                    'hiddenValue'  => $card['card']['card_number'],
                     'installments' => $card['installments']
                 ];
             }

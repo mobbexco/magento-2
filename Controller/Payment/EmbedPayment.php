@@ -31,16 +31,11 @@ class EmbedPayment extends Action
 
     public function execute()
     {
-        
         $resultJson = $this->resultJsonFactory->create();
 
         $checkout = $this->_helper->getCheckout();
-        $vac = [ 
-            'returnUrl' => $checkout['return_url'], 
-            'checkoutId' => $checkout['id']
-        ];
 
-        $resultJson->setData($vac);
+        $resultJson->setData($checkout);
     
         return $resultJson;
     }
