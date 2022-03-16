@@ -107,8 +107,8 @@ function insertWalletSdk() {
  * @param {*} checkoutBuilder 
  */
 function executeWallet(response) {
-    $("body").trigger('processStart');
     let $ = jQuery
+    $("body").trigger('processStart');
     let updatedCard = response.wallet.find(card => card.card.card_number == $(`#${mbbxCurrentCard} input[name=card-number]`).val());
     
     var options = {

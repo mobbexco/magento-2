@@ -97,14 +97,14 @@ class Webhook extends WebhookBase
             $postData = $request->getPostValue();
             $orderId  = $request->getParam('order_id');
             $quoteId  = $request->getParam('quote_id');
-            $data     = $this->formatWebhookData($postData['data'], $orderId, $this->config->getMulticard(), false);
-
+            $data     = $this->formatWebhookData($postData['data'], $orderId, $this->config->getMulticard(), $this->config->getMultivendor());
+            
             // If order ID is empty, try to load from quote id
             if (empty($orderId) && !empty($quoteId)) {
                 $quote = $this->quoteFactory->create()->load($quoteId);
                 $orderId = $quote->getReservedOrderId();
             }
-
+            
             Data::log(
                 "WebHook Controller > Data:" . json_encode(compact('orderId', 'data'), JSON_PRETTY_PRINT),
                 "mobbex_" . date('m_Y') . ".log"
@@ -189,19 +189,19 @@ class Webhook extends WebhookBase
     }
 
     /**
-     * Receives the webhook "opartion type" and return true if the webhook is parent and false if not
+     * Receives the webhook "operation type" and return true if the webhook is parent and false if not
      * 
      * @param string $operationType
      * @param bool $multicard
      * @param bool $multivendor
      * @return bool true|false
-     * @return bool true|false
      * 
      */
     public function isParent($operationType, $multicard, $multivendor)
     {
-        if ($operationType === "payment.v2" && ($multicard || $multivendor)) {
-            return false;
+        if ($operationType === "payment.v2") {
+            if ($multicard || $multivendor !== 'disable')
+                return false;
         }
         return true;
     }
