@@ -100,19 +100,15 @@ class Mobbex extends AbstractHelper
     protected $customerSession;
 
     /**
-     * @var EventManager
-     */
-    protected $eventManager;
-
-    /**
-     * @var SessionManagerInterface
-     */
-    protected $session;
-
-    /**
      * @var ProductRepository
      */
     protected $productRepository;
+
+    /** @var \Magento\Framework\Event\ConfigInterface */ 
+    public $eventConfig;
+
+    /** @var \Magento\Framework\Event\ObserverFactory */
+    public $observerFactory;
 
     /**
      * Mobbex constructor.
@@ -149,9 +145,9 @@ class Mobbex extends AbstractHelper
         QuoteFactory $quoteFactory,
         ProductMetadataInterface $productMetadata,
         Session $customerSession,
-        EventManager $eventManager,
-        SessionManagerInterface $session,
-        ProductRepository $productRepository
+        ProductRepository $productRepository,
+        \Magento\Framework\Event\ConfigInterface $eventConfig,
+        \Magento\Framework\Event\ObserverFactory $observerFactory
     ) {
         $this->config = $config;
         $this->order = $order;
@@ -168,20 +164,17 @@ class Mobbex extends AbstractHelper
         $this->customFields = $customFieldFactory->create();
         $this->productMetadata = $productMetadata;
         $this->customerSession = $customerSession;
-        $this->eventManager = $eventManager;
-        $this->session = $session;
         $this->productRepository = $productRepository;
+        $this->eventConfig     = $eventConfig;
+        $this->observerFactory = $observerFactory;
     }
 
     /**
      * @return bool
      */
-    public function createCheckout()
+    public function createCheckout($checkout)
     {
         $curl = curl_init();
-
-        // get checkout object
-        $checkout = $this->_objectManager->get('Magento\Checkout\Model\Type\Onepage')->getCheckout();
 
         // get order object
         $this->order->loadByIncrementId($checkout->getLastRealOrder()->getEntityId());
@@ -272,7 +265,7 @@ class Mobbex extends AbstractHelper
         $is_wallet_active = ((bool) ($this->config->getWalletActive()) && $userSession->isLoggedIn());
 
         // Create data
-        $data = [
+        $data = $this->executeHook('mobbexCheckoutRequest', true, [
             'reference'    => $this->getReference($orderId),
             'currency'     => 'ARS',
             'description'  => $description,
@@ -298,15 +291,7 @@ class Mobbex extends AbstractHelper
             'installments' => $this->getInstallments($orderedItems),
             'timeout'      => 5,
             'wallet'       => $is_wallet_active
-        ];
-
-        // Init session to get event response
-        $this->session->start();
-        $this->session->setMobbexCheckoutBody($data);
-
-        $this->eventManager->dispatch('mobbex_modify_checkout', ['order' => $this->order, 'body' => $data]);
-
-        $data = $this->session->getMobbexCheckoutBody();
+        ], $orderData);
 
         if($this->config->getDebugMode())
         {
@@ -440,7 +425,7 @@ class Mobbex extends AbstractHelper
         $domain = (string) $this->getDomainUrl();
 
         // Create data
-        $data = [
+        $data = $this->executeHook('mobbexQuoteCheckoutRequest', true, [
             'reference'    => $this->getReference($quoteData['entity_id']),
             'currency'     => 'ARS',
             'description'  => $description,
@@ -467,7 +452,7 @@ class Mobbex extends AbstractHelper
             'installments' => $this->getInstallments($quoteData['items'], true),
             'timeout'      => 5,
             'wallet'       => ($is_wallet_active),
-        ];
+        ], $quoteData);
 
         if($this->config->getDebugMode()) {
             Data::log("Checkout Headers:" . print_r($this->getHeaders(), true), "mobbex_debug_" . date('m_Y') . ".log");
@@ -713,22 +698,44 @@ class Mobbex extends AbstractHelper
     /**
      * Execute a hook and retrieve the response.
      * 
-     * @param string $hookName The hook name.
-     * @param array $params Associative array that will be passed as params.
+     * @param string $name The hook name (in camel case).
+     * @param bool $filter Filter first arg in each execution.
+     * @param mixed ...$args Arguments to pass.
      * 
-     * @return array
+     * @return mixed Last execution response or value filtered. Null on exceptions.
      */
-    public function executeHook($hookName, $params = null)
+    public function executeHook($name, $filter = false, ...$args)
     {
-        // Dispatch event and init session to get response
-        $this->eventManager->dispatch($hookName, $params);
-        $this->session->start()->setMobbexData($params);
+        try {
+            // Use snake case to search event
+            $eventName = ltrim(strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', '_$0', $name)), '_');
 
-        // Get response and clear data
-        $response = $this->session->getMobbexData();
-        $this->session->setMobbexData(null);
+            // Get registered observers and first arg to return as default
+            $observers = $this->eventConfig->getObservers($eventName) ?: [];
+            $value     = $filter ? reset($args) : false;
 
-        return $response;
+            foreach ($observers as $observerData) {
+                // Instance observer
+                $instanceMethod = !empty($observerData['shared']) ? 'get' : 'create';
+                $observer       = $this->observerFactory->$instanceMethod($observerData['instance']);
+
+                // Get method to execute
+                $method = [$observer, $name];
+
+                // Only execute if is callable
+                if (!empty($observerData['disabled']) || !is_callable($method))
+                    continue;
+
+                $value = call_user_func_array($method, $args);
+
+                if ($filter)
+                    $args[0] = $value;
+            }
+
+            return $value;
+        } catch (\Exception $e) {
+            Data::log('Mobbex Hook Error: ' . $e->getMessage(), 'mobbex_error.log');
+        }
     }
 
     /**

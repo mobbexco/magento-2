@@ -2,10 +2,13 @@
 <p><?= __('Los planes habilitados aparecerán en el checkout de este producto') ?></p>
 
 <?php
-extract($this->helper->getPlansFilterFields(isset($this->params['id']) ? $this->params['id'] : 0));
+$id           = isset($this->params['id']) ? $this->params['id'] : 0;
 $form         = 'product_form';
-$subscription = $this->helper->getProductSubscription(isset($this->params['id']) ? $this->params['id'] : 0);
-$entity       = $this->helper->getProductEntity(isset($this->params['id']) ? $this->params['id'] : 0);
+$subscription = $this->helper->getProductSubscription($id);
+$entity       = $this->helper->getProductEntity($id);
+extract($this->helper->getPlansFilterFields($id));
+
 include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');
 include $this->getTemplateFile('Mobbex_Webpay::multivendor.phtml');
 include $this->getTemplateFile('Mobbex_Webpay::subscription.phtml');
+$this->helper->mobbex->executeHook('mobbexProductSettings', false, $id);

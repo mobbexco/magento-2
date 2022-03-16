@@ -101,13 +101,13 @@ class Data extends AbstractHelper
      */
     public function getCheckout()
     {
-        // get checkout object
-        $checkout = $this->mobbex->createCheckout();
-        
-        if ($checkout != false) {
-            return $checkout;
-        } else {
-            // Error?
+        // Get checkout with order data
+        $checkout = $this->_objectManager->get('Magento\Checkout\Model\Type\Onepage')->getCheckout();
+
+        try {
+            return $this->mobbex->executeHook('mobbexProcessPayment', false, $checkout) ?: $this->mobbex->createCheckout($checkout);
+        } catch (\Exception $e) {
+            Data::log('Mobbex: Error Processing Payment' . $e->getMessage(), 'mobbex_error.log');
         }
     }
 
@@ -117,13 +117,13 @@ class Data extends AbstractHelper
      */
     public function getCheckoutMockup($quoteData)
     {
-        // get checkout object
-        $checkout = $this->mobbex->createCheckoutFromQuote($quoteData);
+        // Get checkout with quote data
+        $checkout = $this->_objectManager->get('Magento\Checkout\Model\Type\Onepage')->getCheckout();
 
-        if ($checkout != false) {
-            return $checkout;
-        } else {
-            // Error?
+        try {
+            return $this->mobbex->executeHook('mobbexProcessPayment', false, $checkout) ?: $this->mobbex->createCheckoutFromQuote($quoteData);
+        } catch (\Exception $e) {
+            Data::log('Mobbex: Error Obtaining Mockup Checkout' . $e->getMessage(), 'mobbex_error.log');
         }
     }
     
@@ -332,4 +332,3 @@ class Data extends AbstractHelper
         return $this->mobbex->getProductSubscription($id);
     }
 }
-
