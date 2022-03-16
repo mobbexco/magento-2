@@ -20,6 +20,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_THEME_TYPE          = 'payment/webpay/appearance/theme';
     const PATH_BACKGROUND_COLOR    = 'payment/webpay/appearance/background_color';
     const PATH_PRIMARY_COLOR       = 'payment/webpay/appearance/primary_color';
+    const PATH_TITLE_CHECKOUT     = 'payment/webpay/appearance/checkout_title';
     const PATH_BANNER_CHECKOUT     = 'payment/webpay/appearance/checkout_banner';
     const PATH_WIDGET_STYLE        = 'payment/webpay/appearance/widget_style';
     const PATH_WIDGET_BUTTON_LOGO  = 'payment/webpay/appearance/button_logo';
@@ -56,6 +57,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     public function save($path, $value)
     {
         $this->configWriter->save($path, $value);
+    }
+
+    public function getTitleCheckout($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_TITLE_CHECKOUT,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
     }
 
     public function getBannerCheckout($store = null)

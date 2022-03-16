@@ -23,6 +23,7 @@ let mbbxCurrentCard = false;
 require(['jquery'], function ($) {
     $(document).on('click', '[name="payment[method]"]', function (e) {
         $(".mobbex-wallet-form").hide()
+        $('#mbbx-banner').hide()
         mbbxCurrentMehtod = '';
         mbbxCurrentCard = '';
         if($(this).hasClass('mbbx-payment-method-input')){
@@ -33,6 +34,8 @@ require(['jquery'], function ($) {
                 mbbxCurrentMehtod = $(this).attr('value');
             }
             $('#webpay').trigger('click');
+            if($(this).closest(".payment-method").has('#mbbx-banner'))
+                $('#mbbx-banner').show()
             $(this).closest(".payment-method").after($('#mbbx-place-order'));
         }
     });
