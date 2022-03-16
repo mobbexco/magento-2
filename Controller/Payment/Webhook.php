@@ -123,10 +123,7 @@ class Webhook extends WebhookBase
             $order = $this->_order->loadByIncrementId($orderId);
 
             // Execute own hook to extend functionalities
-            $this->helper->mobbex->executeHook('mobbex_webhook_received', [
-                'order'   => $order,
-                'webhook' => $postData['data'],
-            ]);
+            $this->helper->mobbex->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
 
             // Update order data
             $this->_orderUpdate->updateTotals($order, $data);

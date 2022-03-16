@@ -100,16 +100,6 @@ class Mobbex extends AbstractHelper
     protected $customerSession;
 
     /**
-     * @var EventManager
-     */
-    protected $eventManager;
-
-    /**
-     * @var SessionManagerInterface
-     */
-    protected $session;
-
-    /**
      * @var ProductRepository
      */
     protected $productRepository;
@@ -155,8 +145,6 @@ class Mobbex extends AbstractHelper
         QuoteFactory $quoteFactory,
         ProductMetadataInterface $productMetadata,
         Session $customerSession,
-        EventManager $eventManager,
-        SessionManagerInterface $session,
         ProductRepository $productRepository,
         \Magento\Framework\Event\ConfigInterface $eventConfig,
         \Magento\Framework\Event\ObserverFactory $observerFactory
@@ -176,8 +164,6 @@ class Mobbex extends AbstractHelper
         $this->customFields = $customFieldFactory->create();
         $this->productMetadata = $productMetadata;
         $this->customerSession = $customerSession;
-        $this->eventManager = $eventManager;
-        $this->session = $session;
         $this->productRepository = $productRepository;
         $this->eventConfig     = $eventConfig;
         $this->observerFactory = $observerFactory;
@@ -186,12 +172,9 @@ class Mobbex extends AbstractHelper
     /**
      * @return bool
      */
-    public function createCheckout()
+    public function createCheckout($checkout)
     {
         $curl = curl_init();
-
-        // get checkout object
-        $checkout = $this->_objectManager->get('Magento\Checkout\Model\Type\Onepage')->getCheckout();
 
         // get order object
         $this->order->loadByIncrementId($checkout->getLastRealOrder()->getEntityId());
@@ -282,7 +265,7 @@ class Mobbex extends AbstractHelper
         $is_wallet_active = ((bool) ($this->config->getWalletActive()) && $userSession->isLoggedIn());
 
         // Create data
-        $data = [
+        $data = $this->executeHook('mobbexCheckoutRequest', true, [
             'reference'    => $this->getReference($orderId),
             'currency'     => 'ARS',
             'description'  => $description,
@@ -308,15 +291,7 @@ class Mobbex extends AbstractHelper
             'installments' => $this->getInstallments($orderedItems),
             'timeout'      => 5,
             'wallet'       => $is_wallet_active
-        ];
-
-        // Init session to get event response
-        $this->session->start();
-        $this->session->setMobbexCheckoutBody($data);
-
-        $this->eventManager->dispatch('mobbex_modify_checkout', ['order' => $this->order, 'body' => $data]);
-
-        $data = $this->session->getMobbexCheckoutBody();
+        ], $orderData);
 
         if($this->config->getDebugMode())
         {
@@ -450,7 +425,7 @@ class Mobbex extends AbstractHelper
         $domain = (string) $this->getDomainUrl();
 
         // Create data
-        $data = [
+        $data = $this->executeHook('mobbexQuoteCheckoutRequest', true, [
             'reference'    => $this->getReference($quoteData['entity_id']),
             'currency'     => 'ARS',
             'description'  => $description,
@@ -477,7 +452,7 @@ class Mobbex extends AbstractHelper
             'installments' => $this->getInstallments($quoteData['items'], true),
             'timeout'      => 5,
             'wallet'       => ($is_wallet_active),
-        ];
+        ], $quoteData);
 
         if($this->config->getDebugMode()) {
             Data::log("Checkout Headers:" . print_r($this->getHeaders(), true), "mobbex_debug_" . date('m_Y') . ".log");
