@@ -55,7 +55,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                         'wallet' => $this->config->getWalletActive()
                     ],
                     'banner'            => $this->config->getBannerCheckout(),
-                    'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => 'mobbex', 'name' => $this->config->getTitleCheckout() ?: 'Pagar con Mobbex', 'image' => '']],
+                    'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->getTitleCheckout() ?: 'Pagar con Mobbex', 'image' => '']],
                     'walletCreditCards' => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
                     'returnUrl'         => isset($checkoutData['returnUrl']) ? $checkoutData['returnUrl'] : '',
                     'paymentUrl'        => isset($checkoutData['paymentUrl']) ? $checkoutData['paymentUrl'] : '',
@@ -148,7 +148,7 @@ class CustomConfigProvider implements ConfigProviderInterface
             } else {
                 $data['paymentMethods'][] = [
                     'id'    => 'mobbex',
-                    'value' => 'mobbex',
+                    'value' => '',
                     'name'  => $this->config->getTitleCheckout(),
                     'image' => ''
                 ];

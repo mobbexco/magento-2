@@ -68,7 +68,6 @@ function embedPayment(response){
     var options = {
         id: response.id,
         type: 'checkout',
-        paymentMethod: mbbxCurrentMehtod || '',
 
         onResult: (data) => {
             location.href = response.return_url + '&status=' + data.status.code
@@ -84,6 +83,9 @@ function embedPayment(response){
             location.href = response.return_url
         }
     }
+
+    if(mbbxCurrentMehtod)
+        options.paymentMethod = mbbxCurrentMehtod;
 
     // Init Mobbex Embed
     var mbbxButton = window.MobbexEmbed.init(options);
