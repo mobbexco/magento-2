@@ -55,11 +55,11 @@ class CustomConfigProvider implements ConfigProviderInterface
                         'wallet' => $this->config->getWalletActive()
                     ],
                     'banner'            => $this->config->getBannerCheckout(),
-                    'paymentMethods'    => $checkoutData['paymentMethods'] ?: [],
-                    'walletCreditCards' => $checkoutData['wallet'] ?: [],
-                    'returnUrl'         => $checkoutData['returnUrl'],
-                    'paymentUrl'        => $checkoutData['paymentUrl'],
-                    'checkoutId'        => $checkoutData['checkoutId'],
+                    'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->getTitleCheckout() ?: 'Pagar con Mobbex', 'image' => '']],
+                    'walletCreditCards' => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
+                    'returnUrl'         => isset($checkoutData['returnUrl']) ? $checkoutData['returnUrl'] : '',
+                    'paymentUrl'        => isset($checkoutData['paymentUrl']) ? $checkoutData['paymentUrl'] : '',
+                    'checkoutId'        => isset($checkoutData['checkoutId']) ? $checkoutData['checkoutId'] : '',
                 ]
             ]
         ];
@@ -119,38 +119,54 @@ class CustomConfigProvider implements ConfigProviderInterface
     */
     public function formatCheckoutData($checkoutData)
     {
-        $data = [
-            'paymentMethods' => [],
-            'wallet'         => [],
-            'returnUrl'      => $checkoutData['return_url'],
-            'paymentUrl'     => $checkoutData['url'],
-            'checkoutId'     => $checkoutData['id'],
-            'data'           => $checkoutData
-        ];
+        $data = [];
 
-        if($checkoutData['paymentMethods']) {
-            foreach ($checkoutData['paymentMethods'] as $method) {
+        if($checkoutData){
+
+            $data = [
+                'paymentMethods' => [],
+                'wallet'         => [],
+                'returnUrl'      => $checkoutData['return_url'],
+                'paymentUrl'     => $checkoutData['url'],
+                'checkoutId'     => $checkoutData['id'],
+                'data'           => $checkoutData
+            ];
+    
+            if(isset($checkoutData['paymentMethods'])) {
+                foreach ($checkoutData['paymentMethods'] as $method) {
+                    $data['paymentMethods'][] = [
+                        'id'    => $method['subgroup'],
+                        'value' => $method['group'] . ':' . $method['subgroup'],
+                        'name'  => $method['group'] == 'card' && $method['subgroup'] == 'card_input' && $this->config->getTitleCheckout() ? $this->config->getTitleCheckout() : $method['subgroup_title'],
+                        'image' => $method['subgroup_logo']
+                    ];
+                }
+
+                if(count($data['paymentMethods']) <= 1 && $this->config->getTitleCheckout())
+                    $data['paymentMethods'][0]['name'] = $this->config->getTitleCheckout();
+
+            } else {
                 $data['paymentMethods'][] = [
-                    'id'    => $method['subgroup'],
-                    'value' => $method['group'] . ':' . $method['subgroup'],
-                    'name'  => $method['subgroup_title'],
-                    'image' => $method['subgroup_logo']
+                    'id'    => 'mobbex',
+                    'value' => '',
+                    'name'  => $this->config->getTitleCheckout(),
+                    'image' => ''
                 ];
             }
-        }
-
-        if($this->config->getWalletActive() && isset($checkoutData['wallet'])) {
-            foreach ($checkoutData['wallet'] as $key => $card) {
-                $data['wallet'][] = [
-                    'id'           => 'wallet-card-' . $key,
-                    'value'        => 'card-' . $key,
-                    'name'         => $card['name'],
-                    'img'          => $card['source']['card']['product']['logo'],
-                    'maxlength'    => $card['source']['card']['product']['code']['length'],
-                    'placeholder'  => $card['source']['card']['product']['code']['name'],
-                    'hiddenValue'  => $card['card']['card_number'],
-                    'installments' => $card['installments']
-                ];
+    
+            if($this->config->getWalletActive() && isset($checkoutData['wallet'])) {
+                foreach ($checkoutData['wallet'] as $key => $card) {
+                    $data['wallet'][] = [
+                        'id'           => 'wallet-card-' . $key,
+                        'value'        => 'card-' . $key,
+                        'name'         => $card['name'],
+                        'img'          => $card['source']['card']['product']['logo'],
+                        'maxlength'    => $card['source']['card']['product']['code']['length'],
+                        'placeholder'  => $card['source']['card']['product']['code']['name'],
+                        'hiddenValue'  => $card['card']['card_number'],
+                        'installments' => $card['installments']
+                    ];
+                }
             }
         }
 

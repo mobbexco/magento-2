@@ -10,24 +10,24 @@
     <!--Common Mobbex Methods-->
     <!-- ko foreach: { data: getPaymentMethods(), as: 'item' } -->
     <li class="payment-method payment-method-title field choice">
-
-        <!-- ko if: (item.id == 'card_input' || $parent.getPaymentMethods().length == 1) && $parent.getBanner() -->
-        <div class="mobbex-content" style="padding: 20px 0">
-            <img data-bind="attr: {src: $parent.getBanner()}" alt="mobbex metodos de pagos" class="mobbex-banner"
-            style="max-width: 100%;" />
-        </div>
-        <!-- /ko -->
-
         <div class="inputs" style="display: flex; align-items: center;">
             <input type="radio" class="mbbx-payment-method-input" name="payment[method]"
             data-bind="attr: {'id': item.id, value: item.value}" />
             
             <label data-bind="attr: {'for': item.id}" class="label" style="display: flex; align-items: center;">
+                <!-- ko if: (item.image != '') -->
                 <img data-bind="attr: {'src': item.image}" alt="mobbex metodos de pago"
                 style="width: 50px; margin-right: 10px; border-radius: 50%;">
+                <!-- /ko -->
                 <span data-bind="text: item.name"></span>
             </label>
         </div>
+        <!-- ko if: (item.id == 'card_input' || $parent.getPaymentMethods().length == 1) && $parent.getBanner() -->
+        <div class="mobbex-content" style="padding: 20px 0" id="mbbx-banner">
+            <img data-bind="attr: {src: $parent.getBanner()}" alt="mobbex metodos de pagos" class="mobbex-banner"
+            style="max-width: 100%;" />
+        </div>
+        <!-- /ko -->
     </li>
     <!-- /ko -->
 

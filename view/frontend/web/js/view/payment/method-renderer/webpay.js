@@ -23,6 +23,7 @@ let mbbxCurrentCard = false;
 require(['jquery'], function ($) {
     $(document).on('click', '[name="payment[method]"]', function (e) {
         $(".mobbex-wallet-form").hide()
+        $('#mbbx-banner').hide()
         mbbxCurrentMehtod = '';
         mbbxCurrentCard = '';
         if($(this).hasClass('mbbx-payment-method-input')){
@@ -33,6 +34,8 @@ require(['jquery'], function ($) {
                 mbbxCurrentMehtod = $(this).attr('value');
             }
             $('#webpay').trigger('click');
+            if($(this).closest(".payment-method").has('#mbbx-banner'))
+                $('#mbbx-banner').show()
             $(this).closest(".payment-method").after($('#mbbx-place-order'));
         }
     });
@@ -65,7 +68,6 @@ function embedPayment(response){
     var options = {
         id: response.id,
         type: 'checkout',
-        paymentMethod: mbbxCurrentMehtod || '',
 
         onResult: (data) => {
             location.href = response.return_url + '&status=' + data.status.code
@@ -81,6 +83,9 @@ function embedPayment(response){
             location.href = response.return_url
         }
     }
+
+    if(mbbxCurrentMehtod)
+        options.paymentMethod = mbbxCurrentMehtod;
 
     // Init Mobbex Embed
     var mbbxButton = window.MobbexEmbed.init(options);
@@ -151,6 +156,10 @@ define(
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
                 createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
+                    if(!response.id){
+                        alert('Error al procesar el pedido.')
+                        return;
+                    }
                     if(wallet && mbbxCurrentCard){
                         executeWallet(response)
                     }else if(embed){

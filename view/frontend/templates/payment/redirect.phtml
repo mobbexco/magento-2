@@ -2,7 +2,9 @@
 
 <form id="redirect_form" action="<?php echo $checkout['url']; ?>" method="GET">
     <p><?php echo __("We are redirecting you to our secure payment site in Mobbex..."); ?>
-    <input type='hidden' name='paymentMethod' value='<?php echo $checkout['method']; ?>'/>
+    <?php if($checkout['method']): ?>
+        <input type='hidden' name='paymentMethod' value='<?php echo $checkout['method']; ?>'/>
+    <?php endif; ?>
 </form>
 
 <script type="text/javascript">
