@@ -42,5 +42,6 @@ class ProductSaveObserver implements ObserverInterface
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'entity', $entity);
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'is_subscription', $is_subscription);
         $this->customFields->saveCustomField($observer->getProduct()->getId(), 'product', 'subscription_uid', $subscription_uid);
+        $this->helper->mobbex->executeHook('mobbexSaveProductSettings', false, $observer->getProduct(), $this->params);
     }
 }

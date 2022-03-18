@@ -40,5 +40,6 @@ class CategorySaveObserver implements ObserverInterface
         $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'common_plans', serialize($commonPlans));
         $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'advanced_plans', serialize($advancedPlans));
         $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'entity', $entity);
+        $this->helper->mobbex->executeHook('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
     }
 }
