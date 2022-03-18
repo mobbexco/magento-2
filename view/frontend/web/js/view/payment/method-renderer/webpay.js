@@ -156,8 +156,10 @@ define(
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
                 createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
-                    if(!response.id)
+                    if(!response.id){
+                        alert('Error al procesar el pedido.')
                         return;
+                    }
                     if(wallet && mbbxCurrentCard){
                         executeWallet(response)
                     }else if(embed){
