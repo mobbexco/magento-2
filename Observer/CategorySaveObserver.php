@@ -9,10 +9,12 @@ class CategorySaveObserver implements ObserverInterface
 {
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Mobbex\Webpay\Helper\Data $helper
     ) {
         $this->customFields = $customFieldFactory->create();
         $this->params       = $context->getRequest()->getParams();
+        $this->helper       = $helper;
     }
 
     /**
