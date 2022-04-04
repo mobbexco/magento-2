@@ -22,22 +22,27 @@ class MobbexTransaction extends AbstractModel
      * Return webhooks transaction data from db
      * 
      * @param int $order_id
-     * @param bool $parent 
+     * @param array $parent 
      * 
      * @return array
      */
-    public function getTransaction($order_id, $parent = false)
+    public function getTransaction($order_id, $filter = [false])
     {
-        if($parent){
+        if($filter[0]){
             $collection = $this->getCollection()
-                ->addToFilter('order_id', $order_id)
-                ->addToFilter('parent', 1);
+                ->addFieldToFilter('order_id', $order_id)
+                ->addFieldToFilter('parent', $filter[1])
+                ->getData();
+            
+            if($filter[1])
+                $collection = $collection[0];
 
-            return !empty($collection[0]) ? $collection[0] : false;
+            return !empty($collection) ? $collection : false;
         }
         $collection = $this->getCollection()
-            ->addToFilter('order_id', $order_id);
-
+            ->addFieldToFilter('order_id', $order_id)
+            ->getData();
+            
         return !empty($collection) ? $collection : false;
     }
 
