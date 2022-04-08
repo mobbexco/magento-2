@@ -47,15 +47,15 @@ class Info extends \Magento\Payment\Block\Info
     {
         $transport = parent::_prepareSpecificInformation($transport);
 
-        $mobbexData = $this->mobbexTransaction->getTransaction($this->getInfo()->getOrder()->getIncrementId(), [true,1]);
+        $mobbexData = $this->mobbexTransaction->getTransaction($this->getInfo()->getOrder()->getIncrementId(), [true,true]);
         $cards = [];
         
-        if($mobbexData['operation_type'] == "payment.multiple-sources")
-            $cards = $this->mobbexTransaction->getTransaction($this->getInfo()->getOrder()->getIncrementId(), [true,0]);
+        if($mobbexData && $mobbexData['operation_type'] == "payment.multiple-sources")
+            $cards = $this->mobbexTransaction->getTransaction($this->getInfo()->getOrder()->getIncrementId(), [true,false]);
         
         $data = [
-        (string) __('Transaction ID')      => isset($mobbexData['payment_id']) ? $mobbexData['payment_id'] : '',
-        (string) __('Total')               => isset($mobbexData['total']) ? $mobbexData['total'] : '',
+        (string) __('Transaction ID') => isset($mobbexData['payment_id']) ? $mobbexData['payment_id'] : '',
+        (string) __('Total')          => isset($mobbexData['total']) ? $mobbexData['total'] : '',
         ];
 
         if($cards){

@@ -35,7 +35,7 @@ class MobbexTransaction extends AbstractModel
                 ->getData();
             
             if($filter[1])
-                $collection = $collection[0];
+                $collection = isset($collection[0]) ? $collection[0] : $collection;
 
             return !empty($collection) ? $collection : false;
         }
