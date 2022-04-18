@@ -94,7 +94,7 @@ class Webhook extends WebhookBase
         try {
             // Get request data
             $request  = $this->getRequest();
-            $postData = $request->getPostValue();
+            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : $request->getPostValue();
             $orderId  = $request->getParam('order_id');
             $quoteId  = $request->getParam('quote_id');
             $data     = $this->formatWebhookData($postData['data'], $orderId, $this->config->getMulticard(), $this->config->getMultivendor());
