@@ -1,5 +1,7 @@
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked() && onSelect())}">
 
+    <div id="redirectForm"></div>
+
     <input type="radio"
     style="display: none;" 
     data-bind="attr: {'id': getCode()}, 
