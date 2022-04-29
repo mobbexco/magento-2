@@ -3,8 +3,8 @@ let wallet    = window.checkoutConfig.payment.webpay.config.wallet && window.che
 let returnUrl = window.checkoutConfig.payment.webpay.returnUrl;
 
 // Add Mobbex script
-var script = document.createElement('script');
-script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.20.js`;
+var script   = document.createElement('script');
+script.src   = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.20.js`;
 script.async = true;
 document.body.appendChild(script);
 
@@ -26,7 +26,7 @@ require(['jquery'], function ($) {
         $('#mbbx-banner').hide()
         mbbxCurrentMehtod = '';
         mbbxCurrentCard = '';
-        if($(this).hasClass('mbbx-payment-method-input')){
+        if ($(this).hasClass('mbbx-payment-method-input')) {
             if ($(this).hasClass("mbbx-card")) {
                 mbbxCurrentCard = $(this).attr('value');
                 $(`#${mbbxCurrentCard}`).show()
@@ -34,7 +34,7 @@ require(['jquery'], function ($) {
                 mbbxCurrentMehtod = $(this).attr('value');
             }
             $('#webpay').trigger('click');
-            if($(this).closest(".payment-method").has('#mbbx-banner'))
+            if ($(this).closest(".payment-method").has('#mbbx-banner'))
                 $('#mbbx-banner').show()
             $(this).closest(".payment-method").after($('#mbbx-place-order'));
         }
@@ -44,9 +44,11 @@ require(['jquery'], function ($) {
 
 /**
  * Create checkout and call a callback
- *  
+ *  @param {string} url 
+ *  @param {string} failUrl 
+ *  @param {callback} callback
  * */
- function createCheckout(url, callback) {
+function createCheckout(url, failUrl, callback) {
 
     jQuery.ajax({
         dataType: 'json',
@@ -55,16 +57,22 @@ require(['jquery'], function ($) {
         success: function (response) {
             callback(response);
         },
-        error: function () {
-            console.log("No se ha podido obtener la información");
-            return false;
+        error: function (error) {
+            displayAlert('Pago Fallido', 'No se pudo completar el pago.', failUrl);
         }
     });
 
 }
 
+
 /** MOBBEX EMBED */
-function embedPayment(response){
+
+/**
+ * Call the Mobbex API to create checkout & open it in embed mode.
+ * @param {array} response 
+ * @param {string} failUrl 
+ */
+function embedPayment(response, failUrl) {
     var options = {
         id: response.id,
         type: 'checkout',
@@ -80,11 +88,11 @@ function embedPayment(response){
 
         onError: (error) => {
             jQuery("body").trigger('processStop');
-            location.href = response.return_url
+            displayAlert('Pago Fallido', 'No se pudo completar el pago.', failUrl);
         }
     }
 
-    if(mbbxCurrentMehtod)
+    if (mbbxCurrentMehtod)
         options.paymentMethod = mbbxCurrentMehtod;
 
     // Init Mobbex Embed
@@ -96,7 +104,7 @@ function embedPayment(response){
 /** MOBBEX WALLET */
 
 /**
- * Add Mobbex Wallet SDK script 
+ * Add Mobbex Wallet SDK script.
  */
 function insertWalletSdk() {
     // Add mobbex wallet SDK script
@@ -109,30 +117,64 @@ function insertWalletSdk() {
 /**
  * Call Mobbex API using sdk to make the payment
  * with wallet card
- * @param {*} checkoutBuilder 
+ * @param {array} response 
+ * @param {string} failUrl 
  */
-function executeWallet(response) {
+function executeWallet(response, failUrl) {
     let $ = jQuery
-    $("body").trigger('processStart');
     let updatedCard = response.wallet.find(card => card.card.card_number == $(`#${mbbxCurrentCard} input[name=card-number]`).val());
-    
+    $("body").trigger('processStart');
+
     var options = {
         intentToken: updatedCard.it,
         installment: $(`#${mbbxCurrentCard} select`).val(),
         securityCode: $(`#${mbbxCurrentCard} input[name=security-code]`).val()
     };
-    
+
     window.MobbexJS.operation.process(options)
         .then(data => {
             window.top.location = response.return_url + '&status=' + data.data.status.code;
         })
         .catch(error => {
-            $("body").trigger('processStop');
-            location.href = response.return_url;
+            displayAlert('Pago Fallido', 'No se pudo completar el pago.', failUrl);
         })
 }
 
 /** DISPLAY & EXECUTE FUNCTIONS */
+
+/**
+ * Display Magento & restore the cart. 
+ * @param {string} alertTitle 
+ * @param {string} message 
+ * @param {string} failUrl 
+ */
+function displayAlert(alertTitle, message, failUrl) {
+    let $ = jQuery
+    let alert = document.createElement('P');
+    alert.textContent = message;
+    
+    $("body").trigger('processStop');
+    $(alert).alert({
+        title: $.mage.__(alertTitle),
+        content: $.mage.__(message),
+        actions: {
+            always: function () {
+                jQuery("body").trigger('processStart');
+                jQuery.ajax({
+                    dataType: 'json',
+                    method: 'POST',
+                    url: failUrl,
+                    success: function () {
+                        location.reload()
+                    },
+                    error: function () {
+                        location.reload()
+                    }
+                });
+            }
+        }
+    });
+}
 
 define(
     [
@@ -148,29 +190,29 @@ define(
                 redirectAfterPlaceOrder: false
             },
             onSelect: function () {
-                if(wallet) {
+                if (wallet) {
                     insertWalletSdk();
                 }
                 return true;
             },
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
-                createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
-                    if(!response.id){
-                        alert('Error al procesar el pedido.')
-                        return;
+                createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), urlBuilder.build('webpay/payment/failure'), response => {
+                    if (!response.id) {
+                        displayAlert('Pago Fallido', 'Error al procesar el pedido.', urlBuilder.build('webpay/payment/failure'));
                     }
-                    if(wallet && mbbxCurrentCard){
-                        executeWallet(response)
-                    }else if(embed){
-                        embedPayment(response)
+                    if (wallet && mbbxCurrentCard) {
+                        jQuery("body").trigger('processStop');
+                        executeWallet(response, urlBuilder.build('webpay/payment/failure'))
+                    } else if (embed) {
+                        embedPayment(response, urlBuilder.build('webpay/payment/failure'))
                     } else {
-                        window.top.location.href = urlBuilder.build('webpay/payment/redirect') + '?paymentMethod=' + mbbxCurrentMehtod + '&checkoutUrl=' + encodeURIComponent(response.url);
+                        mbbxRedirect(response.url)
                     }
                 })
             },
             getBanner: function () {
-                if (window.checkoutConfig.payment.webpay['banner'] !== undefined) 
+                if (window.checkoutConfig.payment.webpay['banner'] !== undefined)
                     return window.checkoutConfig.payment.webpay['banner'];
 
                 return false;
