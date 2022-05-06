@@ -113,11 +113,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
         }
 
         /* Add mobbex custom field table */
-
-        if (version_compare($context->getVersion(), '1.3.0', '<=')) {
-            if (!$setup->tableExists('mobbex_customfield')) {
-                $table = $connection
-                ->newTable($setup->getTable('mobbex_customfield'))
+        if (!$setup->tableExists('mobbex_customfield')) {
+            $table = $connection->newTable($setup->getTable('mobbex_customfield'))
                 ->addColumn('customfield_id', Table::TYPE_INTEGER, null, array(
                     'identity'  => true,
                     'unsigned'  => true,
@@ -135,10 +132,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     ), 'Field name')
                 ->addColumn('data', Table::TYPE_TEXT, null, array(
                     'nullable'  => false,
-                    ), 'Data');
-            
-                $connection->createTable($table);
-            }
+                ),
+            'Data');
+        
+            $connection->createTable($table);
         }
 
         /* Add payment fee columns */
