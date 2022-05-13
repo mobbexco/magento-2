@@ -113,15 +113,16 @@ class Data extends AbstractHelper
 
     /**
      * Get a Mockup checkout that serves for extract some specific data.
-     * @return bool
+     * 
+     * @return array
      */
-    public function getCheckoutMockup($quoteData)
+    public function getCheckoutMockup()
     {
         // Get checkout with quote data
         $checkout = $this->_objectManager->get('Magento\Checkout\Model\Type\Onepage')->getCheckout();
 
         try {
-            return $this->mobbex->executeHook('mobbexProcessPayment', false, $checkout) ?: $this->mobbex->createCheckoutFromQuote($quoteData);
+            return $this->mobbex->executeHook('mobbexProcessPayment', false, $checkout) ?: $this->mobbex->createCheckoutFromQuote($checkout->getQuote());
         } catch (\Exception $e) {
             Data::log('Mobbex: Error Obtaining Mockup Checkout' . $e->getMessage(), 'mobbex_error.log');
         }

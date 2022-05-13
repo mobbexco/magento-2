@@ -45,7 +45,7 @@ class CustomConfigProvider implements ConfigProviderInterface
     public function getConfig()
     {   
         //get checkout mockup
-        $checkoutData = $this->formatCheckoutData($this->_helper->getCheckoutMockup($this->getQuotedata()));
+        $checkoutData = $this->formatCheckoutData($this->_helper->getCheckoutMockup());
 
         $config = [
             'payment' => [
@@ -65,51 +65,6 @@ class CustomConfigProvider implements ConfigProviderInterface
         ];
 
         return $config;
-    }
-
-    /**
-     * Get the order data from Quote.
-     * @return array
-     */
-    public function getQuoteData()
-    {
-        $objectManager  = \Magento\Framework\App\ObjectManager::getInstance();
-        $cartObj        = $objectManager->get('\Magento\Checkout\Model\Cart');
-        $quote          = $cartObj->getQuote();
-        $items          = $quote->getItemsCollection();
-        $shipAdressData = $quote->getBillingAddress()->getData();
-
-        //Get ordered items
-        foreach ($items as $item) {
-            $orderedItems[] = [
-                "product_id" => $item->getProductId(),
-                "name"       => $item->getName(),
-                "qty"        => $item->getQty(),
-                "price"      => $item->getPrice(),
-            ];
-        }
-
-        $quoteData = [
-            'entity_id'        => $quote->getId(),
-            'customer_id'      => $quote->getCustomer()->getId(),
-            'price'            => $quote->getGrandTotal(),
-            'currency_id'      => $quote->getStore()->getCurrentCurrency()->getCode(),
-            'email'            => $quote->getCustomerEmail(),
-            'shipping_address' => [
-                'firstname'            => $shipAdressData['firstname'],
-                'lastname'             => $shipAdressData['lastname'],
-                'street'               => $shipAdressData['street'],
-                'city'                 => $shipAdressData['city'],
-                'region'               => $shipAdressData['region'],
-                'postcode'             => $shipAdressData['postcode'],
-                'telephone'            => $shipAdressData['telephone'],
-                'save_in_address_book' => 1
-            ],
-            'items'          => $orderedItems,
-            'shipping_total' => $quote->getShippingAddress()->getShippingAmount(),
-        ];
-
-        return $quoteData;
     }
 
     /**
