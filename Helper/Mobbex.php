@@ -241,24 +241,6 @@ class Mobbex extends AbstractHelper
             ];
         }
 
-        $returnUrl = $this->urlBuilder->getUrl('webpay/payment/paymentreturn', [
-            '_secure' => true,
-            '_current' => true,
-            '_use_rewrite' => true,
-            '_query' => [
-                "order_id" => $orderId
-            ],
-        ]);
-
-        $webhook = $this->urlBuilder->getUrl('webpay/payment/webhook', [
-            '_secure' => true,
-            '_current' => true,
-            '_use_rewrite' => true,
-            '_query' => [
-                "order_id" => $orderId
-            ],
-        ]);
-
         //wallet
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $userSession = $objectManager->get('Magento\Customer\Model\Session');
@@ -270,9 +252,9 @@ class Mobbex extends AbstractHelper
             'currency'     => 'ARS',
             'description'  => $description,
             'test'         => (bool) ($this->config->getTestMode()),
-            'return_url'   => $returnUrl,
+            'return_url'   => $this->getEndpointUrl('paymentreturn', ['order_id' => $orderId]),
+            'webhook'      => $this->getEndpointUrl('webhook', ['order_id' => $orderId]),
             'items'        => $items,
-            'webhook'      => $webhook,
             "options"      => [
                 "button" => (bool) ($this->config->getEmbedPayment()),
                 "domain" => $this->urlBuilder->getUrl('/'),
@@ -321,171 +303,112 @@ class Mobbex extends AbstractHelper
         } else {
             $res = json_decode($response, true);
             Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
-            $res['data']['return_url'] = $returnUrl; 
+            $res['data']['return_url'] = $data['return_url']; 
             return $res['data'];
         }
     }
 
     /**
-     * Create checkout when wallet is active,
-     *  using a quote instead of an order.
-     *  can't use an order object beacouse there is a duplication problem
-     * @return bool
+     * Create a checkout from the given quote.
+     * 
+     * @param Magento\Quote\Model\Quote $quote
+     * 
+     * @return array
      */
-    public function createCheckoutFromQuote($quoteData)
+    public function createCheckoutFromQuote($quote)
     {
-        $curl = curl_init();
+        // Get customer and shipping data
+        $shippingAddress = $quote->getBillingAddress()->getData();
+        $shippingAmount  = $quote->getShippingAddress()->getShippingAmount();
 
-        // set quote description as #QUOTEID
-        $description = __('Quote #').$quoteData['entity_id'] ;//Quoteid / entityId
+        foreach ($quote->getItemsCollection() as $item) {
+            $subscriptionConfig = $this->getProductSubscription($item->getProductId());
 
-        // get order amount
-        $orderAmount = round($quoteData['price'], 2);
-
-        // get user session data and check wallet status
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $userSession = $objectManager->get('Magento\Customer\Model\Session');
-        $is_wallet_active = ((bool) ($this->config->getWalletActive()) && $userSession->isLoggedIn());
-
-        // get customer data
-        $customer = [
-            'email' => $quoteData['email'], 
-            'name' => $quoteData['shipping_address']['firstname'],
-            //Customer id added for wallet usage
-            'uid' => $quoteData['customer_id'],
-            'identification' => $this->getDni($quoteData['entity_id']),
-        ];
-        if ($quoteData['shipping_address']){
-            if ($quoteData['shipping_address']['telephone']) {
-                $customer['phone'] = $quoteData['shipping_address']['telephone'];
-            }
-        }
-
-        //get quote to retrieve shipping amount
-        $quote = $this->quoteFactory->create()->load($quoteData['entity_id']);
-        $quote_grand_total = $quote->getGrandTotal();
-        
-        $items = [];
-
-        foreach ($quoteData['items'] as $item) {
-
-            $subscription  = $this->getProductSubscription($item['product_id']);
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $product       = $objectManager->get('Magento\Catalog\Model\Product')->load($item['product_id']);
-            $entity        = $this->getEntity($product);
-
-            if($subscription['enable'] === 'yes') {
+            if($subscriptionConfig['enable'] === 'yes') {
                 $items[] = [
                     'type'      => 'subscription',
-                    'reference' => $subscription['uid']
+                    'reference' => $subscriptionConfig['uid']
                 ];
             } else {
                 $items[] = [
-                    "description" => $item['name'],
-                    "quantity"    => $item['qty'],
-                    "total"       => round($item['price'], 2),
-                    "entity"      => $entity
+                    'description' => $item->getName(),
+                    'quantity'    => $item->getQty(),
+                    'total'       => (float) $item->getPrice(),
+                    'entity'      => $this->getEntity($item->getProduct()),
                 ];
             }
         }
 
-        if ($quoteData['shipping_total'] > 0) {
+        // Add shipping item if possible
+        if ($shippingAmount)
             $items[] = [
-                'description' => 'Shipping Amount',
-                'total'       => $quoteData['shipping_total'],
+                'description' => 'Shipping',
+                'total'       => $shippingAmount,
             ];
-        }elseif($quote_grand_total > $orderAmount){
-            $shipping_amount = $quote_grand_total - $orderAmount;
-            $items[] = [
-                'description' => 'Shipping Amount',
-                'total'       => ($shipping_amount),
-            ];
-            $orderAmount = $orderAmount + $shipping_amount;
-        }
 
-        $returnUrl = $this->urlBuilder->getUrl('webpay/payment/paymentreturn', [
-            '_secure'      => true,
-            '_current'     => true,
-            '_use_rewrite' => true,
-            '_query'       => [
-                "quote_id" => $quoteData['entity_id']
-            ],
-        ]);
-
-        $webhook = $this->urlBuilder->getUrl('webpay/payment/webhook', [
-            '_secure'      => true,
-            '_current'     => true,
-            '_use_rewrite' => true,
-            '_query'       => [
-                "quote_id" => $quoteData['entity_id']
-            ],
-        ]);
-
-        //get domain format 
-        $domain = (string) $this->getDomainUrl();
-
-        // Create data
-        $data = $this->executeHook('mobbexQuoteCheckoutRequest', true, [
-            'reference'    => $this->getReference($quoteData['entity_id']),
+        $body = $this->executeHook('mobbexQuoteCheckoutRequest', true, [
+            'reference'    => $this->getReference($quote->getId()),
             'currency'     => 'ARS',
-            'description'  => $description,
-            // Test Mode 
+            'total'        => (float) $quote->getGrandTotal(),
+            'description'  => 'Quote #' . $quote->getId(),
             'test'         => (bool) ($this->config->getTestMode()),
-            'return_url'   => $returnUrl,
-            'items'        => $items,
-            'webhook'      => $webhook,
-            "options"      => [
-                "button"     => (bool) ($this->config->getEmbedPayment()),
-                "domain"     => $domain,
-                "theme"      => $this->getTheme(),
-                "redirect"   => [
-                    "success"  => true,
-                    "failure"  => false,
-                ],
-                "platform"   => $this->getPlatform(),
-            ],
-            "multicard"    => (bool) ($this->config->getMulticard()),
-            "multivendor"  => $this->config->getMultivendor() === 'disable' ? false : $this->config->getMultivendor(),
-            "merchants"    => $this->getMerchants($items),
-            'total'        => (float) $orderAmount,
-            'customer'     => $customer,
-            'installments' => $this->getInstallments($quoteData['items'], true),
+            'return_url'   => $this->getEndpointUrl('paymentreturn', ['quote_id' => $quote->getId()]),
+            'webhook'      => $this->getEndpointUrl('webhook', ['quote_id' => $quote->getId()]),
+            'items'        => isset($items) ? $items : [],
+            'wallet'       => $this->config->getWalletActive() && $this->customerSession->isLoggedIn(),
+            'multicard'    => (bool) ($this->config->getMulticard()),
+            'multivendor'  => $this->config->getMultivendor() === 'disable' ? false : $this->config->getMultivendor(),
+            'merchants'    => $this->getMerchants($items),
+            'installments' => $this->getInstallments($quote->getItemsCollection(), true),
             'timeout'      => 5,
-            'wallet'       => ($is_wallet_active),
-        ], $quoteData);
+            'customer'     => [
+                'email'          => $quote->getCustomerEmail(), 
+                'name'           => "$shippingAddress[firstname] $shippingAddress[lastname]",
+                'identification' => $this->getDni($quote->getId()),
+                'uid'            => $quote->getCustomerId(),
+                'phone'          => $shippingAddress['telephone'],
+            ],
+            'options'      => [
+                'button'   => (bool) ($this->config->getEmbedPayment()),
+                'domain'   => $this->getDomainUrl(),
+                'theme'    => $this->getTheme(),
+                'redirect' => [
+                    'success' => true,
+                    'failure' => false,
+                ],
+                'platform' => $this->getPlatform(),
+            ],
+        ], $quote);
 
-        if($this->config->getDebugMode()) {
-            Data::log("Checkout Headers:" . print_r($this->getHeaders(), true), "mobbex_debug_" . date('m_Y') . ".log");
-            Data::log("Checkout Body:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
-        }
+        $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.mobbex.com/p/checkout",
+            CURLOPT_URL            => 'https://api.mobbex.com/p/checkout',
+            CURLOPT_HTTPHEADER     => $this->getHeaders(),
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => $this->getHeaders(),
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'POST',
+            CURLOPT_POSTFIELDS     => json_encode($body),
         ]);
-        
+
         $response = curl_exec($curl);
-        $err      = curl_error($curl);
+        $error    = curl_error($curl);
 
         curl_close($curl);
 
-        if ($err) {
-            Data::log("Checkout Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
-            return false;
-        } else {
-            $res = json_decode($response, true);
-            Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
-            $res['data']['return_url'] = $returnUrl; 
-            return $res['data'];
-        }
+        if ($this->config->getDebugMode())
+            Data::log('Quote Checkout Creation Body:' . print_r($body, true), 'mobbex_debug_' . date('m_Y') . '.log');
 
+        if ($error)
+            return Data::log("Checkout Error:" . print_r($error, true), "mobbex_error_" . date('m_Y') . ".log");
+
+        $result = json_decode($response, true);
+        $result['data']['return_url'] = $body['return_url']; 
+        Data::log("Checkout Response:" . print_r($result, true), "mobbex_" . date('m_Y') . ".log");
+
+        return $result['data'];
     }
 
     /**
@@ -505,6 +428,16 @@ class Mobbex extends AbstractHelper
             $url = substr($url,0,-1);
 
         return $url;
+    }
+
+    public function getEndpointUrl($controller, $data = [])
+    {
+        return $this->urlBuilder->getUrl("webpay/payment/$controller", [
+            '_secure'      => true,
+            '_current'     => true,
+            '_use_rewrite' => true,
+            '_query'       => $data,
+        ]);
     }
 
     /**
@@ -592,17 +525,16 @@ class Mobbex extends AbstractHelper
      * Retrieve installments checked on plans filter of each item.
      * 
      * @param array $items
-     * @param bool $isQuote
      * 
      * @return array
      */
-    public function getInstallments($items, $isQuote = false)
+    public function getInstallments($items)
     {
         $installments = $inactivePlans = $activePlans = [];
 
         // Get plans from order products
         foreach ($items as $item) {
-            $id = is_string($item) ? $item : ($isQuote ? $item['product_id'] : $item->getProductId());
+            $id = is_string($item) ? $item : $item->getProductId();
 
             $inactivePlans = array_merge($inactivePlans, $this->getInactivePlans($id));
             $activePlans   = array_merge($activePlans, $this->getActivePlans($id));
