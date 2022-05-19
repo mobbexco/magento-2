@@ -55,11 +55,11 @@ class CustomConfigProvider implements ConfigProviderInterface
                         'wallet' => $this->config->getWalletActive()
                     ],
                     'banner'            => $this->config->getBannerCheckout(),
-                    'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->getTitleCheckout() ?: 'Pagar con Mobbex', 'image' => '']],
-                    'walletCreditCards' => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
-                    'returnUrl'         => isset($checkoutData['returnUrl']) ? $checkoutData['returnUrl'] : '',
-                    'paymentUrl'        => isset($checkoutData['paymentUrl']) ? $checkoutData['paymentUrl'] : '',
-                    'checkoutId'        => isset($checkoutData['checkoutId']) ? $checkoutData['checkoutId'] : '',
+                    'paymentMethods'    => !empty($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->getTitleCheckout() ?: 'Pagar con Mobbex', 'image' => '']],
+                    'walletCreditCards' => !empty($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
+                    'returnUrl'         => !empty($checkoutData['returnUrl']) ? $checkoutData['returnUrl'] : '',
+                    'paymentUrl'        => !empty($checkoutData['paymentUrl']) ? $checkoutData['paymentUrl'] : '',
+                    'checkoutId'        => !empty($checkoutData['checkoutId']) ? $checkoutData['checkoutId'] : '',
                 ]
             ]
         ];
@@ -81,13 +81,13 @@ class CustomConfigProvider implements ConfigProviderInterface
             $data = [
                 'paymentMethods' => [],
                 'wallet'         => [],
-                'returnUrl'      => $checkoutData['return_url'],
-                'paymentUrl'     => $checkoutData['url'],
-                'checkoutId'     => $checkoutData['id'],
-                'data'           => $checkoutData
+                'returnUrl'      => !empty($checkoutData['return_url']) ? $checkoutData['return_url'] : '',
+                'paymentUrl'     => !empty($checkoutData['url']) ? $checkoutData['url'] : '',
+                'checkoutId'     => !empty($checkoutData['id']) ? $checkoutData['id'] : '',
+                'data'           => !empty($checkoutData) ? $checkoutData : []
             ];
     
-            if(isset($checkoutData['paymentMethods'])) {
+            if(!empty($checkoutData['paymentMethods'])) {
                 foreach ($checkoutData['paymentMethods'] as $method) {
                     $data['paymentMethods'][] = [
                         'id'    => $method['subgroup'],
@@ -109,7 +109,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                 ];
             }
     
-            if($this->config->getWalletActive() && isset($checkoutData['wallet'])) {
+            if($this->config->getWalletActive() && !empty($checkoutData['wallet'])) {
                 foreach ($checkoutData['wallet'] as $key => $card) {
                     $data['wallet'][] = [
                         'id'           => 'wallet-card-' . $key,
