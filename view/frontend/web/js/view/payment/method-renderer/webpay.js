@@ -44,8 +44,8 @@ require(['jquery'], function ($) {
 
 /**
  * Create checkout and call a callback
- *  @param {string} url 
- *  @param {string} failUrl 
+ *  @param {string} url
+ *  @param {string} failUrl
  *  @param {callback} callback
  * */
 function createCheckout(url, failUrl, callback) {
@@ -58,7 +58,7 @@ function createCheckout(url, failUrl, callback) {
             callback(response);
         },
         error: function (error) {
-            displayAlert('Pago Fallido', 'No se pudo completar el pago.', failUrl);
+            displayAlert('Error', 'No se obtener la información del pago.', failUrl + '&status=' + 500);
         }
     });
 
@@ -87,10 +87,9 @@ function createCheckout(url, failUrl, callback) {
 
 /**
  * Call the Mobbex API to create checkout & open it in embed mode.
- * @param {array} response 
- * @param {string} failUrl 
+ * @param {array} response
  */
-function embedPayment(response, failUrl) {
+function embedPayment(response) {
     var options = {
         id: response.id,
         type: 'checkout',
@@ -106,7 +105,6 @@ function embedPayment(response, failUrl) {
 
         onError: (error) => {
             jQuery("body").trigger('processStop');
-            displayAlert('Pago Fallido', 'No se pudo completar el pago.', failUrl);
         }
     }
 
@@ -135,10 +133,9 @@ function insertWalletSdk() {
 /**
  * Call Mobbex API using sdk to make the payment
  * with wallet card
- * @param {array} response 
- * @param {string} failUrl 
+ * @param {array} response
  */
-function executeWallet(response, failUrl) {
+function executeWallet(response) {
     let $ = jQuery
     let updatedCard = response.wallet.find(card => card.card.card_number == $(`#${mbbxCurrentCard} input[name=card-number]`).val());
     $("body").trigger('processStart');
@@ -154,7 +151,7 @@ function executeWallet(response, failUrl) {
             window.top.location = response.return_url + '&status=' + data.data.status.code;
         })
         .catch(error => {
-            displayAlert('Pago Fallido', 'No se pudo completar el pago.', failUrl);
+            displayAlert('Error', 'No se pudo completar el pago.', response.return_url + '&status=500');
         })
 }
 
@@ -183,7 +180,6 @@ function displayAlert(alertTitle, message, failUrl) {
                     method: 'POST',
                     url: failUrl,
                     success: function () {
-                        location.reload()
                     },
                     error: function () {
                         location.reload()
@@ -215,15 +211,15 @@ define(
             },
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
-                createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), urlBuilder.build('webpay/payment/failure'), response => {
+                createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), urlBuilder.build('webpay/payment/paymentreturn'), response => {
                     if (!response.id) {
-                        displayAlert('Pago Fallido', 'Error al procesar el pedido.', urlBuilder.build('webpay/payment/failure'));
+                        displayAlert('Error', 'Error al procesar el pedido.', urlBuilder.build('webpay/payment/paymentreturn') + '&status=500');
                     }
                     if (wallet && mbbxCurrentCard) {
                         jQuery("body").trigger('processStop');
-                        executeWallet(response, urlBuilder.build('webpay/payment/failure'))
+                        executeWallet(response)
                     } else if (embed) {
-                        embedPayment(response, urlBuilder.build('webpay/payment/failure'))
+                        embedPayment(response)
                     } else {
                         mbbxRedirect(response.url)
                     }
