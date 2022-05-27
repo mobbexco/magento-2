@@ -460,9 +460,12 @@ class Mobbex extends AbstractHelper
     private function getPlatform()
     {
         return [
-            "name"             => "magento_2",
-            "version"          => Mobbex::VERSION,
-            "platform_version" => $this->productMetadata->getVersion() // TODO: test this
+            'name'      => 'magento_2',
+            'version'   => Mobbex::VERSION,
+            'ecommerce' => [
+                'magento' => $this->productMetadata->getVersion(),
+                'php'     => phpversion(),
+            ],
         ];
     }
 
@@ -476,7 +479,7 @@ class Mobbex extends AbstractHelper
             'content-type: application/json',
             'x-api-key: ' . $this->config->getApiKey(),
             'x-access-token: ' . $this->config->getAccessToken(),
-            'x-ecommerce-agent: Magento/' . $this->productMetadata->getVersion() . ' Plugin/' . $this::VERSION,
+            'x-ecommerce-agent: Magento/' . $this->productMetadata->getVersion() . ' Plugin/' . $this::VERSION . ' PHP/' . phpversion(),
         ];
     }
 
