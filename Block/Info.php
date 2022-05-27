@@ -27,8 +27,8 @@ class Info extends \Magento\Payment\Block\Info
     public function __construct(
         Context $context, 
         State $state, 
-        array $data = [],
-        \Mobbex\Webpay\Model\MobbexTransactionFactory $mobbexTransactionFactory
+        \Mobbex\Webpay\Model\MobbexTransactionFactory $mobbexTransactionFactory,
+        array $data = []
         )
     {
         parent::__construct($context, $data);
