@@ -46,13 +46,14 @@ class OrderUpdate
         $statusName  = $this->getStatusConfigName($order, $data['status_code']);
         $orderStatus = $this->config->{"getOrderStatus$statusName"}();
 
+        //Cancel Order to restore stock when payment is not attempted
+        if ($data['status_code'] >= 400)
+            $order->cancel();
+        
         if ($orderStatus == $order->getStatus())
             return;
 
         $order->setState($orderStatus)->setStatus($orderStatus);
-
-        if ($order->getStatus() == 'canceled')
-            $order->cancel();
 
         // Notify the customer
         $notified = $this->sendOrderEmail($order, $data['status_message']);
