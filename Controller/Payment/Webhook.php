@@ -97,7 +97,7 @@ class Webhook extends WebhookBase
             $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : $request->getPostValue();
             $orderId  = $request->getParam('order_id');
             $quoteId  = $request->getParam('quote_id');
-            $data     = $this->formatWebhookData($postData['data'], $orderId, $this->config->getMulticard(), $this->config->getMultivendor());
+            $data     = $this->formatWebhookData($postData['data'], $orderId);
             
             // If order ID is empty, try to load from quote id
             if (empty($orderId) && !empty($quoteId)) {
@@ -143,20 +143,18 @@ class Webhook extends WebhookBase
     }
 
     /**
-     * Format the webhook data in an array.
+     * Format the webhook data to save in db.
      * 
-     * @param array $webhook_data
-     * @param int $order_id
-     * @param bool $multicard
-     * @param bool $multivendor
-     * @return array $data
+     * @param array $webhookData
+     * @param int $orderId
      * 
+     * @return array
      */
-    public function formatWebhookData($webhookData, $orderId, $multicard, $multivendor)
+    public function formatWebhookData($webhookData, $orderId)
     {
         $data = [
             'order_id'           => $orderId,
-            'parent'             => $this->isParent($webhookData['payment']['operation']['type'], $multicard, $multivendor) ? true : false,
+            'parent'             => isset($webhookData['payment']['id']) ? $this->isParent($webhookData['payment']['id']) : false,
             'operation_type'     => isset($webhookData['payment']['operation']['type']) ? $webhookData['payment']['operation']['type'] : '',
             'payment_id'         => isset($webhookData['payment']['id']) ? $webhookData['payment']['id'] : '',
             'description'        => isset($webhookData['payment']['description']) ? $webhookData['payment']['description'] : '',
@@ -189,20 +187,14 @@ class Webhook extends WebhookBase
     }
 
     /**
-     * Receives the webhook "operation type" and return true if the webhook is parent and false if not
+     * Check if webhook is parent type using him payment id.
      * 
-     * @param string $operationType
-     * @param bool $multicard
-     * @param bool $multivendor
-     * @return bool true|false
+     * @param string $paymentId
      * 
+     * @return bool
      */
-    public function isParent($operationType, $multicard, $multivendor)
+    public function isParent($paymentId)
     {
-        if ($operationType === "payment.v2") {
-            if ($multicard || $multivendor !== 'disable')
-                return false;
-        }
-        return true;
+        return strpos($paymentId, 'CHD-') === 0;
     }
 }
