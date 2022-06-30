@@ -138,7 +138,6 @@ class PaymentReturn extends Action
                 if ($status > 1 && $status < 400) {
                     $this->_redirect('checkout/onepage/success');
                 } else {
-                    $this->restoreStock($order);
                     $this->restoreCart($order);
                     $this->_redirect('checkout',['_fragment' => 'payment']);
                 }
@@ -181,29 +180,4 @@ class PaymentReturn extends Action
         $this->checkoutSession->restoreQuote();
     }
 
-    /**
-     * Restore the item stock after cancelled or refunded order.
-     * 
-     * @param Object $order
-     * 
-     */
-    private function restoreStock($order)
-    {
-        $refundItems = [];
-        $storeId = '';
-
-        foreach ($order->getAllVisibleItems() as $item) {
-            $refundItems[$item->getProductId()] = $item->getQtyOrdered();
-            $storeId = $item->getStore()->getWebsiteId();
-        }
-
-        $objectManager   = \Magento\Framework\App\ObjectManager::getInstance();
-        $stockManagement = $objectManager->get('Magento\CatalogInventory\Model\StockManagement');
-
-        foreach ($refundItems as $productId => $qty) {
-            $stockManagement->backItemQty($productId, $qty, $storeId);
-        }
-
-        return;
-    }
 }
