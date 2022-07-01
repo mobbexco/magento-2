@@ -124,7 +124,19 @@
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
-                        <field id="disable_invoices" translate="label" type="select" sortOrder="23" showInDefault="1"
+                        <field id="order_status_revision" translate="label" type="select" sortOrder="23"
+                            showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido en revisión de fraude</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
+                        <field id="order_status_fraud" translate="label" type="select" sortOrder="24"
+                            showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Estado del sospechado de fraude</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
+                        <field id="disable_invoices" translate="label" type="select" sortOrder="24" showInDefault="1"
                             showInWebsite="1" showInStore="0">
                             <label>Deshabilitar creación automática de facturas</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -135,19 +147,19 @@
                         showInStore="1">
                         <label>Email Settings</label>
 
-                        <field id="create_order_email" translate="label comment" sortOrder="23" type="select"
+                        <field id="create_order_email" translate="label comment" sortOrder="25" type="select"
                             showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Email al crear orden</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
 
-                        <field id="update_order_email" translate="label comment" sortOrder="25" type="select"
+                        <field id="update_order_email" translate="label comment" sortOrder="26" type="select"
                             showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Email al actualizar orden</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
 
-                        <field id="create_invoice_email" translate="label comment" sortOrder="26" type="select"
+                        <field id="create_invoice_email" translate="label comment" sortOrder="27" type="select"
                             showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Email al crear factura</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

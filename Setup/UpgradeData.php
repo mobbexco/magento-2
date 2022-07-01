@@ -28,27 +28,38 @@ class UpgradeData implements UpgradeDataInterface
     {
         $setup->startSetup();
 
-        if ($context->getVersion() < '2.1.5') {
-            $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
-            $productEntity = \Magento\Catalog\Model\Product::ENTITY;
-            $ahoraPlanRefs = ['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'];
+        //Remove deprecated attributes
+        if ($context->getVersion() < '2.1.5')
+            $this->removeDeprecatedAttributes($setup);
 
-            // Remove deprecated 'ahora' plan attributes
-            foreach ($ahoraPlanRefs as $planRef) {
-                // If attribute exists
-                if ($eavSetup->getAttribute($productEntity, $planRef, 'attribute_id')) {
-                    // Get all uses
-                    foreach ($this->getProductAttributeUses($planRef) as $productId => $product) {
-                        $commonPlans = unserialize($this->customFields->getCustomField($productId, 'product', 'common_plans')) ?: [];
+        //Install Mobbex Custom Statuses
+        if($context->getVersion() < '3.1.0')
+            $this->installMobbexOrderStatus($setup);
+    }
 
-                        // Move value to common_plans array and save
-                        $commonPlans[] = $planRef;
-                        $this->customFields->saveCustomField($productId, 'product', 'common_plans', serialize($commonPlans));
-                    }
-
-                    // Remove attribute
-                    $eavSetup->removeAttribute($productEntity, $planRef);
+    /**
+     * Remove deprecated attributes.
+     * 
+     * @param ModuleDataSetupInterface $setup
+     */
+    public function removeDeprecatedAttributes($setup)
+    {
+        $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
+        $productEntity = \Magento\Catalog\Model\Product::ENTITY;
+        $ahoraPlanRefs = ['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'];
+        // Remove deprecated 'ahora' plan attributes
+        foreach ($ahoraPlanRefs as $planRef) {
+            // If attribute exists
+            if ($eavSetup->getAttribute($productEntity, $planRef, 'attribute_id')) {
+                // Get all uses
+                foreach ($this->getProductAttributeUses($planRef) as $productId => $product) {
+                    $commonPlans = unserialize($this->customFields->getCustomField($productId, 'product', 'common_plans')) ?: [];
+                    // Move value to common_plans array and save
+                    $commonPlans[] = $planRef;
+                    $this->customFields->saveCustomField($productId, 'product', 'common_plans', serialize($commonPlans));
                 }
+                // Remove attribute
+                $eavSetup->removeAttribute($productEntity, $planRef);
             }
         }
     }
@@ -67,5 +78,50 @@ class UpgradeData implements UpgradeDataInterface
             ->load();
 
         return $productCollection->getItems() ?: [];
+    }
+
+    /**
+     * Install Mobbex custom order states.
+     * 
+     * @param ModuleDataSetupInterface $setup
+     */
+    public function installMobbexOrderStatus($setup)
+    {
+        //Install order status
+        $statuses = [
+            ['status' => 'mobbex_failure', 'label' => __('Mobbex Failure')],
+            ['status' => 'mobbex_refunded', 'label' => __('Mobbex Refunded')],
+            ['status' => 'mobbex_fraud', 'label' => __('Mobbex Suspected Fraud')],
+            ['status' => 'mobbex_revision', 'label' => __('Mobbex in Revision')]
+        ];
+
+        $setup->getConnection()->insertArray($setup->getTable('sales_order_status'), ['status', 'label'], $statuses);
+
+        //Install order states
+        $states = [
+            [
+                "status"     => "mobbex_failure",
+                "state"      => "mobbex_failure",
+                "is_default" => 1
+            ],
+            [
+                "status"     => "mobbex_refunded",
+                "state"      => "mobbex_refunded",
+                "is_default" => 1
+            ],
+            [
+                "status"     => "mobbex_fraud",
+                "state"      => "mobbex_fraud",
+                "is_default" => 1
+            ],
+            [
+                "status"     => "mobbex_revision",
+                "state"      => "mobbex_revision",
+                "is_default" => 1
+            ]
+        ];
+
+        $setup->getConnection()->insertArray($setup->getTable('sales_order_status_state'), ['status', 'state', 'is_default'], $states);
+
     }
 }
