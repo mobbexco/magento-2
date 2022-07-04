@@ -3,6 +3,9 @@
 namespace Mobbex\Webpay\Model;
 
 use Magento\Sales\Model\Order\Payment\Transaction;
+use Magento\Framework\App\ResourceConnection;
+use Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite;
+use \Mobbex\Webpay\Model\CustomFieldFactory;
 
 class OrderUpdate
 {
@@ -21,18 +24,33 @@ class OrderUpdate
     /** @var BuilderInterface */
     protected $transactionBuilder;
 
+    /** @var ResourceConnection */
+    protected $resourceConnection;
+
+    /** @var GetStockIdForCurrentWebsite */
+    protected $stockId;
+
+    /** @var CustomFieldFactory */
+    protected $customFieldFactory;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender,
-        \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder
+        \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
+        \Magento\Framework\App\ResourceConnection $resourceConnection,
+        \Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite $stockId,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         $this->config             = $config;
         $this->orderSender        = $orderSender;
         $this->invoiceSender      = $invoiceSender;
         $this->orderCommentSender = $orderCommentSender;
         $this->transactionBuilder = $transactionBuilder;
+        $this->resourceConnection = $resourceConnection;
+        $this->stockId            = $stockId;
+        $this->customFields       = $customFieldFactory->create();
     }
 
     /**
@@ -49,10 +67,19 @@ class OrderUpdate
         if ($orderStatus == $order->getStatus())
             return;
 
+        //Set order status
         $order->setState($orderStatus)->setStatus($orderStatus);
 
-        if ($order->getStatus() == 'canceled')
-            $order->cancel();
+        //Update stock reservations
+        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'stock_reservation', 'refunded') === 'yes' ? true : false;
+
+        if ($order->getStatus() !== 'canceled' && !$refunded && ($order->getStatus() === 'mobbex_failure' || $order->getStatus() === 'mobbex_refunded' || $order->getStatus() === 'mobbex_fraud')){
+            //Refund stock
+            $this->updateStock($order);
+        } else if($refunded && $data['status_code'] < 400 && $data['status_code'] >= 200){
+            //Discount stock
+            $this->updateStock($order, false);
+        }
 
         // Notify the customer
         $notified = $this->sendOrderEmail($order, $data['status_message']);
@@ -180,5 +207,37 @@ class OrderUpdate
         }
 
         return $name;
+    }
+
+    /**
+     * Update item stock based in the mobbex order status.
+     * 
+     * @param string $orderId 
+     * @param bool $restoreStock 
+     * 
+     */
+    private function updateStock($order, $restoreStock = true)
+    {
+        $connection = $this->resourceConnection->getConnection();
+
+        foreach ($order->getAllVisibleItems() as $item) {
+            $product = $item->getProduct();
+            
+            $quantity = $restoreStock ? $item->getQtyOrdered() : '-'.$item->getQtyOrdered();
+            $metadata = [
+                'event_type'          => $restoreStock ? "back_item_qty" : "order_placed",
+                "object_type"         => $restoreStock ? "legacy_stock_management_api" : "order",
+                "object_id"           => "",
+                "object_increment_id" => $order->getIncrementId()
+            ];
+
+            $query = "INSERT INTO inventory_reservation (stock_id, sku, quantity, metadata)
+                VALUES (".$this->stockId->execute().", '".$product->getSku()."', ".$quantity.", '".json_encode($metadata)."');"; 
+
+            //Insert data in db
+            $connection->query($query);
+        }
+
+        return $this->customFields->saveCustomField($order->getIncrementId(), 'stock_reservation', 'refunded', $restoreStock ? 'yes' : 'no');
     }
 }
