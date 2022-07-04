@@ -63,6 +63,25 @@ require(['jquery'], function ($) {
 
 }
 
+/** MOBBEX REDIRECT */
+
+/**
+ * Redirect to Mobbex Checkout
+ * @param checkoutUrl 
+ */
+ function mbbxRedirect(checkoutUrl) {
+
+    let mobbexForm = document.createElement('FORM');
+    document.querySelector('#redirectForm').appendChild(mobbexForm);
+    mobbexForm.setAttribute('action', checkoutUrl);
+    mobbexForm.setAttribute('method', 'GET');
+
+    if(mbbxCurrentMehtod)
+        mobbexForm.innerHTML = `<input type='hidden' name='paymentMethod' value='${mbbxCurrentMehtod}'/>`
+
+    mobbexForm.submit();
+}
+
 /** MOBBEX EMBED */
 function embedPayment(response){
     var options = {
@@ -165,7 +184,7 @@ define(
                     }else if(embed){
                         embedPayment(response)
                     } else {
-                        window.top.location.href = urlBuilder.build('webpay/payment/redirect') + '?paymentMethod=' + mbbxCurrentMehtod + '&checkoutUrl=' + encodeURIComponent(response.url);
+                        mbbxRedirect(response.url);
                     }
                 })
             },
