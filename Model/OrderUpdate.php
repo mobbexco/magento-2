@@ -3,9 +3,6 @@
 namespace Mobbex\Webpay\Model;
 
 use Magento\Sales\Model\Order\Payment\Transaction;
-use Magento\Framework\App\ResourceConnection;
-use Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite;
-use \Mobbex\Webpay\Model\CustomFieldFactory;
 
 class OrderUpdate
 {
@@ -50,7 +47,8 @@ class OrderUpdate
         $this->transactionBuilder = $transactionBuilder;
         $this->resourceConnection = $resourceConnection;
         $this->stockId            = $stockId;
-        $this->customFields       = $customFieldFactory->create();
+        $this->customFieldFactory = $customFieldFactory;
+        $this->customFields       = $this->customFieldFactory->create();
     }
 
     /**
@@ -71,7 +69,7 @@ class OrderUpdate
         $order->setState($orderStatus)->setStatus($orderStatus);
 
         //Update stock reservations
-        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'stock_reservation', 'refunded') === 'yes' ? true : false;
+        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
 
         if ($order->getStatus() !== 'canceled' && !$refunded && ($order->getStatus() === 'mobbex_failure' || $order->getStatus() === 'mobbex_refunded' || $order->getStatus() === 'mobbex_fraud')){
             //Refund stock
@@ -238,6 +236,6 @@ class OrderUpdate
             $connection->query($query);
         }
 
-        return $this->customFields->saveCustomField($order->getIncrementId(), 'stock_reservation', 'refunded', $restoreStock ? 'yes' : 'no');
+        return $this->customFields->saveCustomField($order->getIncrementId(), 'order', 'refunded', $restoreStock ? 'yes' : 'no');
     }
 }
