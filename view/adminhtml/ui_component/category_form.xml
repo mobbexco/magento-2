@@ -7,7 +7,7 @@
         </settings>
         <container name="mbbx_category_tab" sortOrder="1">
             <htmlContent name="html_content">
-                <block name="custom_category_block"
+                <block name="mobbex_category_settings"
                        class="Mobbex\Webpay\Block\Template"
                        cacheable="false"
                        template="Mobbex_Webpay::category-settings.phtml"/>
