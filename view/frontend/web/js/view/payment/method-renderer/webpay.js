@@ -56,8 +56,7 @@ require(['jquery'], function ($) {
             callback(response);
         },
         error: function () {
-            console.log("No se ha podido obtener la información");
-            return false;
+            displayAlert('Error', 'No se obtener la información del pago.', failUrl + '&status=' + 500);
         }
     });
 
@@ -132,7 +131,6 @@ function insertWalletSdk() {
  */
 function executeWallet(response) {
     let $ = jQuery
-    $("body").trigger('processStart');
     let updatedCard = response.wallet.find(card => card.card.card_number == $(`#${mbbxCurrentCard} input[name=card-number]`).val());
     
     var options = {
@@ -146,12 +144,44 @@ function executeWallet(response) {
             window.top.location = response.return_url + '&status=' + data.data.status.code;
         })
         .catch(error => {
-            $("body").trigger('processStop');
-            location.href = response.return_url;
+            displayAlert('Error', 'No se pudo completar el pago.', response.return_url + '&status=500');
         })
 }
 
 /** DISPLAY & EXECUTE FUNCTIONS */
+
+/**
+ * Display Magento alert when payment fails & redirect to cart. 
+ * @param {string} alertTitle 
+ * @param {string} message 
+ * @param {string} failUrl 
+ */
+ function displayAlert(alertTitle, message, failUrl) {
+     let $ = jQuery
+     let alert = document.createElement('P');
+     alert.textContent = message;
+     
+    $("body").trigger('processStop');
+    $(alert).alert({
+        title: $.mage.__(alertTitle),
+        content: $.mage.__(message),
+        actions: {
+            always: function () {
+                jQuery("body").trigger('processStart');
+                jQuery.ajax({
+                    dataType: 'json',
+                    method: 'POST',
+                    url: failUrl,
+                    success: function () {
+                    },
+                    error: function () {
+                        location.reload()
+                    }
+                });
+            }
+        }
+    });
+}
 
 define(
     [
@@ -176,8 +206,7 @@ define(
                 $("body").trigger('processStart');
                 createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
                     if(!response || !response.id){
-                        alert('Error al procesar el pedido.')
-                        return;
+                        displayAlert('Error', 'Error al obtener la información del pedido.', urlBuilder.build('webpay/payment/paymentreturn') + '&status=500');
                     }
                     if(wallet && mbbxCurrentCard){
                         executeWallet(response)
