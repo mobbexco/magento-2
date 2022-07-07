@@ -34,6 +34,8 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_ORDER_STATUS_IN_PROCESS = 'payment/webpay/checkout/order_status_settings/order_status_in_process';
     const PATH_ORDER_STATUS_CANCELLED = 'payment/webpay/checkout/order_status_settings/order_status_cancelled';
     const PATH_ORDER_STATUS_REFUNDED = 'payment/webpay/checkout/order_status_settings/order_status_refunded';
+    const PATH_ORDER_STATUS_REVISION = 'payment/webpay/checkout/order_status_settings/order_status_revision';
+    const PATH_ORDER_STATUS_FRAUD    = 'payment/webpay/checkout/order_status_settings/order_status_fraud';
     const PATH_DISABLE_INVOICES = 'payment/webpay/checkout/order_status_settings/disable_invoices';
 
     const PATH_WALLET_ACTIVE = 'payment/webpay/checkout/wallet_active';
@@ -138,7 +140,25 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
-    }
+    } 
+
+    public function getOrderStatusRevision($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_ORDER_STATUS_REVISION,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    } 
+
+    public function getOrderStatusFraud($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_ORDER_STATUS_FRAUD,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    } 
 
     public function getThemeType($store = null)
     {
