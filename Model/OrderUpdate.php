@@ -59,7 +59,7 @@ class OrderUpdate
      */
     public function updateStatus($order, $data)
     {
-        $statusName  = $this->getStatusConfigName($order, $data['status_code']);
+        $statusName  = $this->getStatusConfigName($data['status_code']);
         $orderStatus = $this->config->{"getOrderStatus$statusName"}();
 
         if ($orderStatus == $order->getStatus())
@@ -71,7 +71,7 @@ class OrderUpdate
         //Update stock reservations
         $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
 
-        if ($order->getStatus() !== 'canceled' && !$refunded && ($order->getStatus() === 'mobbex_failure' || $order->getStatus() === 'mobbex_refunded' || $order->getStatus() === 'mobbex_fraud')){
+        if ($order->getStatus() !== 'canceled' && !$refunded && ($order->getStatus() === 'mobbex_failed' || $order->getStatus() === 'mobbex_refunded' || $order->getStatus() === 'mobbex_rejected')){
             //Refund stock
             $this->updateStock($order);
         } else if($refunded && $data['status_code'] < 400 && $data['status_code'] >= 200){
@@ -189,19 +189,24 @@ class OrderUpdate
     /**
      * Get the status config name from transaction status code.
      * 
-     * @param OrderInterface $order
      * @param int $statusCode
      * 
      * @return string 
      */
-    public function getStatusConfigName($order, $statusCode)
+    public function getStatusConfigName($statusCode)
     {
-        if ($statusCode == 2 || $statusCode == 3 || $statusCode == 100 || $statusCode == 201) {
+        if ($statusCode == 2 || $statusCode == 3 || $statusCode == 201) {
             $name = 'InProcess';
+        } else if ($statusCode == 100) {
+            $name = 'Revision';
+        } else if ($statusCode == 602 || $statusCode == 605) {
+            $name = 'Refunded';
+        } else if ($statusCode == 604) {
+            $name = 'Rejected';
         } else if ($statusCode == 4 || $statusCode >= 200 && $statusCode < 400) {
             $name = 'Approved';
         } else {
-            $name = $order->getStatus() != 'pending' ? 'Cancelled' : 'Refunded';
+            $name = 'Cancelled';
         }
 
         return $name;
