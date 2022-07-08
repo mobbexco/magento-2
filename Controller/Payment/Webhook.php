@@ -195,6 +195,6 @@ class Webhook extends WebhookBase
      */
     public function isParent($paymentId)
     {
-        return strpos($paymentId, 'CHD-') === 0;
+        return strpos($paymentId, 'CHD-') !== 0;
     }
 }
