@@ -21,7 +21,7 @@
                         <order_status_cancelled>mobbex_failed</order_status_cancelled>
                         <order_status_refunded>mobbex_refunded</order_status_refunded>
                         <order_status_revision>mobbex_revision</order_status_revision>
-                        <order_status_fraud>mobbex_fraud</order_status_fraud>
+                        <order_status_rejected>mobbex_rejected</order_status_rejected>
                         <disable_invoices>0</disable_invoices>
                     </order_status_settings>
                     <email_settings>

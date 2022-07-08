@@ -126,13 +126,13 @@
 
                         <field id="order_status_revision" translate="label" type="select" sortOrder="23"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido en revisión de fraude</label>
+                            <label>Estado del pedido cuando se sospecha de posible fraude</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
-                        <field id="order_status_fraud" translate="label" type="select" sortOrder="24"
+                        <field id="order_status_rejected" translate="label" type="select" sortOrder="24"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del sospechado de fraude</label>
+                            <label>Estado del pedido cuando se rechaza el pago por posible fraude</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 

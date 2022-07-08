@@ -89,10 +89,10 @@ class UpgradeData implements UpgradeDataInterface
     {
         //Install order status
         $statuses = [
-            ['status' => 'mobbex_failure', 'label' => __('Mobbex Failure')],
-            ['status' => 'mobbex_refunded', 'label' => __('Mobbex Refunded')],
-            ['status' => 'mobbex_fraud', 'label' => __('Mobbex Suspected Fraud')],
-            ['status' => 'mobbex_revision', 'label' => __('Mobbex in Revision')]
+            ['status' => 'mobbex_failed',   'label' => 'Fallido (Mobbex)'],
+            ['status' => 'mobbex_refunded', 'label' => 'Devuelto (Mobbex)'],
+            ['status' => 'mobbex_rejected', 'label' => 'Rechazado (Mobbex)'],
+            ['status' => 'mobbex_revision', 'label' => 'En Revisión (Mobbex)']
         ];
 
         $setup->getConnection()->insertArray($setup->getTable('sales_order_status'), ['status', 'label'], $statuses);
@@ -100,8 +100,8 @@ class UpgradeData implements UpgradeDataInterface
         //Install order states
         $states = [
             [
-                "status"     => "mobbex_failure",
-                "state"      => "mobbex_failure",
+                "status"     => "mobbex_failed",
+                "state"      => "mobbex_failed",
                 "is_default" => 1
             ],
             [
@@ -110,8 +110,8 @@ class UpgradeData implements UpgradeDataInterface
                 "is_default" => 1
             ],
             [
-                "status"     => "mobbex_fraud",
-                "state"      => "mobbex_fraud",
+                "status"     => "mobbex_rejected",
+                "state"      => "mobbex_rejected",
                 "is_default" => 1
             ],
             [
