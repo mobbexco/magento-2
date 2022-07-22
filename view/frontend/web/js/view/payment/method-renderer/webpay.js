@@ -76,7 +76,7 @@ require(['jquery'], function ($) {
     mobbexForm.setAttribute('method', 'GET');
 
     if(mbbxCurrentMehtod)
-        mobbexForm.innerHTML = `<input type='hidden' name='paymentMethod' value='${mbbxCurrentMehtod}'/>`
+        mobbexForm.innerHTML = `<input type='hidden' name='paymentMethod' value='${mbbxCurrentMehtod}'/>`;
 
     mobbexForm.submit();
 }
