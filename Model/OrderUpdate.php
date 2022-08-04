@@ -24,8 +24,11 @@ class OrderUpdate
     /** @var ResourceConnection */
     protected $resourceConnection;
 
-    /** @var GetStockIdForCurrentWebsite */
-    protected $stockId;
+    /** @var \Magento\Framework\Module\Manager */
+    protected $moduleManager;
+
+    /** @var \Magento\Framework\ObjectManagerInterface */
+    protected $objectManager;
 
     /** @var CustomFieldFactory */
     protected $customFieldFactory;
@@ -37,7 +40,8 @@ class OrderUpdate
         \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender,
         \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
-        \Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite $stockId,
+        \Magento\Framework\Module\Manager $moduleManager,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         $this->config             = $config;
@@ -46,7 +50,8 @@ class OrderUpdate
         $this->orderCommentSender = $orderCommentSender;
         $this->transactionBuilder = $transactionBuilder;
         $this->resourceConnection = $resourceConnection;
-        $this->stockId            = $stockId;
+        $this->moduleManager      = $moduleManager;
+        $this->objectManager      = $objectManager;
         $this->customFieldFactory = $customFieldFactory;
         $this->customFields       = $this->customFieldFactory->create();
     }
@@ -221,7 +226,12 @@ class OrderUpdate
      */
     private function updateStock($order, $restoreStock = true)
     {
+        // Only execute if inventory is enabled
+        if (!$this->isInventoryEnabled())
+            return;
+
         $connection = $this->resourceConnection->getConnection();
+        $stockId    = $this->objectManager->get('\Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite');
 
         foreach ($order->getAllVisibleItems() as $item) {
             $product = $item->getProduct();
@@ -235,12 +245,35 @@ class OrderUpdate
             ];
 
             $query = "INSERT INTO inventory_reservation (stock_id, sku, quantity, metadata)
-                VALUES (".$this->stockId->execute().", '".$product->getSku()."', ".$quantity.", '".json_encode($metadata)."');"; 
+                VALUES (".$stockId->execute().", '".$product->getSku()."', ".$quantity.", '".json_encode($metadata)."');"; 
 
             //Insert data in db
             $connection->query($query);
         }
 
         return $this->customFields->saveCustomField($order->getIncrementId(), 'order', 'refunded', $restoreStock ? 'yes' : 'no');
+    }
+
+    /**
+     * Check if Magento inventory feature is enabled.
+     * 
+     * @return bool
+     */
+    public function isInventoryEnabled()
+    {
+        $requiredModules = [
+            'Magento_Inventory',
+            'Magento_InventoryApi',
+            'Magento_InventoryCatalog',
+            'Magento_InventorySalesApi',
+            'Magento_InventorySalesApi',
+        ];
+
+        // Check if each required module is enabled
+        foreach ($requiredModules as $module)
+            if (!$this->moduleManager->isEnabled($module))
+                return false;
+
+        return true;
     }
 }
