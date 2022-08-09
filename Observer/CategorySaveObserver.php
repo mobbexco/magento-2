@@ -12,9 +12,9 @@ class CategorySaveObserver implements ObserverInterface
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Mobbex\Webpay\Helper\Data $helper
     ) {
-        $this->customFields = $customFieldFactory->create();
-        $this->params       = $context->getRequest()->getParams();
-        $this->helper       = $helper;
+        $this->customFieldsFactory = $customFieldFactory;
+        $this->params              = $context->getRequest()->getParams();
+        $this->helper              = $helper;
     }
 
     /**
@@ -24,9 +24,8 @@ class CategorySaveObserver implements ObserverInterface
      */
     public function execute($observer)
     {
-        $commonPlans = $advancedPlans = [];
-
         // Get plans selected
+        $commonPlans = $advancedPlans = [];
         foreach ($this->params as $key => $value) {
             if (strpos($key, 'common_plan_') !== false && $value === '0') {
                 // Add UID to common plans
@@ -37,11 +36,19 @@ class CategorySaveObserver implements ObserverInterface
             }
         }
 
-        $entity = isset($this->params['entity']) ? $this->params['entity'] : '';
+        //Get mobbex configs
+        $categoryConfigs = [
+            'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
+            'common_plans'     => serialize($commonPlans),
+            'advanced_plans'   => serialize($advancedPlans),
+        ];
 
-        $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'common_plans', serialize($commonPlans));
-        $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'advanced_plans', serialize($advancedPlans));
-        $this->customFields->saveCustomField($observer->getCategory()->getId(), 'category', 'entity', $entity);
+        //Save mobbex custom fields
+        foreach ($categoryConfigs as $key => $value) {
+            $customFields = $this->customFieldsFactory->create();
+            $customFields->saveCustomField($observer->getCategory()->getId(), 'category', $key, $value);
+        }
+
         $this->helper->mobbex->executeHook('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
     }
 }
