@@ -127,7 +127,27 @@ class Data extends AbstractHelper
             Data::log('Mobbex: Error Obtaining Mockup Checkout' . $e->getMessage(), 'mobbex_error.log');
         }
     }
-    
+
+    /**
+     * Returns a query param with the installments of the product.
+     * @param array $plans
+     */
+    public static function getInstallmentsQuery($plans = null)
+    {
+        if (empty($plans))
+            return '';
+
+        $installments = [];
+
+        foreach ($plans as $plan)
+            $installments[] = $plan;
+
+        //Build query param
+        $query = http_build_query(['installments' => $installments]);
+        $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
+
+        return $query;
+    }
 
     /**
      * Get sources with common and advanced plans from mobbex.
@@ -139,22 +159,17 @@ class Data extends AbstractHelper
      */
     public function getSources($total = null, $installments = [])
     {
-        $entityData = $this->getEntityData();
-
-        if (!$entityData)
-            return [];
 
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL            => "https://api.mobbex.com/p/sources/list/$entityData[countryReference]/$entityData[tax_id]" . ($total ? "?total=$total" : ''),
+            CURLOPT_URL            => "https://api.mobbex.com/p/sources" . ($total ? "?total=$total" : '') . ($this->getInstallmentsQuery($installments) ? '&' . $this->getInstallmentsQuery($installments) : ''),
             CURLOPT_HTTPHEADER     => $this->mobbex->getHeaders(),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS      => 10,
             CURLOPT_TIMEOUT        => 30,
             CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST  => 'POST',
-            CURLOPT_POSTFIELDS     => json_encode(compact('installments')),
+            CURLOPT_CUSTOMREQUEST  => 'GET'
         ]);
 
         $response = curl_exec($curl);
@@ -171,50 +186,6 @@ class Data extends AbstractHelper
             self::log('Sources Obtaining Error', "mobbex_error_" . date('m_Y') . ".log");
 
         return isset($result['data']) ? $result['data'] : [];
-    }
-
-    /**
-     * Get entity data from Mobbex API or db if possible.
-     * 
-     * @return string[] 
-     */
-    public function getEntityData()
-    {
-        // First, try to get from db
-        $entityData = $this->mobbex->config->getEntityData();
-
-        if ($entityData)
-            return json_decode($entityData, true);
-
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL            => "https://api.mobbex.com/p/entity/validate",
-            CURLOPT_HTTPHEADER     => $this->mobbex->getHeaders(),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING       => "",
-            CURLOPT_MAXREDIRS      => 10,
-            CURLOPT_TIMEOUT        => 30,
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST  => 'GET',
-        ]);
-
-        $response = curl_exec($curl);
-        $error    = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($error)
-            return self::log('Entity Data Obtaining cURL Error' . $error, "mobbex_error_" . date('m_Y') . ".log");
-
-        $res = json_decode($response, true);
-
-        if (empty($res['data']))
-            return self::log('Entity Data Obtaining Error', "mobbex_error_" . date('m_Y') . ".log");
-
-        // Save data
-        $this->mobbex->config->save($this->mobbex->config::PATH_ENTITY_DATA, json_encode($res['data']));
-
-        return $res['data'];
     }
 
     /**
@@ -286,7 +257,7 @@ class Data extends AbstractHelper
                 ];
             }
         }
-        
+
         // Create plan with advanced rules fields
         foreach ($this->getSourcesAdvanced() as $source) {
             // Only if have installments

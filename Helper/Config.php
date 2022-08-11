@@ -7,7 +7,6 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_API_KEY = 'payment/webpay/api_key';
     const PATH_ACCESS_TOKEN = 'payment/webpay/access_token';
 
-    const PATH_ENTITY_DATA = 'payment/webpay/entity';
     const PATH_FINANCIAL_ACTIVE = 'payment/webpay/financial_active';
     const PATH_FINANCE_WIDGET_ON_CART = 'payment/webpay/finance_widget_on_cart';
 
@@ -245,15 +244,6 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_DEBUG_MODE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getEntityData($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ENTITY_DATA,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
