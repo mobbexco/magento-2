@@ -27,7 +27,7 @@ use Magento\Catalog\Model\ProductRepository;
  */
 class Mobbex extends AbstractHelper
 {
-    const VERSION = '3.1.0';
+    const VERSION = '3.1.1';
 
     /**
      * @var Config
