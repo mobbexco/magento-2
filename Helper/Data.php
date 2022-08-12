@@ -130,23 +130,14 @@ class Data extends AbstractHelper
 
     /**
      * Returns a query param with the installments of the product.
-     * @param array $plans
+     * @param int $total
+     * @param array $installments
+     * @return string $query
      */
-    public static function getInstallmentsQuery($plans = null)
+    public function getInstallmentsQuery($total, $installments = [])
     {
-        if (empty($plans))
-            return '';
-
-        $installments = [];
-
-        foreach ($plans as $plan)
-            $installments[] = $plan;
-
-        //Build query param
-        $query = http_build_query(['installments' => $installments]);
-        $query = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
-
-        return $query;
+        // Build query params and replace special chars
+        return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', http_build_query(compact('total', 'installments')));
     }
 
     /**
@@ -160,10 +151,11 @@ class Data extends AbstractHelper
     public function getSources($total = null, $installments = [])
     {
 
-        $curl = curl_init();
+        $curl  = curl_init();
+        $query = $this->getInstallmentsQuery($total, $installments);
 
         curl_setopt_array($curl, [
-            CURLOPT_URL            => "https://api.mobbex.com/p/sources" . ($total ? "?total=$total" : '') . ($this->getInstallmentsQuery($installments) ? '&' . $this->getInstallmentsQuery($installments) : ''),
+            CURLOPT_URL            => "https://api.mobbex.com/p/sources" . ($query ? "?$query" : ''),
             CURLOPT_HTTPHEADER     => $this->mobbex->getHeaders(),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS      => 10,
