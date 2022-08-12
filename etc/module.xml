@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noTestSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Mobbex_Webpay" setup_version="3.1.0" active="true">
+    <module name="Mobbex_Webpay" setup_version="3.1.1" active="true">
         <sequence>
 			<module name="Magento_Catalog"/>
 		</sequence>
