@@ -205,6 +205,7 @@ define(
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
                 createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
+                    $("body").trigger('processStop');
                     if(!response || !response.id){
                         displayAlert('Error', 'Error al obtener la información del pedido.', urlBuilder.build('webpay/payment/paymentreturn') + '&status=500');
                     }
