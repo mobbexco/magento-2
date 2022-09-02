@@ -104,7 +104,7 @@ class OrderUpdate
     public function updateTotals($order, $data)
     {
         $orderTotal = $order->getGrandTotal();
-        $totalPaid  = isset($data['total_webhook']) ? $data['total_webhook'] : $orderTotal;
+        $totalPaid  = isset($data['total']) ? $data['total'] : $orderTotal;
         $paidDiff   = $totalPaid - $orderTotal;
 
         if ($paidDiff > 0) {
