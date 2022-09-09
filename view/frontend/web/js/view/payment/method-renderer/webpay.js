@@ -44,9 +44,11 @@ require(['jquery'], function ($) {
 
 /**
  * Create checkout and call a callback
- *  
- * */
- function createCheckout(url, callback) {
+ * @param {string} url 
+ * @param {callback} callback 
+ * @param {string} returnUrl 
+ **/
+ function createCheckout(url, callback, returnUrl) {
 
     jQuery.ajax({
         dataType: 'json',
@@ -56,7 +58,7 @@ require(['jquery'], function ($) {
             callback(response);
         },
         error: function () {
-            displayAlert('Error', 'No se obtener la información del pago.', failUrl + '&status=' + 500);
+            displayAlert('Error', 'No se obtener la información del pago.', returnUrl  + '&status=' + 500);
         }
     });
 
@@ -160,34 +162,34 @@ function executeWallet(response) {
      let $ = jQuery
      let alert = document.createElement('P');
      alert.textContent = message;
-     
-    $("body").trigger('processStop');
-    $(alert).alert({
-        title: $.mage.__(alertTitle),
-        content: $.mage.__(message),
-        actions: {
-            always: function () {
-                jQuery("body").trigger('processStart');
-                jQuery.ajax({
-                    dataType: 'json',
-                    method: 'POST',
-                    url: failUrl,
-                    success: function () {
-                    },
-                    error: function () {
-                        location.reload()
-                    }
-                });
-            }
-        }
-    });
+
+     $("body").trigger('processStop');
+     $(alert).alert({
+         title: $.mage.__(alertTitle),
+         content: $.mage.__(message),
+         actions: {
+             always: function () {
+                 jQuery("body").trigger('processStart');
+                 jQuery.ajax({
+                     dataType: 'json',
+                     method: 'POST',
+                     url: failUrl,
+                     success: function () {},
+                     error: function () {
+                         location.reload()
+                     }
+                 });
+             }
+         }
+     });
 }
 
 define(
     [
         'jquery',
         'Magento_Checkout/js/view/payment/default',
-        'mage/url'
+        'mage/url',
+        'Magento_Ui/js/modal/alert'
     ],
     function ($, Component, urlBuilder) {
         'use strict';
@@ -204,10 +206,11 @@ define(
             },
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
+                var returnUrl = urlBuilder.build('webpay/payment/paymentreturn/');
                 createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
                     $("body").trigger('processStop');
                     if(!response || !response.id){
-                        displayAlert('Error', 'Error al obtener la información del pedido.', urlBuilder.build('webpay/payment/paymentreturn') + '&status=500');
+                        displayAlert('Error', 'Error al obtener la información del pedido.', returnUrl + '&status=500');
                     }
                     if(wallet && mbbxCurrentCard){
                         executeWallet(response)
@@ -216,7 +219,7 @@ define(
                     } else {
                         mbbxRedirect(response.url);
                     }
-                })
+                }, returnUrl)
             },
             getBanner: function () {
                 if (window.checkoutConfig.payment.webpay['banner'] !== undefined) 
