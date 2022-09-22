@@ -34,7 +34,7 @@
                     showInWebsite="1" showInStore="1">
                     <label>Habilitar debug</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Solo para pruebas de desarrollo y verficiar eventuales errores</comment>
+                    <comment>Solo para pruebas de desarrollo y verificar eventuales errores</comment>
                 </field>
 
                 <field id="test_mode" translate="label comment" sortOrder="7" type="select" showInDefault="1"

@@ -10,12 +10,12 @@ use Magento\Backend\Block\Template as MagentoTemplate;
 class Template extends MagentoTemplate
 {
     public function __construct(
-        \Mobbex\Webpay\Helper\Data $helper, 
         \Magento\Backend\Block\Template\Context $context,
+        \Mobbex\Webpay\Helper\Instantiator $instantiator,
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->helper = $helper;
+        $instantiator->setProperties($this, ['sdk', 'config', 'helper', 'repository']);
 
         // Set params as public prop
         $this->params = $this->_request->getParams();

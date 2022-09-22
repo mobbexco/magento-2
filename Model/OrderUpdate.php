@@ -65,7 +65,7 @@ class OrderUpdate
     public function updateStatus($order, $data)
     {
         $statusName  = $this->getStatusConfigName($data['status_code']);
-        $orderStatus = $this->config->{"getOrderStatus$statusName"}();
+        $orderStatus = $this->config->get($statusName);
 
         if ($orderStatus == $order->getStatus())
             return;
@@ -149,7 +149,7 @@ class OrderUpdate
      */
     public function generateInvoice($order, $message)
     {
-        if ($order->hasInvoices() || $this->config->getDisableInvoices())
+        if ($order->hasInvoices() || $this->config->get('disable_invoices'))
             return false;
 
         $payment = $order->getPayment();
@@ -163,7 +163,7 @@ class OrderUpdate
         $order->addRelatedObject($invoice);
         $invoice->addComment($message, true, true);
 
-        if (!$invoice->getEmailSent() && $this->config->getCreateInvoiceEmail()) {
+        if (!$invoice->getEmailSent() && $this->config->get('create_invoice_email')) {
             $this->invoiceSender->send($invoice);
         }
 
@@ -179,8 +179,8 @@ class OrderUpdate
     public function sendOrderEmail($order, $message)
     {
         $emailSent       = $order->getEmailSent();
-        $canSendCreation = $this->config->getCreateOrderEmail();
-        $canSendUpdate   = $this->config->getUpdateOrderEmail();
+        $canSendCreation = $this->config->get('create_order_email');
+        $canSendUpdate   = $this->config->get('update_order_email');
 
         if (!$emailSent) {
             if ($canSendCreation) {

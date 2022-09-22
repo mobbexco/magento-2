@@ -12,28 +12,24 @@ class Info extends \Magento\Payment\Block\Info
     protected $_state;
 
     /**
-     * @var MobbexTransactionFactory
-     */
-    protected $_mobbexTransactionFactory;
-
-    /**
      * Constructor
      *
      * @param Context $context
-     * @param State $state
+     * @param State $_state
+     * @param Instantiator $instantiator
      * @param array $data
-     * @param MobbexTransactionFactory $MobbexTransactionFactory
      */
     public function __construct(
         Context $context, 
-        State $state, 
-        \Mobbex\Webpay\Model\MobbexTransactionFactory $mobbexTransactionFactory,
+        State $_state,
+        \Mobbex\Webpay\Helper\Instantiator $instantiator,
         array $data = []
         )
     {
         parent::__construct($context, $data);
-        $this->_state = $state;
-        $this->mobbexTransaction = $mobbexTransactionFactory->create();
+        $instantiator->setProperties($this, ['mobbexTransactionFactory']);
+        $this->_state = $_state;
+        $this->mobbexTransaction = $this->mobbexTransactionFactory->create();
     }
 
     /**

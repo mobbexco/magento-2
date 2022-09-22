@@ -1,4 +1,4 @@
-<div id="mbbxProductModal" class="<?= $this->config->getThemeType() ?>"> 
+<div id="mbbxProductModal" class="<?= $this->config->get('theme_type') ?>"> 
     <div id="mbbxProductModalContent">
         <div id="mbbxProductModalHeader">
             <select name="mbbx-method-select" id="mbbx-method-select">
@@ -47,18 +47,18 @@
 </div>
 <button type="button" class="action secondary" id="mbbxProductBtn" 
     style="display: flex;align-items: center;">
-    <?php if($this->config->getButtonLogo()):?>
-    <img src="<?=$this->config->getButtonLogo()?>" alt="mobbex logo"
+    <?php if($this->config->get('button_logo')):?>
+    <img src="<?=$this->config->get('button_logo')?>" alt="mobbex logo"
         width="40" 
         height="40"
         style="margin-right: 10px; border-radius: 40px;">
     <?php endif; ?>
-    <?= $this->config->getButtonText() ?>
+    <?= $this->config->get('button_text') ?>
 </button>
 
 <style>
     /* Open Button Style */
-    <?= $this->config->getWidgetStyle() ?>
+    <?= $this->config->get('widget_style') ?>
     
     /* The Modal (background) */
     #mbbxProductModal {

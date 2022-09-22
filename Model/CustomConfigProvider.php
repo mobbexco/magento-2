@@ -3,9 +3,6 @@
 namespace Mobbex\Webpay\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
-use Mobbex\Webpay\Helper\Data;
-use Mobbex\Webpay\Helper\Config;
-use Magento\Quote\Model\QuoteFactory;
 
 /**
  * Class CustomConfigProvider
@@ -14,29 +11,11 @@ use Magento\Quote\Model\QuoteFactory;
 class CustomConfigProvider implements ConfigProviderInterface
 {
     /**
-     * @var Data
-     */
-    protected $_helper;
-
-    /**
-     * @var Config
-     */
-    protected $config;
-    
-    protected $quoteFactory;
-
-    /**
      * CustomConfigProvider constructor.
-     * @param Data $helper
      */
-    public function __construct(
-        Data $helper,
-        Config $config,
-        QuoteFactory $quoteFactory
-    ) {
-        $this->_helper = $helper;
-        $this->config = $config;
-        $this->quoteFactory = $quoteFactory;
+    public function __construct(\Mobbex\Webpay\Helper\Instantiator $instantiator) 
+    {
+        $instantiator->setProperties($this, ['sdk', 'config', 'helper', 'logger', 'quoteFactory']);
     }
 
     /**
@@ -45,24 +24,27 @@ class CustomConfigProvider implements ConfigProviderInterface
     public function getConfig()
     {   
         //get checkout mockup
-        $checkoutData = $this->formatCheckoutData($this->_helper->getCheckoutMockup());
+        $checkoutData = $this->formatCheckoutData($this->helper->createCheckoutFromQuote());
 
         $config = [
             'payment' => [
                 'webpay' => [
                     'config' => [
-                        'embed' => $this->config->getEmbedPayment(),
-                        'wallet' => $this->config->getWalletActive()
+                        'embed' => $this->config->get('embed'),
+                        'wallet' => $this->config->get('wallet')
                     ],
-                    'banner'            => $this->config->getBannerCheckout(),
-                    'paymentMethods'    => !empty($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->getTitleCheckout() ?: 'Pagar con Mobbex', 'image' => '']],
+                    'banner'            => $this->config->get('banner_checkout'),
+                    'paymentMethods'    => !empty($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->get('title_checkout') ?: 'Pagar con Mobbex', 'image' => '']],
                     'walletCreditCards' => !empty($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
-                    'returnUrl'         => !empty($checkoutData['returnUrl']) ? $checkoutData['returnUrl'] : '',
                     'paymentUrl'        => !empty($checkoutData['paymentUrl']) ? $checkoutData['paymentUrl'] : '',
                     'checkoutId'        => !empty($checkoutData['checkoutId']) ? $checkoutData['checkoutId'] : '',
+                    'orderId'           => !empty($checkoutData['orderId']) ? $checkoutData['orderId'] : '',
                 ]
             ]
         ];
+
+        //Log data in debug mode
+        $this->logger->createJsonResponse('debug', 'CustomConfigProvider > :', $config);
 
         return $config;
     }
@@ -74,54 +56,49 @@ class CustomConfigProvider implements ConfigProviderInterface
     */
     public function formatCheckoutData($checkoutData)
     {
-        $data = [];
 
-        if($checkoutData){
+        $data = [
+            'paymentMethods' => [],
+            'wallet'         => [],
+            'paymentUrl'     => !empty($checkoutData['data']['url']) ? $checkoutData['data']['url'] : '',
+            'checkoutId'     => !empty($checkoutData['data']['id']) ? $checkoutData['data']['id'] : '',
+            'orderId'        => !empty($checkoutData['order_id']) ? $checkoutData['order_id'] : '',
+            'data'           => !empty($checkoutData['data']) ? $checkoutData['data'] : []
+        ];
 
-            $data = [
-                'paymentMethods' => [],
-                'wallet'         => [],
-                'returnUrl'      => !empty($checkoutData['return_url']) ? $checkoutData['return_url'] : '',
-                'paymentUrl'     => !empty($checkoutData['url']) ? $checkoutData['url'] : '',
-                'checkoutId'     => !empty($checkoutData['id']) ? $checkoutData['id'] : '',
-                'data'           => !empty($checkoutData) ? $checkoutData : []
-            ];
-    
-            if(!empty($checkoutData['paymentMethods'])) {
-                foreach ($checkoutData['paymentMethods'] as $method) {
-                    $data['paymentMethods'][] = [
-                        'id'    => $method['subgroup'],
-                        'value' => $method['group'] . ':' . $method['subgroup'],
-                        'name'  => $method['group'] == 'card' && $method['subgroup'] == 'card_input' && $this->config->getTitleCheckout() ? $this->config->getTitleCheckout() : $method['subgroup_title'],
-                        'image' => $method['subgroup_logo']
-                    ];
-                }
-
-                if(count($data['paymentMethods']) <= 1 && $this->config->getTitleCheckout())
-                    $data['paymentMethods'][0]['name'] = $this->config->getTitleCheckout();
-
-            } else {
+        if(!empty($checkoutData['data']['paymentMethods'])) {
+            foreach ($checkoutData['data']['paymentMethods'] as $method) {
                 $data['paymentMethods'][] = [
-                    'id'    => 'mobbex',
-                    'value' => '',
-                    'name'  => $this->config->getTitleCheckout(),
-                    'image' => ''
+                    'id'    => $method['subgroup'],
+                    'value' => $method['group'] . ':' . $method['subgroup'],
+                    'name'  => $method['group'] == 'card' && $method['subgroup'] == 'card_input' && $this->config->get('title_checkout') ? $this->config->get('title_checkout') : $method['subgroup_title'],
+                    'image' => $method['subgroup_logo']
                 ];
             }
-    
-            if($this->config->getWalletActive() && !empty($checkoutData['wallet'])) {
-                foreach ($checkoutData['wallet'] as $key => $card) {
-                    $data['wallet'][] = [
-                        'id'           => 'wallet-card-' . $key,
-                        'value'        => 'card-' . $key,
-                        'name'         => $card['name'],
-                        'img'          => $card['source']['card']['product']['logo'],
-                        'maxlength'    => $card['source']['card']['product']['code']['length'],
-                        'placeholder'  => $card['source']['card']['product']['code']['name'],
-                        'hiddenValue'  => $card['card']['card_number'],
-                        'installments' => $card['installments']
-                    ];
-                }
+            if(count($data['paymentMethods']) <= 1 && $this->config->get('title_checkout'))
+                $data['paymentMethods'][0]['name'] = $this->config->get('title_checkout');
+                
+        } else {
+            $data['paymentMethods'][] = [
+                'id'    => 'mobbex',
+                'value' => '',
+                'name'  => $this->config->get('title_checkout'),
+                'image' => ''
+            ];
+        }
+
+        if($this->config->get('wallet') && !empty($checkoutData['data']['wallet'])) {
+            foreach ($checkoutData['data']['wallet'] as $key => $card) {
+                $data['wallet'][] = [
+                    'id'           => 'wallet-card-' . $key,
+                    'value'        => 'card-' . $key,
+                    'name'         => $card['name'],
+                    'img'          => $card['source']['card']['product']['logo'],
+                    'maxlength'    => $card['source']['card']['product']['code']['length'],
+                    'placeholder'  => $card['source']['card']['product']['code']['name'],
+                    'hiddenValue'  => $card['card']['card_number'],
+                    'installments' => $card['installments']
+                ];
             }
         }
 

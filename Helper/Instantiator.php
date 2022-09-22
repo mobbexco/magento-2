@@ -1,0 +1,51 @@
+<?php
+
+namespace Mobbex\Webpay\Helper;
+
+/**
+ * Class Instantiator
+ * @package Mobbex\Webpay\Helper
+ */
+class Instantiator extends \Magento\Framework\App\Helper\AbstractHelper
+{
+    /** @var \Magento\Framework\ObjectManagerInterface */
+    public $objectManager;
+
+    public $classes = [
+        'sdk'                      => '\Mobbex\Webpay\Helper\Sdk',
+        'config'                   => '\Mobbex\Webpay\Helper\Config',
+        'helper'                   => '\Mobbex\Webpay\Helper\Mobbex',
+        'logger'                   => '\Mobbex\Webpay\Helper\Logger',
+        'repository'               => '\Mobbex\Repository',
+        'customFieldFactory'       => '\Mobbex\Webpay\Model\CustomFieldFactory',
+        'mobbexTransactionFactory' => '\Mobbex\Webpay\Model\MobbexTransactionFactory',
+        'quoteFactory'             => '\Magento\Quote\Model\QuoteFactory',
+        'redirectFactory'          => '\Magento\Framework\Controller\Result\RedirectFactory',
+        'orderUpdate'              => '\Mobbex\Webpay\Model\OrderUpdate',
+        '_cart'                    => '\Magento\Checkout\Model\Cart',
+        '_checkoutSession'         => '\Magento\Checkout\Model\Session',
+        '_order'                   => '\Magento\Sales\Model\Order',
+        '_request'                 => '\Magento\Framework\App\RequestInterface',
+        '_urlBuilder'              => '\Magento\Framework\UrlInterface'
+    ];
+
+    public function __construct(\Magento\Framework\ObjectManagerInterface $objectManager)
+    {
+        $this->_objectManager = $objectManager;
+    }
+
+    /**
+     * Set properties from instantiator
+     * @param array $properties
+     */
+    public function setProperties($object, $properties)
+    {
+        foreach ($properties as $propertie){
+            $object->$propertie = $this->_objectManager->get($this->classes[$propertie]);
+            if($propertie === 'sdk')
+                $object->sdk->init();
+        }
+    }
+}
+
+

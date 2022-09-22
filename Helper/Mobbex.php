@@ -2,222 +2,108 @@
 
 namespace Mobbex\Webpay\Helper;
 
-use Mobbex\Webpay\Helper\Config;
-use Magento\Catalog\Helper\Image;
-use Magento\Checkout\Model\Cart;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\App\Helper\AbstractHelper;
-use \Magento\Framework\App\ProductMetadataInterface;
-use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\UrlInterface;
-use Magento\Sales\Api\Data\OrderInterface;
-use Magento\Sales\Model\Order;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Store\Model\ScopeInterface;
-use Psr\Log\LoggerInterface;
-use Magento\Quote\Model\QuoteFactory;
-use Magento\Customer\Model\Session;
-use Magento\Framework\Event\ManagerInterface as EventManager;
-use Magento\Framework\Session\SessionManagerInterface;
-use Magento\Catalog\Model\ProductRepository;
-
 /**
  * Class Mobbex
  * @package Mobbex\Webpay\Helper
  */
-class Mobbex extends AbstractHelper
+class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
     const VERSION = '3.1.2';
 
-    /**
-     * @var Config
-     */
-    public $config;
+    /** @var \Mobbex\Webpay\Helper\Instantiator */
+    public $instantiator;
 
-    /**
-     * @var ScopeConfigInterface
-     */
+    /** @var ScopeConfigInterface */
     public $scopeConfig;
 
-    /**
-     * @var OrderInterface
-     */
-    public $order;
-
-    /**
-     * @var Order
-     */
-    public $modelOrder;
-
-    /**
-     * @var Cart
-     */
-    public $cart;
-
-    /**
-     * @var ObjectManagerInterface
-     */
+    /** @var ObjectManagerInterface */
     protected $_objectManager;
 
-    /**
-     * @var StoreManagerInterface
-     */
+    /** @var StoreManagerInterface */
     protected $_storeManager;
 
-    /**
-     * @var LoggerInterface
-     */
-    protected $log;
-
-    /**
-     * @var UrlInterface
-     */
-    protected $urlBuilder;
-
-    /**
-     * @var Image
-     */
+    /** @var Image */
     protected $imageHelper;
-
-    /**
-     * @var CustomFieldFactory
-     */
-    protected $_customFieldFactory;
-
-    /**
-     * @var ProductMetadataInterface
-     */
+    
+    /** @var ProductMetadataInterface */
     protected $productMetadata;
-
-    /**
-     * @var QuoteFactory
-     */
-    protected $quoteFactory;
-
-    /**
-     * @var Session
-     */
+    
+    /** @var Session */
     protected $customerSession;
 
-    /**
-     * @var ProductRepository
-     */
+    /** @var \Magento\Sales\Api\Data\OrderInterface */
+    protected $_orderInterface;
+
+    /** @var ProductRepository */
     protected $productRepository;
 
-    /** @var \Magento\Framework\Event\ConfigInterface */ 
+    /** @var \Magento\Framework\Event\ConfigInterface */
     public $eventConfig;
 
     /** @var \Magento\Framework\Event\ObserverFactory */
     public $observerFactory;
 
-    /**
-     * Mobbex constructor.
-     * @param Config $config
-     * @param ScopeConfigInterface $scopeConfig
-     * @param OrderInterface $order
-     * @param Order $modelOrder
-     * @param Cart $cart
-     * @param ObjectManagerInterface $_objectManager
-     * @param StoreManagerInterface $_storeManager
-     * @param LoggerInterface $logger
-     * @param UrlInterface $urlBuilder
-     * @param Image $imageHelper
-     * @param CustomFieldFactory $_customFieldFactory
-     * @param ProductMetadataInterface $productMetadata
-     * @param QuoteFactory $quoteFactory
-     * @param Session $customerSession
-     * @param EventManager $eventManager
-     * @param SessionManagerInterface $session
-     * @param ProductRepository $productRepository
-     */
     public function __construct(
-        Config $config,
-        ScopeConfigInterface $scopeConfig,
-        OrderInterface $order,
-        Order $modelOrder,
-        Cart $cart,
-        ObjectManagerInterface $_objectManager,
-        StoreManagerInterface $_storeManager,
-        LoggerInterface $logger,
-        UrlInterface $urlBuilder,
-        Image $imageHelper,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        QuoteFactory $quoteFactory,
-        ProductMetadataInterface $productMetadata,
-        Session $customerSession,
-        ProductRepository $productRepository,
+        \Mobbex\Webpay\Helper\Instantiator $instantiator,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Store\Model\StoreManagerInterface $_storeManager,
+        \Magento\Catalog\Helper\Image $imageHelper,
+        \Magento\Framework\App\ProductMetadataInterface $productMetadata,
+        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Sales\Api\Data\OrderInterface $_orderInterface,
+        \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Framework\Event\ConfigInterface $eventConfig,
         \Magento\Framework\Event\ObserverFactory $observerFactory
     ) {
-        $this->config = $config;
-        $this->order = $order;
-        $this->modelOrder = $modelOrder;
-        $this->cart = $cart;
-        $this->scopeConfig = $scopeConfig;
-        $this->quoteFactory = $quoteFactory;
-        $this->_storeManager = $_storeManager;
-        $this->_objectManager = $_objectManager;
-        $this->log = $logger;
-        $this->urlBuilder = $urlBuilder;
-        $this->imageHelper = $imageHelper;
-        $this->_customFieldFactory = $customFieldFactory;
-        $this->customFields = $customFieldFactory->create();
-        $this->productMetadata = $productMetadata;
-        $this->customerSession = $customerSession;
-        $this->productRepository = $productRepository;
-        $this->eventConfig     = $eventConfig;
-        $this->observerFactory = $observerFactory;
+        $instantiator->setProperties($this, ['config', 'logger', 'repository','customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
+        $this->scopeConfig        = $scopeConfig;
+        $this->_storeManager      = $_storeManager;
+        $this->imageHelper        = $imageHelper;
+        $this->productMetadata    = $productMetadata;
+        $this->customerSession    = $customerSession;
+        $this->productRepository  = $productRepository;
+        $this->eventConfig        = $eventConfig;
+        $this->observerFactory    = $observerFactory;
+        $this->_orderInterface    = $_orderInterface;
     }
 
     /**
      * @return bool
      */
-    public function createCheckout($checkout)
+    public function getCheckout()
     {
-        $curl = curl_init();
+        // get order data
+        $orderId     = $this->_checkoutSession->getLastRealOrderId();
+        $orderData   = $this->_order->load($this->_checkoutSession->getLastRealOrder()->getEntityId());
+        $orderAmount = round($this->_orderInterface->getData('base_grand_total'), 2);
 
-        // get order object
-        $this->order->loadByIncrementId($checkout->getLastRealOrder()->getEntityId());
-
-        // get extra order data
-        $orderData = $this->modelOrder->load($checkout->getLastRealOrder()->getEntityId());
-
-        // get oder id
-        $orderId = $checkout->getLastRealOrderId();
-
-        // set order description as #ORDERID
-        $description = __('Orden #') . $checkout->getLastRealOrderId();
-
-        // get order amount
-        $orderAmount = round($this->order->getData('base_grand_total'), 2);
-
-        // Get phone
-        $phone = '';
+        // Get customer data
         if ($orderData->getBillingAddress()){
             if (!empty($orderData->getBillingAddress()->getTelephone())) {
                 $phone = $orderData->getBillingAddress()->getTelephone();
             }
         }
 
-        // Get customer data
         $customer = [
             'name'           => $orderData->getCustomerName(),
             'email'          => $orderData->getCustomerEmail(), 
             'uid'            => $orderData->getCustomerId(),
-            'phone'          => $phone,
+            'phone'          => isset($phone) ? $phone : '',
             'identification' => $this->getDni($orderData->getQuoteId()),
         ];
 
-        $items = [];
-        $orderedItems = $this->order->getAllVisibleItems();
-
+        //Get Items
+        $items = $products = [];
+        $orderedItems = $this->_orderInterface->getAllVisibleItems();
+        
         foreach ($orderedItems as $item) {
 
-            $product = $item->getProduct();
-            $price = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
+            $product      = $item->getProduct();
+            $products[]   = $product;
+            $price        = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
             $subscription = $this->getProductSubscription($product->getId());
-            $entity  = $this->getEntity($product);
-
+            $entity       = $this->getEntity($product);
+            
             if($subscription['enable'] === 'yes') {
                 $items[] = [
                     'type'      => 'subscription',
@@ -234,78 +120,30 @@ class Mobbex extends AbstractHelper
             }
         }
 
-        if (!empty($this->order->getShippingDescription())) {
+        //Get products active plans
+        extract($this->config->getProductPlans($products));
+        
+        if (!empty($this->_orderInterface->getShippingDescription())) {
             $items[] = [
-                'description' => __('Shipping') . ': ' . $this->order->getShippingDescription(),
-                'total' => $this->order->getShippingInclTax(),
+                'description' => __('Shipping') . ': ' . $this->_orderInterface->getShippingDescription(),
+                'total' => $this->_orderInterface->getShippingInclTax(),
             ];
         }
 
-        //wallet
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $userSession = $objectManager->get('Magento\Customer\Model\Session');
-        $is_wallet_active = ((bool) ($this->config->getWalletActive()) && $userSession->isLoggedIn());
+        $mobbexCheckout = new \Mobbex\Modules\Checkout(
+            $orderId,
+            (float) $orderAmount,
+            $this->getEndpointUrl('paymentreturn', ['order_id' => $orderId]),
+            $this->getEndpointUrl('webhook', ['order_id' => $orderId]),
+            $items,
+            $this->repository->getInstallments($orderedItems, $common_plans, $advanced_plans),
+            $customer,
+            'mobbexProcessPayment'
+        );
 
-        // Create data
-        $data = $this->executeHook('mobbexCheckoutRequest', true, [
-            'reference'    => $this->getReference($orderId),
-            'currency'     => 'ARS',
-            'description'  => $description,
-            'test'         => (bool) ($this->config->getTestMode()),
-            'return_url'   => $this->getEndpointUrl('paymentreturn', ['order_id' => $orderId]),
-            'webhook'      => $this->getEndpointUrl('webhook', ['order_id' => $orderId]),
-            'items'        => $items,
-            "options"      => [
-                "button" => (bool) ($this->config->getEmbedPayment()),
-                "domain" => $this->urlBuilder->getUrl('/'),
-                "theme"  => $this->getTheme(),
-                "redirect" => [
-                    "success" => true,
-                    "failure" => false,
-                ],
-                "platform" => $this->getPlatform(),
-            ],
-            "multicard"    => (bool) ($this->config->getMulticard()),
-            "multivendor"  => $this->config->getMultivendor() === 'disable' ? false : $this->config->getMultivendor(),
-            "merchants"    => $this->getMerchants($items),
-            'total'        => (float) $orderAmount,
-            'customer'     => $customer,
-            'installments' => $this->getInstallments($orderedItems),
-            'timeout'      => 5,
-            'wallet'       => $is_wallet_active
-        ], $orderData);
+        $this->logger->createJsonResponse('debug', "Checkout Response: ", $mobbexCheckout->response);
 
-        if($this->config->getDebugMode())
-        {
-            Data::log("Checkout Headers:" . print_r($this->getHeaders(), true), "mobbex_debug_" . date('m_Y') . ".log");
-            Data::log("Checkout Headers:" . print_r($data, true), "mobbex_debug_" . date('m_Y') . ".log");
-        }
-
-        curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.mobbex.com/p/checkout",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => $this->getHeaders(),
-        ]);
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-
-        if ($err) {
-            Data::log("Checkout Error:" . print_r($err, true), "mobbex_error_" . date('m_Y') . ".log");
-            return false;
-        } else {
-            $res = json_decode($response, true);
-            Data::log("Checkout Response:" . print_r($res, true), "mobbex_" . date('m_Y') . ".log");
-            $res['data']['return_url'] = $data['return_url']; 
-            return $res['data'];
-        }
+        return $mobbexCheckout->response;
     }
 
     /**
@@ -315,124 +153,80 @@ class Mobbex extends AbstractHelper
      * 
      * @return array
      */
-    public function createCheckoutFromQuote($quote)
+    public function createCheckoutFromQuote()
     {
-        // Get customer and shipping data
-        $shippingAddress = $quote->getBillingAddress()->getData();
-        $shippingAmount  = $quote->getShippingAddress()->getShippingAmount();
+        try {
+            // Get quote
+            $quote = $this->_checkoutSession->getQuote();
 
-        foreach ($quote->getItemsCollection() as $item) {
-            $subscriptionConfig = $this->getProductSubscription($item->getProductId());
+            // Get customer and shipping data
+            $shippingAddress = $quote->getBillingAddress()->getData();
+            $shippingAmount  = $quote->getShippingAddress()->getShippingAmount();
 
-            if($subscriptionConfig['enable'] === 'yes') {
-                $items[] = [
-                    'type'      => 'subscription',
-                    'reference' => $subscriptionConfig['uid']
-                ];
-            } else {
-                $items[] = [
-                    'description' => $item->getName(),
-                    'quantity'    => $item->getQty(),
-                    'total'       => (float) $item->getPrice(),
-                    'entity'      => $this->getEntity($item->getProduct()),
-                ];
+            foreach ($quote->getItemsCollection() as $item) {
+                $subscriptionConfig = $this->getProductSubscription($item->getProductId());
+
+                if ($subscriptionConfig['enable'] === 'yes') {
+                    $items[] = [
+                        'type'      => 'subscription',
+                        'reference' => $subscriptionConfig['uid']
+                    ];
+                } else {
+                    $items[] = [
+                        'description' => $item->getName(),
+                        'quantity'    => $item->getQty(),
+                        'total'       => (float) $item->getPrice(),
+                        'entity'      => $this->getEntity($item->getProduct()),
+                    ];
+                }
             }
-        }
 
-        // Add shipping item if possible
-        if ($shippingAmount)
-            $items[] = [
-                'description' => 'Shipping',
-                'total'       => $shippingAmount,
-            ];
+            //Get products active plans
+            $products = [];
+            foreach ($quote->getItemsCollection() as $item)
+                $products[] = $item->getProduct();
+            extract($this->config->getProductPlans($products));
 
-        $body = $this->executeHook('mobbexQuoteCheckoutRequest', true, [
-            'reference'    => $this->getReference($quote->getId()),
-            'currency'     => 'ARS',
-            'total'        => (float) $quote->getGrandTotal(),
-            'description'  => 'Quote #' . $quote->getId(),
-            'test'         => (bool) ($this->config->getTestMode()),
-            'return_url'   => $this->getEndpointUrl('paymentreturn', ['quote_id' => $quote->getId()]),
-            'webhook'      => $this->getEndpointUrl('webhook', ['quote_id' => $quote->getId()]),
-            'items'        => isset($items) ? $items : [],
-            'wallet'       => $this->config->getWalletActive() && $this->customerSession->isLoggedIn(),
-            'multicard'    => (bool) ($this->config->getMulticard()),
-            'multivendor'  => $this->config->getMultivendor() === 'disable' ? false : $this->config->getMultivendor(),
-            'merchants'    => $this->getMerchants($items),
-            'installments' => $this->getInstallments($quote->getItemsCollection(), true),
-            'timeout'      => 5,
-            'customer'     => [
-                'email'          => $quote->getCustomerEmail(), 
+            // Add shipping item if possible
+            if ($shippingAmount)
+                $items[] = [
+                    'description' => 'Shipping',
+                    'total'       => $shippingAmount,
+                ];
+
+            $customer = [
+                'email'          => $quote->getCustomerEmail(),
                 'name'           => "$shippingAddress[firstname] $shippingAddress[lastname]",
                 'identification' => $this->getDni($quote->getId()),
                 'uid'            => $quote->getCustomerId(),
                 'phone'          => $shippingAddress['telephone'],
-            ],
-            'options'      => [
-                'button'   => (bool) ($this->config->getEmbedPayment()),
-                'domain'   => $this->getDomainUrl(),
-                'theme'    => $this->getTheme(),
-                'redirect' => [
-                    'success' => true,
-                    'failure' => false,
-                ],
-                'platform' => $this->getPlatform(),
-            ],
-        ], $quote);
+            ];
 
-        $curl = curl_init();
+            $mobbexCheckout = new \Mobbex\Modules\Checkout(
+                $quote->getId(),
+                (float) $quote->getGrandTotal(),
+                $this->getEndpointUrl('paymentreturn', ['order_id' => $quote->getId()]),
+                $this->getEndpointUrl('webhook', ['order_id' => $quote->getId()]),
+                isset($items) ? $items : [],
+                $this->repository->getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
+                $customer,
+                'mobbexProcessPayment'
+            );
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL            => 'https://api.mobbex.com/p/checkout',
-            CURLOPT_HTTPHEADER     => $this->getHeaders(),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_MAXREDIRS      => 10,
-            CURLOPT_TIMEOUT        => 30,
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST  => 'POST',
-            CURLOPT_POSTFIELDS     => json_encode($body),
-        ]);
+            $this->logger->createJsonResponse('debug', "Checkout Response: ", $mobbexCheckout->response); 
+            
+            return ['data' => $mobbexCheckout->response, 'order_id' => $quote->getId()];
 
-        $response = curl_exec($curl);
-        $error    = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($this->config->getDebugMode())
-            Data::log('Quote Checkout Creation Body:' . print_r($body, true), 'mobbex_debug_' . date('m_Y') . '.log');
-
-        if ($error)
-            return Data::log("Checkout Error:" . print_r($error, true), "mobbex_error_" . date('m_Y') . ".log");
-
-        $result = json_decode($response, true);
-        $result['data']['return_url'] = $body['return_url']; 
-        Data::log("Checkout Response:" . print_r($result, true), "mobbex_" . date('m_Y') . ".log");
-
-        return $result['data'];
-    }
-
-    /**
-     * Return domain url without "https://" or "http://".
-     * 
-     * @return string
-     */
-    private function getDomainUrl()
-    {
-        $url = $this->urlBuilder->getUrl();
-
-        // Remove scheme from URL
-        $url = str_replace(['http://', 'https://'], '', $url);
-
-        // Remove empty path
-        if (strpos(substr($url,-1),'/') !== 'false')
-            $url = substr($url,0,-1);
-
-        return $url;
+        } catch (\Mobbex\Exception $e) {
+            $this->logger->createJsonResponse('err', $e->getMessage(), $e->data);
+            return false;
+        }
+        
     }
 
     public function getEndpointUrl($controller, $data = [])
-    {
-        return $this->urlBuilder->getUrl("webpay/payment/$controller", [
+    {   
+        return $this->_urlBuilder->getUrl("webpay/payment/$controller", [
             '_secure'      => true,
             '_current'     => true,
             '_use_rewrite' => true,
@@ -441,174 +235,37 @@ class Mobbex extends AbstractHelper
     }
 
     /**
-     * @return array
-     */
-    private function getTheme()
-    {
-        return [
-            "type" => $this->config->getThemeType(),
-            "background" => $this->config->getBackgroundColor(),
-            "colors" => [
-                "primary" => $this->config->getPrimaryColor(),
-            ],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    private function getPlatform()
-    {
-        return [
-            'name'      => 'magento_2',
-            'version'   => Mobbex::VERSION,
-            'ecommerce' => [
-                'magento' => $this->productMetadata->getVersion(),
-                'php'     => phpversion(),
-            ],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeaders()
-    {
-        return [
-            'cache-control: no-cache',
-            'content-type: application/json',
-            'x-api-key: ' . $this->config->getApiKey(),
-            'x-access-token: ' . $this->config->getAccessToken(),
-            'x-ecommerce-agent: Magento/' . $this->productMetadata->getVersion() . ' Plugin/' . $this::VERSION . ' PHP/' . phpversion(),
-        ];
-    }
-
-    /**
-     * Retrieve active advanced plans from a product and its categories.
-     * 
-     * @param int $productId
-     * 
-     * @return array
-     */
-    public function getInactivePlans($productId)
-    {
-        $product = $this->productRepository->getById($productId);
-
-        $inactivePlans = unserialize($this->customFields->getCustomField($productId, 'product', 'common_plans')) ?: [];
-
-        foreach ($product->getCategoryIds() as $categoryId)
-            $inactivePlans = array_merge($inactivePlans, unserialize($this->customFields->getCustomField($categoryId, 'category', 'common_plans')) ?: []);
-
-        // Remove duplicated and return
-        return array_unique($inactivePlans);
-    }
-
-    /**
-     * Retrieve active advanced plans from a product and its categories.
-     * 
-     * @param int $productId
-     * 
-     * @return array
-     */
-    public function getActivePlans($productId)
-    {
-        $product = $this->productRepository->getById($productId);
-
-        // Get plans from product and product categories
-        $activePlans = unserialize($this->customFields->getCustomField($productId, 'product', 'advanced_plans')) ?: [];
-
-        foreach ($product->getCategoryIds() as $categoryId)
-            $activePlans = array_merge($activePlans, unserialize($this->customFields->getCustomField($categoryId, 'category', 'advanced_plans')) ?: []);
-
-        // Remove duplicated and return
-        return array_unique($activePlans);
-    }
-
-    /**
-     * Retrieve installments checked on plans filter of each item.
-     * 
-     * @param array $items
-     * 
-     * @return array
-     */
-    public function getInstallments($items)
-    {
-        $installments = $inactivePlans = $activePlans = [];
-
-        // Get plans from order products
-        foreach ($items as $item) {
-            $id = is_string($item) ? $item : $item->getProductId();
-
-            $inactivePlans = array_merge($inactivePlans, $this->getInactivePlans($id));
-            $activePlans   = array_merge($activePlans, $this->getActivePlans($id));
-        }
-
-        // Add inactive (common) plans to installments
-        foreach ($inactivePlans as $plan)
-            $installments[] = '-' . $plan;
-
-        // Add active (advanced) plans to installments only if the plan is active on all products
-        foreach (array_count_values($activePlans) as $plan => $reps) {
-            if ($reps == count($items))
-                $installments[] = '+uid:' . $plan;
-        }
-
-        // Remove duplicated plans and return
-        return array_values(array_unique($installments));
-    }
-
-
-    /**
-     * @return string
-     */
-    public function getReference($orderId)
-    {
-        return 'mag2_order_'.$orderId;
-	}
-  
-    /**
      * Get yhe entity of a product
      * @param object $product
      * @return string $entity
      */
     public function getEntity($product)
     {
-        if($this->customFields->getCustomField($product->getId(), 'product', 'entity'))
-            return $this->customFields->getCustomField($product->getId(), 'product', 'entity');
+        if($this->config->getCatalogSetting($product->getId(), 'entity'))
+            return $this->config->getCatalogSetting($product->getId(), 'entity');
 
         $categories = $product->getCategoryIds();
         foreach ($categories as $category) {
-            if($this->customFields->getCustomField($category, 'category', 'entity'))
-                return $this->customFields->getCustomField($category, 'category', 'entity'); 
+            if($this->config->getCatalogSetting($category, 'entity', 'category'))
+                return $this->config->getCatalogSetting($category, 'entity', 'category'); 
         }
 
         return '';
 	}
 
     /**
-     * Get the merchants from item list.
-     * @param array
+     * Retrieve product subscription data.
+     * 
+     * @param int|string $id
+     * 
      * @return array
      */
-    public function getMerchants($items)
+    public function getProductSubscription($id)
     {
-        $merchants = [];
+        foreach (['is_subscription', 'subscription_uid'] as $value)
+            ${$value} = $this->config->getCatalogSetting($id, $value);
 
-        //Get the merchants from items list
-        foreach ($items as $item) {
-            if (!empty($item['entity']))
-                $merchants[] = ['uid' => $item['entity']];
-        }
-
-        return $merchants;
-	}
-
-    /**
-     * Check if plugin is configured.
-     */
-    public function isReady()
-    {
-        return (!empty($this->config->getApiKey()) && !empty($this->config->getAccessToken()));
+        return ['enable' => $is_subscription, 'uid' => $subscription_uid];
     }
 
     /**
@@ -620,7 +277,7 @@ class Mobbex extends AbstractHelper
      */
     public function getDni($quoteId)
     {
-        $customField = $this->_customFieldFactory->create();
+        $customField = $this->customFieldFactory->create();
 
         // Get dni custom field from quote or current user if logged in
         $customerId = $this->customerSession->getCustomer()->getId();
@@ -669,22 +326,8 @@ class Mobbex extends AbstractHelper
 
             return $value;
         } catch (\Exception $e) {
-            Data::log('Mobbex Hook Error: ' . $e->getMessage(), 'mobbex_error.log');
+            $this->logger->createJsonResponse('err', 'Mobbex Hook Error: ', $e->getMessage());
         }
     }
 
-    /**
-     * Retrieve product subscription data.
-     * 
-     * @param int|string $id
-     * 
-     * @return array
-     */
-    public function getProductSubscription($id)
-    {
-        $is_subscription  = $this->customFields->getCustomField($id, 'product', 'is_subscription') ?: false;
-        $subscription_uid = $this->customFields->getCustomField($id, 'product', 'subscription_uid') ?: '';
-
-        return ['enable' => $is_subscription, 'uid' => $subscription_uid];
-    }
 }

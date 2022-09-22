@@ -5,7 +5,6 @@ namespace Mobbex\Webpay\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\App\Action\Context;
-use Mobbex\Webpay\Helper\Data;
 use Magento\Framework\Message\ManagerInterface;
 
 /**
@@ -15,18 +14,20 @@ use Magento\Framework\Message\ManagerInterface;
 class RefundObserverBeforeSave implements ObserverInterface
 {
     /**
-     * @var Data
+     * @var Context
      */
-    protected $_helper;
-
+    protected $context;
+    
     /**
-     * @var ManagerInterface
+     * @var \Mobbex\Webpay\Helper\Instantiator
      */
-    protected $messageManager;
+    protected $instantiator;
 
-    public function __construct(Context $context, Data $_helper) {
+
+    public function __construct(Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
+    {
         $this->messageManager = $context->getMessageManager();
-        $this->_helper = $_helper;
+        $instantiator->setProperties($this, ['logger']);
     }
 
     /**
@@ -53,7 +54,7 @@ class RefundObserverBeforeSave implements ObserverInterface
         if ($amount <= 0) {
             $message = __('Refund Error: Sorry! This is not a refundable transaction.');
             $this->messageManager->addErrorMessage($message);
-            Data::log($message, 'mobbex_error_' . date('m_Y') . '.log');
+            $this->logger->createJsonResponse('err', $message);
 
             throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
         }
@@ -63,38 +64,18 @@ class RefundObserverBeforeSave implements ObserverInterface
 
     public function processRefund($amount, $paymentId)
     {
-        $curl = curl_init();
+        try {
 
-        $headers = $this->_helper->mobbex->getHeaders();
+            $result = \Mobbex\Api::request([
+                'method' => 'POST',
+                'uri'    => "operations/" . $paymentId . '/refund',
+                'body'   => json_encode(['total' => floatval($amount)])
+            ]) ?: [];
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => 'https://api.mobbex.com/p/operations/' . $paymentId . '/refund',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => json_encode(['total' => floatval($amount)]),
-            CURLOPT_HTTPHEADER => $headers,
-        ]);
+            return !empty($result);
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        $result = json_decode($response);
-
-        if (empty($err) && $result->result) {
-            return true;
-        } else {
-            $message = empty($err) ? __('Refund Error: Sorry! This is not a refundable transaction.') : 'Refund Error:' . print_r($err, true);
-
-            $this->messageManager->addErrorMessage($message);
-            Data::log($message, 'mobbex_error_' . date('m_Y') . '.log');
-
-            throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
+        } catch (\Mobbex\Exception $err) {
+            $this->logger->createJsonResponse('err', $err->getMessage(), $err->data);
         }
     }
 }

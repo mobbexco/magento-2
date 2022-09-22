@@ -7,14 +7,10 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CategorySaveObserver implements ObserverInterface
 {
-    public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        \Mobbex\Webpay\Helper\Data $helper
-    ) {
-        $this->customFieldsFactory = $customFieldFactory;
-        $this->params              = $context->getRequest()->getParams();
-        $this->helper              = $helper;
+    public function __construct(\Magento\Framework\App\Action\Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
+    {
+        $instantiator->setProperties($this, ['helper', 'customFieldFactory']);
+        $this->params = $context->getRequest()->getParams();
     }
 
     /**
@@ -45,10 +41,10 @@ class CategorySaveObserver implements ObserverInterface
 
         //Save mobbex custom fields
         foreach ($categoryConfigs as $key => $value) {
-            $customFields = $this->customFieldsFactory->create();
+            $customFields = $this->customFieldFactory->create();
             $customFields->saveCustomField($observer->getCategory()->getId(), 'category', $key, $value);
         }
 
-        $this->helper->mobbex->executeHook('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
+        $this->helper->executeHook('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
     }
 }
