@@ -89,17 +89,17 @@ function embedPayment(response){
         type: 'checkout',
 
         onResult: (data) => {
-            location.href = returnUrl + '&status=' + data.status.code
+            location.href = returnUrl + '&status=' + data.status.code 
         },
 
         onClose: () => {
             jQuery("body").trigger('processStop');
-            location.href = returnUrl
+            location.href = returnUrl + '&status=500'
         },
 
         onError: (error) => {
             jQuery("body").trigger('processStop');
-            location.href = returnUrl
+            location.href = returnUrl + '&status=500'
         }
     }
 
