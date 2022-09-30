@@ -308,8 +308,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $addresses[] = [
                 'type'         => isset($address["address_type"]) ? $address["address_type"] : '',
                 'country'      => isset($address["country_id"]) ? $this->repository->convertCountryCode($address["country_id"]) : '',
-                'street'       => isset($address["street"]) ? rtrim(preg_replace('/[0-9]+/', '', $address["street"])) : '',
-                'streetNumber' => isset($address["street"]) ? filter_var($address["street"], FILTER_SANITIZE_NUMBER_INT) : '',
+                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['street']))),
+                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['street'])), '', trim($address['street'])),
                 'streetNotes'  => '',
                 'zipCode'      => isset($address["postcode"]) ? $address["postcode"] : '',
                 'city'         => isset($address["city"]) ? $address["city"] : '',
