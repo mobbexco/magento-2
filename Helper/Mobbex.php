@@ -55,7 +55,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Event\ConfigInterface $eventConfig,
         \Magento\Framework\Event\ObserverFactory $observerFactory
     ) {
-        $instantiator->setProperties($this, ['config', 'logger', 'repository','customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
+        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
         $this->scopeConfig        = $scopeConfig;
         $this->_storeManager      = $_storeManager;
         $this->imageHelper        = $imageHelper;
@@ -136,7 +136,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $this->getEndpointUrl('paymentreturn', ['order_id' => $orderId]),
             $this->getEndpointUrl('webhook', ['order_id' => $orderId]),
             $items,
-            $this->repository->getInstallments($orderedItems, $common_plans, $advanced_plans),
+            \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
             'mobbexProcessPayment'
         );
@@ -208,7 +208,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 $this->getEndpointUrl('paymentreturn', ['order_id' => $quote->getId()]),
                 $this->getEndpointUrl('webhook', ['order_id' => $quote->getId()]),
                 isset($items) ? $items : [],
-                $this->repository->getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
+                \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
                 'mobbexProcessPayment'
             );

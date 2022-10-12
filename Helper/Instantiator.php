@@ -16,7 +16,6 @@ class Instantiator extends \Magento\Framework\App\Helper\AbstractHelper
         'config'                   => '\Mobbex\Webpay\Helper\Config',
         'helper'                   => '\Mobbex\Webpay\Helper\Mobbex',
         'logger'                   => '\Mobbex\Webpay\Helper\Logger',
-        'repository'               => '\Mobbex\Repository',
         'customFieldFactory'       => '\Mobbex\Webpay\Model\CustomFieldFactory',
         'mobbexTransactionFactory' => '\Mobbex\Webpay\Model\MobbexTransactionFactory',
         'quoteFactory'             => '\Magento\Quote\Model\QuoteFactory',

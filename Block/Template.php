@@ -15,7 +15,7 @@ class Template extends MagentoTemplate
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $instantiator->setProperties($this, ['sdk', 'config', 'helper', 'repository']);
+        $instantiator->setProperties($this, ['sdk', 'config', 'helper'  ]);
 
         // Set params as public prop
         $this->params = $this->_request->getParams();

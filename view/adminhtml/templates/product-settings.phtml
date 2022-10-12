@@ -8,7 +8,7 @@ $form = 'product_form';
 foreach ($this->config->catalogSettings as $value)
    ${$value} = $this->config->getCatalogSetting($id, $value);
 
-extract($this->repository->getPlansFilterFields($id, $common_plans, $advanced_plans));
+extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
 
 include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');
 include $this->getTemplateFile('Mobbex_Webpay::multivendor.phtml');

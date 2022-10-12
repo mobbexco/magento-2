@@ -27,7 +27,7 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $instantiator->setProperties($this, ['sdk', 'config', 'repository','_checkoutSession']);
+        $instantiator->setProperties($this, ['sdk', 'config', '_checkoutSession']);
         $this->registry = $registry;
         $this->priceHelper = $priceHelper;
 
@@ -51,7 +51,7 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         
         $this->total = $action == 'catalog_product_view' ? $product->getPriceInfo()->getPrice('final_price')->getValue() : $quote->getGrandTotal();
         extract($this->config->getProductPlans($this->products));
-        $this->sources = $this->repository->getSources($this->total, $this->repository->getInstallments($this->products, $common_plans, $advanced_plans));
+        $this->sources = \Mobbex\Repository::getSources($this->total, \Mobbex\Repository::getInstallments($this->products, $common_plans, $advanced_plans));
     }
 
 
