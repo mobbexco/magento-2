@@ -141,7 +141,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             'mobbexProcessPayment'
         );
 
-        $this->logger->createJsonResponse('debug', "Checkout Response: ", $mobbexCheckout->response);
+        $this->logger->debug('debug', "Checkout Response: ", $mobbexCheckout->response);
 
         return $mobbexCheckout->response;
     }
@@ -155,45 +155,44 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function createCheckoutFromQuote()
     {
-        try {
-            // Get quote
-            $quote = $this->_checkoutSession->getQuote();
-
-            // Get customer and shipping data
-            $shippingAddress = $quote->getBillingAddress()->getData();
-            $shippingAmount  = $quote->getShippingAddress()->getShippingAmount();
-
-            foreach ($quote->getItemsCollection() as $item) {
-                $subscriptionConfig = $this->getProductSubscription($item->getProductId());
-
-                if ($subscriptionConfig['enable'] === 'yes') {
-                    $items[] = [
-                        'type'      => 'subscription',
-                        'reference' => $subscriptionConfig['uid']
-                    ];
-                } else {
-                    $items[] = [
-                        'description' => $item->getName(),
-                        'quantity'    => $item->getQty(),
-                        'total'       => (float) $item->getPrice(),
-                        'entity'      => $this->getEntity($item->getProduct()),
-                    ];
-                }
+        // Get quote
+        $quote = $this->_checkoutSession->getQuote();
+        
+        // Get customer and shipping data
+        $shippingAddress = $quote->getBillingAddress()->getData();
+        $shippingAmount  = $quote->getShippingAddress()->getShippingAmount();
+        
+        foreach ($quote->getItemsCollection() as $item) {
+            $subscriptionConfig = $this->getProductSubscription($item->getProductId());
+            
+            if ($subscriptionConfig['enable'] === 'yes') {
+                $items[] = [
+                    'type'      => 'subscription',
+                    'reference' => $subscriptionConfig['uid']
+                ];
+            } else {
+                $items[] = [
+                    'description' => $item->getName(),
+                    'quantity'    => $item->getQty(),
+                    'total'       => (float) $item->getPrice(),
+                    'entity'      => $this->getEntity($item->getProduct()),
+                ];
             }
+        }
 
             //Get products active plans
             $products = [];
             foreach ($quote->getItemsCollection() as $item)
-                $products[] = $item->getProduct();
+            $products[] = $item->getProduct();
             extract($this->config->getProductPlans($products));
-
+            
             // Add shipping item if possible
             if ($shippingAmount)
-                $items[] = [
-                    'description' => 'Shipping',
-                    'total'       => $shippingAmount,
-                ];
-
+            $items[] = [
+                'description' => 'Shipping',
+                'total'       => $shippingAmount,
+            ];
+            
             $customer = [
                 'email'          => $quote->getCustomerEmail(),
                 'name'           => "$shippingAddress[firstname] $shippingAddress[lastname]",
@@ -201,6 +200,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 'uid'            => $quote->getCustomerId(),
                 'phone'          => $shippingAddress['telephone'],
             ];
+            
+            try {
 
             $mobbexCheckout = new \Mobbex\Modules\Checkout(
                 $quote->getId(),
@@ -213,12 +214,12 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 'mobbexProcessPayment'
             );
 
-            $this->logger->createJsonResponse('debug', "Checkout Response: ", $mobbexCheckout->response); 
+            $this->logger->debug('debug', "Checkout Response: ", $mobbexCheckout->response); 
             
             return ['data' => $mobbexCheckout->response, 'order_id' => $quote->getId()];
 
-        } catch (\Mobbex\Exception $e) {
-            $this->logger->createJsonResponse('err', $e->getMessage(), $e->data);
+        } catch (\Exception $e) {
+            $this->logger->debug('err', $e->getMessage(), $e->data);
             return false;
         }
         
@@ -326,7 +327,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             return $value;
         } catch (\Exception $e) {
-            $this->logger->createJsonResponse('err', 'Mobbex Hook Error: ', $e->getMessage());
+            $this->logger->debug('err', 'Mobbex Hook Error: ', $e->getMessage());
         }
     }
 

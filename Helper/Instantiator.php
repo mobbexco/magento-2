@@ -9,7 +9,7 @@ namespace Mobbex\Webpay\Helper;
 class Instantiator extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /** @var \Magento\Framework\ObjectManagerInterface */
-    public $objectManager;
+    public $_objectManager;
 
     public $classes = [
         'sdk'                      => '\Mobbex\Webpay\Helper\Sdk',
@@ -28,20 +28,21 @@ class Instantiator extends \Magento\Framework\App\Helper\AbstractHelper
         '_urlBuilder'              => '\Magento\Framework\UrlInterface'
     ];
 
-    public function __construct(\Magento\Framework\ObjectManagerInterface $objectManager)
+    public function __construct(\Magento\Framework\ObjectManagerInterface $_objectManager)
     {
-        $this->_objectManager = $objectManager;
+        $this->_objectManager = $_objectManager;
     }
 
     /**
      * Set properties from instantiator
+     * @param Object $object
      * @param array $properties
      */
     public function setProperties($object, $properties)
     {
-        foreach ($properties as $propertie){
-            $object->$propertie = $this->_objectManager->get($this->classes[$propertie]);
-            if($propertie === 'sdk')
+        foreach ($properties as $property){
+            $object->$property = $this->_objectManager->get($this->classes[$property]);
+            if($property === 'sdk')
                 $object->sdk->init();
         }
     }

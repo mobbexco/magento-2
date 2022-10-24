@@ -50,7 +50,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
                 $orderId = $quote->getReservedOrderId();
             }
             
-            $this->logger->createJsonResponse('debug', "WebHook Controller > ", compact('orderId', 'data'));
+            $this->logger->debug('debug', "WebHook Controller > ", compact('orderId', 'data'));
 
             //Save webhook data en database
             $this->mobbexTransaction->saveTransaction($data);

@@ -65,7 +65,7 @@ class OrderUpdate
     public function updateStatus($order, $data)
     {
         $statusName  = $this->getStatusConfigName($data['status_code']);
-        $orderStatus = $this->config->get($statusName);
+        $orderStatus = $this->config->get($statusName) ?: 'cancelled';
 
         if ($orderStatus == $order->getStatus())
             return;
@@ -87,7 +87,7 @@ class OrderUpdate
         // Notify the customer
         $notified = $this->sendOrderEmail($order, $data['status_message']);
 
-        if ($statusName == 'Approved') {
+        if ($statusName == 'order_status_approved') {
             $this->generateTransaction($order, $data['status_message'], $notified);
             $this->generateInvoice($order, $data['status_message']);
         }
@@ -201,15 +201,15 @@ class OrderUpdate
     public function getStatusConfigName($statusCode)
     {
         if ($statusCode == 2 || $statusCode == 3 || $statusCode == 201) {
-            $name = 'InProcess';
+            $name = 'order_status_in_process';
         } else if ($statusCode == 100) {
-            $name = 'Revision';
+            $name = 'order_status_revision';
         } else if ($statusCode == 602 || $statusCode == 605) {
-            $name = 'Refunded';
+            $name = 'order_status_refunded';
         } else if ($statusCode == 604) {
-            $name = 'Rejected';
+            $name = 'order_status_rejected';
         } else if ($statusCode == 4 || $statusCode >= 200 && $statusCode < 400) {
-            $name = 'Approved';
+            $name = 'order_status_approved';
         } else {
             $name = 'Cancelled';
         }

@@ -54,7 +54,7 @@ class RefundObserverBeforeSave implements ObserverInterface
         if ($amount <= 0) {
             $message = __('Refund Error: Sorry! This is not a refundable transaction.');
             $this->messageManager->addErrorMessage($message);
-            $this->logger->createJsonResponse('err', $message);
+            $this->logger->debug('err', $message);
 
             throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
         }
@@ -74,8 +74,8 @@ class RefundObserverBeforeSave implements ObserverInterface
 
             return !empty($result);
 
-        } catch (\Mobbex\Exception $err) {
-            $this->logger->createJsonResponse('err', $err->getMessage(), $err->data);
+        } catch (\Exception $err) {
+            $this->logger->debug('err', $err->getMessage(), $err->data);
         }
     }
 }

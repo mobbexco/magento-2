@@ -30,15 +30,27 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
      * @param string $mode 
      * @param string $message
      * @param string $data
+     * @return json
      */
     public function createJsonResponse($mode, $message, $data = [])
     {
-        //Log data
-        $writer = new Stream(BP . '/var/log/' . "mobbex_$mode". "_" . date('m_Y') . ".log");
-        $this->logger->addWriter($writer);
-        if($mode !== 'debug' || $this->config->get('debug_mode'))
-            $this->logger->{$mode}($message, $data);
-
+        $this->debug($mode, $message, $data);
         return $this->resultJsonFactory->create()->setData(compact('mode', 'message', 'data'));
-    }    
+    }
+
+    /**
+     * Creates log document to log errors & useful data.
+     * @param string $mode 
+     * @param string $message
+     * @param string $data
+     */
+    public function debug($mode, $message, $data = [])
+    {
+        //Log data
+        $writer = new Stream(BP . '/var/log/' . "mobbex_$mode" . "_" . date('m_Y') . ".log");
+        $this->logger->addWriter($writer);
+
+        if ($mode !== 'debug' || $this->config->get('debug_mode'))
+            $this->logger->{$mode}($message, $data);
+    }
 }
