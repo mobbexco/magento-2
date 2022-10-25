@@ -40,6 +40,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const PATH_WALLET_ACTIVE = 'payment/webpay/checkout/wallet_active';
 
     const PATH_OWN_DNI_FIELD = 'payment/webpay/checkout/own_dni_field';
+    const PATH_DNI_COLUMN    = 'payment/webpay/checkout/dni_column';
 
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -272,6 +273,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::PATH_OWN_DNI_FIELD,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getDniColumn($store = null)
+    {
+        return $this->scopeConfig->getValue(
+            self::PATH_DNI_COLUMN,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
