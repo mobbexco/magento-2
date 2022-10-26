@@ -219,7 +219,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             return ['data' => $mobbexCheckout->response, 'order_id' => $quote->getId()];
 
         } catch (\Exception $e) {
-            $this->logger->debug('err', $e->getMessage(), $e->data);
+            $this->logger->debug('err', $e->getMessage(), isset($e->data) ? $e->data : []);
             return false;
         }
         
