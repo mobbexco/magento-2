@@ -74,8 +74,8 @@ class RefundObserverBeforeSave implements ObserverInterface
 
             return !empty($result);
 
-        } catch (\Exception $err) {
-            $this->logger->debug('err', $err->getMessage(), $err->data);
+        } catch (\Exception $e) {
+            $this->logger->debug('err', $e->getMessage(), isset($e->data) ? $e->data : []);
         }
     }
 }

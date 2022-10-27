@@ -65,7 +65,7 @@ class OrderUpdate
     public function updateStatus($order, $data)
     {
         $statusName  = $this->getStatusConfigName($data['status_code']);
-        $orderStatus = $this->config->get($statusName) ?: 'cancelled';
+        $orderStatus = $this->config->get($statusName);
 
         if ($orderStatus == $order->getStatus())
             return;
@@ -211,7 +211,7 @@ class OrderUpdate
         } else if ($statusCode == 4 || $statusCode >= 200 && $statusCode < 400) {
             $name = 'order_status_approved';
         } else {
-            $name = 'Cancelled';
+            $name = 'order_status_cancelled';
         }
 
         return $name;
