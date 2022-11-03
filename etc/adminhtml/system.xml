@@ -87,7 +87,7 @@
                     <field id="own_dni_field" translate="label comment" sortOrder="18" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Mostrar campo DNI</label>
-                        <comment>No compatible con la opcion "Columna DNI".</comment>
+                        <comment>No compatible con la opcion "Usar columna DNI existente ".</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 

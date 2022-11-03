@@ -205,7 +205,7 @@ class Mobbex extends AbstractHelper
             'email'          => $orderData->getCustomerEmail(), 
             'uid'            => $orderData->getCustomerId(),
             'phone'          => $phone,
-            'identification' => $this->getDni($orderData, $orderData->getQuoteId()),
+            'identification' => $this->getDni($orderData),
         ];
 
         $items = [];
@@ -614,12 +614,11 @@ class Mobbex extends AbstractHelper
     /**
      * Get DNI configured by quote or current user if logged in.
      * 
-     * @param object $object
-     * @param int|string $quoteId
+     * @param object $order
      * 
      * @return string $dni 
      */
-    public function getDni($order, $quoteId)
+    public function getDni($order)
     {
 
         if(!empty($this->config->getDniColumn()) && isset($order->getBillingAddress()->getData()[$this->config->getDniColumn()]))
@@ -629,10 +628,10 @@ class Mobbex extends AbstractHelper
 
         // Get dni custom field from quote or current user if logged in
         $customerId = $this->customerSession->getCustomer()->getId();
-        $order     = $customerId ? 'customer' : 'quote';
-        $rowId      = $customerId ? $customerId : $quoteId;
+        $object     = $customerId ? 'customer' : 'quote';
+        $rowId      = $customerId ? $customerId : $order->getQuoteId();
 
-        return $customField->getCustomField($rowId, $order, 'dni') ?: '';
+        return $customField->getCustomField($rowId, $object, 'dni') ?: '';
     }
 
     /**
