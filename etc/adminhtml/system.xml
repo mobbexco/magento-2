@@ -93,7 +93,7 @@
 
                     <field id="dni_column" translate="label comment" sortOrder="19" type="text" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Columna de DNI</label>
+                        <label>Usar columna DNI existente</label>
                         <comment>Nombre de la columna de 'sales_order_address' en la que se aloja el DNI del customer.</comment>
                     </field>
 

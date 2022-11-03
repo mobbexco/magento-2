@@ -364,7 +364,7 @@ class Mobbex extends AbstractHelper
             'customer'     => [
                 'email'          => $quote->getCustomerEmail(), 
                 'name'           => "$shippingAddress[firstname] $shippingAddress[lastname]",
-                'identification' => $this->getDni($quote, $quote->getId()),
+                'identification' => '',
                 'uid'            => $quote->getCustomerId(),
                 'phone'          => $shippingAddress['telephone'],
             ],
@@ -619,20 +619,20 @@ class Mobbex extends AbstractHelper
      * 
      * @return string $dni 
      */
-    public function getDni($object, $quoteId)
+    public function getDni($order, $quoteId)
     {
 
-        if(!empty($this->config->getDniColumn()))
-            return $object->getBillingAddress()->getData()[$this->config->getDniColumn()];
+        if(!empty($this->config->getDniColumn()) && isset($order->getBillingAddress()->getData()[$this->config->getDniColumn()]))
+            return $order->getBillingAddress()->getData()[$this->config->getDniColumn()];
 
         $customField = $this->_customFieldFactory->create();
 
         // Get dni custom field from quote or current user if logged in
         $customerId = $this->customerSession->getCustomer()->getId();
-        $object     = $customerId ? 'customer' : 'quote';
+        $order     = $customerId ? 'customer' : 'quote';
         $rowId      = $customerId ? $customerId : $quoteId;
 
-        return $customField->getCustomField($rowId, $object, 'dni') ?: '';
+        return $customField->getCustomField($rowId, $order, 'dni') ?: '';
     }
 
     /**
