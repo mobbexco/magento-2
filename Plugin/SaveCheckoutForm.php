@@ -40,7 +40,7 @@ class SaveCheckoutForm
     public function beforeSaveAddressInformation(ShippingInformationManagement $subject, $cartId, ShippingInformationInterface $addressInformation)
     {
         // Exit if dni field option is disabled
-        if (!$this->config->getOwnDniField())
+        if (!$this->config->getOwnDniField() || !empty($this->config->getDniColumn()))
             return [$cartId, $addressInformation];
 
         // Get extension attributes
