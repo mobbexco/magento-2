@@ -1,6 +1,6 @@
 let embed     = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
 let wallet    = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
-let returnUrl = window.checkoutConfig.payment.webpay.returnUrl;
+let returnUrl = '';
 
 // Add Mobbex script
 var script = document.createElement('script');
@@ -46,19 +46,18 @@ require(['jquery'], function ($) {
  * Create checkout and call a callback
  * @param {string} url 
  * @param {callback} callback 
- * @param {string} returnUrl 
  **/
- function createCheckout(url, callback, returnUrl) {
+ function createCheckout(url, callback) {
 
     jQuery.ajax({
         dataType: 'json',
-        method: 'POST',
+        method: 'GET',
         url: url,
         success: function (response) {
-            callback(response);
+            callback(response.data);
         },
         error: function () {
-            displayAlert('Error', 'No se obtener la información del pago.', returnUrl  + '&status=' + 500);
+            displayAlert('Error', 'No se obtener la información del pago.', returnUrl + '&status=500');
         }
     });
 
@@ -90,17 +89,17 @@ function embedPayment(response){
         type: 'checkout',
 
         onResult: (data) => {
-            location.href = response.return_url + '&status=' + data.status.code
+            location.href = returnUrl + '&status=' + data.status.code 
         },
 
         onClose: () => {
             jQuery("body").trigger('processStop');
-            location.href = response.return_url
+            location.href = returnUrl + '&status=500'
         },
 
         onError: (error) => {
             jQuery("body").trigger('processStop');
-            location.href = response.return_url
+            location.href = returnUrl + '&status=500'
         }
     }
 
@@ -143,10 +142,10 @@ function executeWallet(response) {
     
     window.MobbexJS.operation.process(options)
         .then(data => {
-            window.top.location = response.return_url + '&status=' + data.data.status.code;
+            window.top.location = returnUrl + '&status=' + data.data.status.code;
         })
         .catch(error => {
-            displayAlert('Error', 'No se pudo completar el pago.', response.return_url + '&status=500');
+            displayAlert('Error', 'No se pudo completar el pago.', returnUrl + '&status=500');
         })
 }
 
@@ -172,7 +171,7 @@ function executeWallet(response) {
                  jQuery("body").trigger('processStart');
                  jQuery.ajax({
                      dataType: 'json',
-                     method: 'POST',
+                     method: 'GET',
                      url: failUrl,
                      success: function () {},
                      error: function () {
@@ -206,8 +205,8 @@ define(
             },
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
-                var returnUrl = urlBuilder.build('webpay/payment/paymentreturn/');
-                createCheckout(urlBuilder.build('webpay/payment/embedpayment/'), response => {
+                returnUrl = urlBuilder.build('webpay/payment/paymentreturn/') + `?order_id=${window.checkoutConfig.payment.webpay.orderId}`;
+                createCheckout(urlBuilder.build('webpay/payment/checkout/'), response => {
                     $("body").trigger('processStop');
                     if(!response || !response.id){
                         displayAlert('Error', 'Error al obtener la información del pedido.', returnUrl + '&status=500');
@@ -219,7 +218,7 @@ define(
                     } else {
                         mbbxRedirect(response.url);
                     }
-                }, returnUrl)
+                })
             },
             getBanner: function () {
                 if (window.checkoutConfig.payment.webpay['banner'] !== undefined) 

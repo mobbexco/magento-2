@@ -65,7 +65,7 @@ class OrderUpdate
     public function updateStatus($order, $data)
     {
         $statusName  = $this->getStatusConfigName($data['status_code']);
-        $orderStatus = $this->config->{"getOrderStatus$statusName"}();
+        $orderStatus = $this->config->get($statusName);
 
         if ($orderStatus == $order->getStatus())
             return;
@@ -87,7 +87,7 @@ class OrderUpdate
         // Notify the customer
         $notified = $this->sendOrderEmail($order, $data['status_message']);
 
-        if ($statusName == 'Approved') {
+        if ($statusName == 'order_status_approved') {
             $this->generateTransaction($order, $data['status_message'], $notified);
             $this->generateInvoice($order, $data['status_message']);
         }
@@ -149,7 +149,7 @@ class OrderUpdate
      */
     public function generateInvoice($order, $message)
     {
-        if ($order->hasInvoices() || $this->config->getDisableInvoices())
+        if ($order->hasInvoices() || $this->config->get('disable_invoices'))
             return false;
 
         $payment = $order->getPayment();
@@ -163,7 +163,7 @@ class OrderUpdate
         $order->addRelatedObject($invoice);
         $invoice->addComment($message, true, true);
 
-        if (!$invoice->getEmailSent() && $this->config->getCreateInvoiceEmail()) {
+        if (!$invoice->getEmailSent() && $this->config->get('create_invoice_email')) {
             $this->invoiceSender->send($invoice);
         }
 
@@ -179,8 +179,8 @@ class OrderUpdate
     public function sendOrderEmail($order, $message)
     {
         $emailSent       = $order->getEmailSent();
-        $canSendCreation = $this->config->getCreateOrderEmail();
-        $canSendUpdate   = $this->config->getUpdateOrderEmail();
+        $canSendCreation = $this->config->get('create_order_email');
+        $canSendUpdate   = $this->config->get('update_order_email');
 
         if (!$emailSent) {
             if ($canSendCreation) {
@@ -201,17 +201,17 @@ class OrderUpdate
     public function getStatusConfigName($statusCode)
     {
         if ($statusCode == 2 || $statusCode == 3 || $statusCode == 201) {
-            $name = 'InProcess';
+            $name = 'order_status_in_process';
         } else if ($statusCode == 100) {
-            $name = 'Revision';
+            $name = 'order_status_revision';
         } else if ($statusCode == 602 || $statusCode == 605) {
-            $name = 'Refunded';
+            $name = 'order_status_refunded';
         } else if ($statusCode == 604) {
-            $name = 'Rejected';
+            $name = 'order_status_rejected';
         } else if ($statusCode == 4 || $statusCode >= 200 && $statusCode < 400) {
-            $name = 'Approved';
+            $name = 'order_status_approved';
         } else {
-            $name = 'Cancelled';
+            $name = 'order_status_cancelled';
         }
 
         return $name;

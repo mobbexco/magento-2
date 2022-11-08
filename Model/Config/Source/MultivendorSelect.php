@@ -11,8 +11,8 @@ class MultivendorSelect implements \Magento\Framework\Option\ArrayInterface
     public function toOptionArray()
     {
         return [
-            'disable' => 'Disable',
-            'active' => 'Active',
+            ''        => 'Disable',
+            'active'  => 'Active',
             'unified' => 'Unified',
         ];
     }

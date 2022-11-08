@@ -3,13 +3,16 @@
 <input type="hidden" name="mbbx_options_loaded" value="1">
 
 <?php
-$id           = isset($this->params['id']) ? $this->params['id'] : 0;
-$form         = 'product_form';
-$subscription = $this->helper->getProductSubscription($id);
-$entity       = $this->helper->getProductEntity($id);
-extract($this->helper->getPlansFilterFields($id));
+$id   = isset($this->params['id']) ? $this->params['id'] : 0;
+$form = 'product_form';
+
+foreach ($this->config->catalogSettings as $value)
+   ${$value} = $this->config->getCatalogSetting($id, $value);
+
+extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
 
 include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');
 include $this->getTemplateFile('Mobbex_Webpay::multivendor.phtml');
 include $this->getTemplateFile('Mobbex_Webpay::subscription.phtml');
-$this->helper->mobbex->executeHook('mobbexProductSettings', false, $id);
+
+$this->helper->executeHook('mobbexProductSettings', false, $id);

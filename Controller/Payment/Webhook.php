@@ -3,83 +3,29 @@
 namespace Mobbex\Webpay\Controller\Payment;
 
 use Exception;
-use Magento\Framework\App\Action\Context;
-use Magento\Framework\Controller\Result\JsonFactory;
-use Magento\Sales\Model\Order;
-use Mobbex\Webpay\Helper\Data;
-use Mobbex\Webpay\Model\Mobbex;
-use Mobbex\Webpay\Model\OrderUpdate;
-use Psr\Log\LoggerInterface;
 
 /**
  * Class Webhook
  * @package Mobbex\Webpay\Controller\Payment
  */
-class Webhook extends WebhookBase
+class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 {
-    
-    /**
-     * @var Context
-     */
-    public $context;
+    /** @var \Mobbex\Webpay\Helper\Instantiator */
+    protected $instantiator;
 
-    /**
-     * @var Order
-     */
-    protected $_order;
-
-    /**
-     * @var JsonFactory
-     */
-    protected $resultJsonFactory;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $log;
-
-    /**
-     * @var OrderUpdate
-     */
+    /** @var \Mobbex\Webpay\Model\OrderUpdate */
     protected $_orderUpdate;
 
-    /**
-     *
-     * @var \Magento\Quote\Model\QuoteFactory
-     */
-    protected $quoteFactory;
-
-    /**
-     * Webhook constructor.
-     * @param Context $context
-     * @param Order $_order
-     * @param OrderUpdate $orderUpdate
-     * @param JsonFactory $resultJsonFactory
-     * @param LoggerInterface $logger
-     * @param CartRepositoryInterface $quoteRepository,
-     */
     public function __construct(
-        Context $context,
-        Order $_order,
-        OrderUpdate $orderUpdate,
-        JsonFactory $resultJsonFactory,
-        LoggerInterface $logger,
-        \Mobbex\Webpay\Helper\Config $config,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Mobbex\Webpay\Helper\Data $helper,
-        \Mobbex\Webpay\Model\MobbexTransactionFactory $mobbexTransactionFactory
+        \Mobbex\Webpay\Helper\Instantiator $instantiator,
+        \Magento\Framework\App\Action\Context $context,
+        \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
     ) {
-        $this->_order = $_order;
-        $this->context = $context;
-        $this->resultJsonFactory = $resultJsonFactory;
-        $this->_orderUpdate = $orderUpdate;
-        $this->log = $logger;
-        $this->quoteFactory = $quoteFactory;
-        $this->helper = $helper;
-        $this->mobbexTransaction = $mobbexTransactionFactory->create();
-        $this->config = $config;
-
         parent::__construct($context);
+        $instantiator->setProperties($this, ['config', 'logger', 'helper', 'mobbexTransactionFactory', 'quoteFactory', '_order']);
+        $this->orderUpdate       = $orderUpdate;
+        $this->_request          = $this->getRequest();
+        $this->mobbexTransaction = $this->mobbexTransactionFactory->create();
     }
 
     /**
@@ -92,11 +38,10 @@ class Webhook extends WebhookBase
         ];
 
         try {
-            // Get request data
-            $request  = $this->getRequest();
-            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : $request->getPostValue();
-            $orderId  = $request->getParam('order_id');
-            $quoteId  = $request->getParam('quote_id');
+            // Getrequest data
+            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : $this->_request->getPostValue();
+            $orderId  = $this->_request->getParam('order_id');
+            $quoteId  = $this->_request->getParam('quote_id');
             $data     = $this->formatWebhookData($postData['data'], $orderId);
             
             // If order ID is empty, try to load from quote id
@@ -105,10 +50,7 @@ class Webhook extends WebhookBase
                 $orderId = $quote->getReservedOrderId();
             }
             
-            Data::log(
-                "WebHook Controller > Data:" . json_encode(compact('orderId', 'data'), JSON_PRETTY_PRINT),
-                "mobbex_" . date('m_Y') . ".log"
-            );
+            $this->logger->debug('debug', "WebHook Controller > ", compact('orderId', 'data'));
 
             //Save webhook data en database
             $this->mobbexTransaction->saveTransaction($data);
@@ -123,23 +65,20 @@ class Webhook extends WebhookBase
             $order = $this->_order->loadByIncrementId($orderId);
 
             // Execute own hook to extend functionalities
-            $this->helper->mobbex->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
+            $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
 
             // Update order data
-            $this->_orderUpdate->updateTotals($order, $data);
-            $this->_orderUpdate->updateStatus($order, $data);
+            $this->orderUpdate->updateTotals($order, $data);
+            $this->orderUpdate->updateStatus($order, $data);
 
             // Redirect to sucess page
             $response['result'] = true;
+            
         } catch (\Exception $e) {
-            Data::log('WebHook Controller > Error Paynment Data: ' . $e->getMessage(), "mobbex_error_" . date('m_Y') . ".log");
+            $this->logger->createJsonResponse('err', 'WebHook Controller > Error Paynment Data: ' . $e->getMessage());
         }
 
-        // Reply with json
-        $resultJson = $this->resultJsonFactory->create();
-        $resultJson->setData($response);
-
-        return $resultJson;
+        return $this->logger->createJsonResponse('debug', 'WebHook Received OK: ', $response);
     }
 
     /**

@@ -21,7 +21,8 @@
     ],
     "require": {
         "magento/magento-composer-installer": "*",
-        "laminas/laminas-log": "*"
+        "laminas/laminas-log": "*",
+        "mobbexco/php-plugins-sdk": "*"
     },
     "conflict": {
         "mobbexco/magento-2-marketplace": "<1.2.1"

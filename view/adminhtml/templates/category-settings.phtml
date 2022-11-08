@@ -5,9 +5,14 @@
 <?php
 $id     = isset($this->params['id']) ? $this->params['id'] : 0;
 $form   = 'category_form';
-$entity = $this->helper->getProductEntity($id, 'category');
-extract($this->helper->getPlansFilterFields($id, 'category'));
+
+foreach ($this->config->catalogSettings as $value){
+    if(!strpos('subscription', $value))
+        ${$value} = $this->config->getCatalogSetting($id, $value, 'category');
+}
+
+extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
 
 include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');
 include $this->getTemplateFile('Mobbex_Webpay::multivendor.phtml');
-$this->helper->mobbex->executeHook('mobbexCategorySettings', false, $id);
+$this->helper->executeHook('mobbexCategorySettings', false, $id);

@@ -4,51 +4,53 @@ namespace Mobbex\Webpay\Helper;
 
 class Config extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const PATH_API_KEY = 'payment/webpay/api_key';
-    const PATH_ACCESS_TOKEN = 'payment/webpay/access_token';
+    /** Module configuration paths */
+    public $settingPaths = [
+        'api_key'                => 'payment/webpay/api_key',
+        'access_token'           => 'payment/webpay/access_token',
+        'test'                   => 'payment/webpay/test_mode',
+        'debug_mode'             => 'payment/webpay/debug_mode',
+        'financial_active'       => 'payment/webpay/financial_active',
+        'finance_widget_on_cart' => 'payment/webpay/finance_widget_on_cart',
+        'theme_type'             => 'payment/webpay/appearance/theme_type',
+        'background_color'       => 'payment/webpay/appearance/background_color',
+        'primary_color'          => 'payment/webpay/appearance/primary_color',
+        'title_checkout'         => 'payment/webpay/appearance/title_checkout',
+        'banner_checkout'        => 'payment/webpay/appearance/banner_checkout',
+        'widget_style'           => 'payment/webpay/appearance/widget_style',
+        'button_logo'            => 'payment/webpay/appearance/button_logo',
+        'button_text'            => 'payment/webpay/appearance/button_text',
+        'embed'                  => 'payment/webpay/checkout/embed_payment',
+        'multicard'              => 'payment/webpay/checkout/multicard',
+        'multivendor'            => 'payment/webpay/checkout/multivendor',
+        'wallet'                 => 'payment/webpay/checkout/wallet_active',
+        'own_dni_field'          => 'payment/webpay/checkout/own_dni_field',
+        'dni_column'             => 'payment/webpay/checkout/dni_column',
+        'create_order_email'     => 'payment/webpay/checkout/email_settings/create_order_email',
+        'update_order_email'     => 'payment/webpay/checkout/email_settings/update_order_email',
+        'create_invoice_email'   => 'payment/webpay/checkout/email_settings/create_invoice_email',
+        'order_status_approved'  => 'payment/webpay/checkout/order_status_settings/order_status_approved',
+        'order_status_in_process'=> 'payment/webpay/checkout/order_status_settings/order_status_in_process',
+        'order_status_refunded'  => 'payment/webpay/checkout/order_status_settings/order_status_refunded',
+        'order_status_revision'  => 'payment/webpay/checkout/order_status_settings/order_status_revision',
+        'order_status_rejected'  => 'payment/webpay/checkout/order_status_settings/order_status_rejected',
+        'disable_invoices'       => 'payment/webpay/checkout/order_status_settings/disable_invoices',
+    ];
 
-    const PATH_FINANCIAL_ACTIVE = 'payment/webpay/financial_active';
-    const PATH_FINANCE_WIDGET_ON_CART = 'payment/webpay/finance_widget_on_cart';
-
-    const PATH_TEST_MODE = 'payment/webpay/test_mode';
-    const PATH_DEBUG_MODE = 'payment/webpay/debug_mode';
-    const PATH_EMBED_PAYMENT = 'payment/webpay/checkout/embed_payment';
-    const PATH_MULTICARD = 'payment/webpay/checkout/multicard';
-    const PATH_MULTIVENDOR = 'payment/webpay/checkout/multivendor';
-
-    const PATH_THEME_TYPE          = 'payment/webpay/appearance/theme';
-    const PATH_BACKGROUND_COLOR    = 'payment/webpay/appearance/background_color';
-    const PATH_PRIMARY_COLOR       = 'payment/webpay/appearance/primary_color';
-    const PATH_TITLE_CHECKOUT     = 'payment/webpay/appearance/checkout_title';
-    const PATH_BANNER_CHECKOUT     = 'payment/webpay/appearance/checkout_banner';
-    const PATH_WIDGET_STYLE        = 'payment/webpay/appearance/widget_style';
-    const PATH_WIDGET_BUTTON_LOGO  = 'payment/webpay/appearance/button_logo';
-    const PATH_WIDGET_BUTTON_TEXT  = 'payment/webpay/appearance/button_text';
-
-    const PATH_CREATE_ORDER_EMAIL   = 'payment/webpay/checkout/email_settings/create_order_email';
-    const PATH_UPDATE_ORDER_EMAIL   = 'payment/webpay/checkout/email_settings/update_order_email';
-    const PATH_CREATE_INVOICE_EMAIL = 'payment/webpay/checkout/email_settings/create_invoice_email';
-
-    const PATH_ORDER_STATUS_APPROVED = 'payment/webpay/checkout/order_status_settings/order_status_approved';
-    const PATH_ORDER_STATUS_IN_PROCESS = 'payment/webpay/checkout/order_status_settings/order_status_in_process';
-    const PATH_ORDER_STATUS_CANCELLED = 'payment/webpay/checkout/order_status_settings/order_status_cancelled';
-    const PATH_ORDER_STATUS_REFUNDED = 'payment/webpay/checkout/order_status_settings/order_status_refunded';
-    const PATH_ORDER_STATUS_REVISION = 'payment/webpay/checkout/order_status_settings/order_status_revision';
-    const PATH_ORDER_STATUS_REJECTED    = 'payment/webpay/checkout/order_status_settings/order_status_rejected';
-    const PATH_DISABLE_INVOICES = 'payment/webpay/checkout/order_status_settings/disable_invoices';
-
-    const PATH_WALLET_ACTIVE = 'payment/webpay/checkout/wallet_active';
-
-    const PATH_OWN_DNI_FIELD = 'payment/webpay/checkout/own_dni_field';
-    const PATH_DNI_COLUMN    = 'payment/webpay/checkout/dni_column';
+    /** Mobbex Catalog Settings */
+    public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'is_subscription', 'subscription_uid'];
 
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\App\Config\Storage\WriterInterface $configWriter
+        \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         parent::__construct($context);
         $this->configWriter = $configWriter;
+        $this->customField = $customFieldFactory->create();
     }
+
+    /** MODULE SETTINGS */
 
     /**
      * Save a config value to db.
@@ -61,273 +63,75 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         $this->configWriter->save($path, $value);
     }
 
-    public function getTitleCheckout($store = null)
+    /**
+     * Get a config value from db.
+     * 
+     * @param string $path Config identifier. @see $this::$configurationPaths
+     * @param string $store Store code.
+     * 
+     * @return mixed
+     */
+    public function get($name, $store = null)
     {
-        return $this->scopeConfig->getValue(
-            self::PATH_TITLE_CHECKOUT,
+        return empty($this->settingPaths[$name]) ? null : $this->scopeConfig->getValue(
+            $this->settingPaths[$name],
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
     }
 
-    public function getBannerCheckout($store = null)
+    /**
+     * Get all module configuration values from db.
+     * 
+     * @return array
+     */
+    public function getAll()
     {
-        return $this->scopeConfig->getValue(
-            self::PATH_BANNER_CHECKOUT,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
+        $settings = [];
+        foreach ($this->settingPaths as $name => $value)
+            $settings[$name] = $this->get($name);
+
+        return $settings;
     }
 
-    public function getCreateOrderEmail($store = null)
+    /** CATALOG SETTINGS */
+
+    /**
+     * Retrieve the given product/category option.
+     * 
+     * @param int|string $id
+     * @param string $object
+     * @param string $catalogType
+     * 
+     * @return array|string
+     */
+    public function getCatalogSetting($id, $object, $catalogType = 'product')
     {
-        return $this->scopeConfig->getValue(
-            self::PATH_CREATE_ORDER_EMAIL,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
+        if (strpos($object, '_plans'))
+            return unserialize($this->customField->getCustomField($id, $catalogType, $object)) ?: [];
+
+        return $this->customField->getCustomField($id, $catalogType, $object) ?: '';
     }
 
-    public function getUpdateOrderEmail($store = null)
+    /**
+     * Get active plans for a given products.
+     * @param array $products
+     * @return array $array
+     */
+    public function getProductPlans($products)
     {
-        return $this->scopeConfig->getValue(
-            self::PATH_UPDATE_ORDER_EMAIL,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
+        $common_plans = $advanced_plans = [];
 
-    public function getCreateInvoiceEmail($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_CREATE_INVOICE_EMAIL,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
+        foreach ($products as $product) {
+            foreach (['common_plans', 'advanced_plans'] as $value) {
+                //Get product active plans
+                ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
+                //Get product category active plans
+                foreach ($product->getCategoryIds() as $categoryId)
+                    ${$value} = array_unique(array_merge(${$value}, $this->getCatalogSetting($categoryId, $value, 'category')));
+            }
+        }
 
-    public function getOrderStatusApproved($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ORDER_STATUS_APPROVED,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getOrderStatusInProcess($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ORDER_STATUS_IN_PROCESS,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getOrderStatusCancelled($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ORDER_STATUS_CANCELLED,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getOrderStatusRefunded($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ORDER_STATUS_REFUNDED,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    } 
-
-    public function getOrderStatusRevision($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ORDER_STATUS_REVISION,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    } 
-
-    public function getOrderStatusRejected($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ORDER_STATUS_REJECTED,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    } 
-
-    public function getThemeType($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_THEME_TYPE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getBackgroundColor($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_BACKGROUND_COLOR,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getPrimaryColor($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_PRIMARY_COLOR,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getEmbedPayment($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_EMBED_PAYMENT,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getMulticard($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_MULTICARD,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getMultivendor($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_MULTIVENDOR,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getApiKey($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_API_KEY,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getAccessToken($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_ACCESS_TOKEN,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getTestMode($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_TEST_MODE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getDebugMode($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_DEBUG_MODE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getFinancialActive($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_FINANCIAL_ACTIVE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-
-    public function getWalletActive($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_WALLET_ACTIVE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getOwnDniField($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_OWN_DNI_FIELD,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getDniColumn($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_DNI_COLUMN,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getDisableInvoices($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_DISABLE_INVOICES,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getFinanceWidgetOnCart($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_FINANCE_WIDGET_ON_CART,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getWidgetStyle($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_WIDGET_STYLE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    public function getButtonLogo($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_WIDGET_BUTTON_LOGO,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-    public function getButtonText($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::PATH_WIDGET_BUTTON_TEXT,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
+        return compact('common_plans', 'advanced_plans');
     }
 }
