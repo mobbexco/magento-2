@@ -43,6 +43,9 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\Event\ObserverFactory */
     public $observerFactory;
 
+    /** @var \Magento\Directory\Model\RegionFactory */
+    public $regionFactory;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -53,7 +56,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Sales\Api\Data\OrderInterface $_orderInterface,
         \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Framework\Event\ConfigInterface $eventConfig,
-        \Magento\Framework\Event\ObserverFactory $observerFactory
+        \Magento\Framework\Event\ObserverFactory $observerFactory,
+        \Magento\Directory\Model\RegionFactory $regionFactory
     ) {
         $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
         $this->scopeConfig        = $scopeConfig;
@@ -65,6 +69,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $this->eventConfig        = $eventConfig;
         $this->observerFactory    = $observerFactory;
         $this->_orderInterface    = $_orderInterface;
+        $this->regionFactory      = $regionFactory;
     }
 
     /**
@@ -138,6 +143,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
+            $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()]),
             'mobbexProcessPayment'
         );
 
@@ -211,6 +217,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 isset($items) ? $items : [],
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
+                $this->getAddresses([$quote->getBillingAddress()->getData(), $quote->getShippingAddress()->getData()]),
                 'mobbexProcessPayment'
             );
 
@@ -292,6 +299,32 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $rowId      = $customerId ? $customerId : $order->getQuoteId();
 
         return $customField->getCustomField($rowId, $object, 'dni') ?: '';
+    }
+
+    /**
+     * Get Addresses data for Mobebx Checkout.
+     * @param array $addressesData
+     * @return array $addresses
+     */
+    public function getAddresses($addressesData)
+    {
+        $addresses = [];
+
+        foreach ($addressesData as $address) {
+            $region = $this->regionFactory->create()->load($address['region_id'])->getData();
+            $addresses[] = [
+                'type'         => isset($address["address_type"]) ? $address["address_type"] : '',
+                'country'      => isset($address["country_id"]) ? $this->repository->convertCountryCode($address["country_id"]) : '',
+                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['street']))),
+                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['street'])), '', trim($address['street'])),
+                'streetNotes'  => '',
+                'zipCode'      => isset($address["postcode"]) ? $address["postcode"] : '',
+                'city'         => isset($address["city"]) ? $address["city"] : '',
+                'state'        => (isset($address["country_id"]) && isset($region['code'])) ? str_replace($address["country_id"] . '-', '', $region['code']) : ''
+            ];
+        }
+
+        return $addresses;
     }
 
     /**
