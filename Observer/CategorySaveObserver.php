@@ -20,6 +20,10 @@ class CategorySaveObserver implements ObserverInterface
      */
     public function execute($observer)
     {
+        // Only if options are loaded
+        if (empty($this->params['mbbx_options_loaded']))
+            return;
+
         // Get plans selected
         $commonPlans = $advancedPlans = [];
         foreach ($this->params as $key => $value) {

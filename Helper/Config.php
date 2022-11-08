@@ -25,6 +25,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'multivendor'            => 'payment/webpay/checkout/multivendor',
         'wallet'                 => 'payment/webpay/checkout/wallet_active',
         'own_dni_field'          => 'payment/webpay/checkout/own_dni_field',
+        'dni_column'             => 'payment/webpay/checkout/dni_column',
         'create_order_email'     => 'payment/webpay/checkout/email_settings/create_order_email',
         'update_order_email'     => 'payment/webpay/checkout/email_settings/update_order_email',
         'create_invoice_email'   => 'payment/webpay/checkout/email_settings/create_invoice_email',
@@ -92,8 +93,6 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $settings;
     }
-
-
 
     /** CATALOG SETTINGS */
 

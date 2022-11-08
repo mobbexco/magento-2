@@ -87,10 +87,17 @@
                     <field id="own_dni_field" translate="label comment" sortOrder="18" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Mostrar campo DNI</label>
+                        <comment>No compatible con la opcion "Usar columna DNI existente ".</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
-                    <field id="multivendor" translate="label comment" sortOrder="19" type="select" showInDefault="1"
+                    <field id="dni_column" translate="label comment" sortOrder="19" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Usar columna DNI existente</label>
+                        <comment>Nombre de la columna de 'sales_order_address' en la que se aloja el DNI del customer.</comment>
+                    </field>
+
+                    <field id="multivendor" translate="label comment" sortOrder="20" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Allow multiple vendors</label>
                         <source_model>Mobbex\Webpay\Model\Config\Source\MultivendorSelect</source_model>

@@ -89,7 +89,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             'email'          => $orderData->getCustomerEmail(), 
             'uid'            => $orderData->getCustomerId(),
             'phone'          => isset($phone) ? $phone : '',
-            'identification' => $this->getDni($orderData->getQuoteId()),
+            'identification' => $this->getDni($orderData),
         ];
 
         //Get Items
@@ -196,7 +196,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $customer = [
                 'email'          => $quote->getCustomerEmail(),
                 'name'           => "$shippingAddress[firstname] $shippingAddress[lastname]",
-                'identification' => $this->getDni($quote->getId()),
+                'identification' => '',
                 'uid'            => $quote->getCustomerId(),
                 'phone'          => $shippingAddress['telephone'],
             ];
@@ -272,18 +272,24 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Get DNI configured by quote or current user if logged in.
      * 
-     * @param int|string $quoteId
+     * @param object $order
      * 
      * @return string $dni 
      */
-    public function getDni($quoteId)
+    public function getDni($order)
     {
-        $customField = $this->customFieldFactory->create();
+        $address   = $order->getBillingAddress()->getData();
+        $dniColumn = $this->config->get('dni_column');
+
+        if ($dniColumn && isset($address[$dniColumn]))
+            return $address[$dniColumn];
+
+        $customField = $this->_customFieldFactory->create();
 
         // Get dni custom field from quote or current user if logged in
         $customerId = $this->customerSession->getCustomer()->getId();
         $object     = $customerId ? 'customer' : 'quote';
-        $rowId      = $customerId ? $customerId : $quoteId;
+        $rowId      = $customerId ? $customerId : $order->getQuoteId();
 
         return $customField->getCustomField($rowId, $object, 'dni') ?: '';
     }
