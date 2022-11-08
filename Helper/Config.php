@@ -34,6 +34,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'order_status_refunded'  => 'payment/webpay/checkout/order_status_settings/order_status_refunded',
         'order_status_revision'  => 'payment/webpay/checkout/order_status_settings/order_status_revision',
         'order_status_rejected'  => 'payment/webpay/checkout/order_status_settings/order_status_rejected',
+        'order_status_cancelled' => 'payment/webpay/checkout/order_status_settings/order_status_cancelled',
         'disable_invoices'       => 'payment/webpay/checkout/order_status_settings/disable_invoices',
     ];
 
