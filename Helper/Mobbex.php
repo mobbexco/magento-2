@@ -59,7 +59,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Event\ObserverFactory $observerFactory,
         \Magento\Directory\Model\RegionFactory $regionFactory
     ) {
-        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
+        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession', 'repository']);
         $this->scopeConfig        = $scopeConfig;
         $this->_storeManager      = $_storeManager;
         $this->imageHelper        = $imageHelper;
@@ -294,7 +294,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         if ($dniColumn && isset($address[$dniColumn]))
             return $address[$dniColumn];
 
-        $customField = $this->_customFieldFactory->create();
+        $customField = $this->customFieldFactory->create();
 
         // Get dni custom field from quote or current user if logged in
         $customerId = $this->customerSession->getCustomer()->getId();

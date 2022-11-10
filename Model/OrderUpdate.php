@@ -6,8 +6,8 @@ use Magento\Sales\Model\Order\Payment\Transaction;
 
 class OrderUpdate
 {
-    /** @var Mobbex\Webpay\Helper\Config */
-    protected $config;
+    /** @var Mobbex\Webpay\Helper\Instantiator */
+    protected $instantiator;
 
     /** @var OrderSender */
     protected $orderSender;
@@ -27,32 +27,23 @@ class OrderUpdate
     /** @var \Magento\Framework\Module\Manager */
     protected $moduleManager;
 
-    /** @var \Magento\Framework\ObjectManagerInterface */
-    protected $objectManager;
-
-    /** @var CustomFieldFactory */
-    protected $customFieldFactory;
-
     public function __construct(
-        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender,
         \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
-        \Magento\Framework\Module\Manager $moduleManager,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+        \Magento\Framework\Module\Manager $moduleManager
     ) {
-        $this->config             = $config;
+        $instantiator->setProperties($this, ['config', 'customFieldFactory', '_order']);
         $this->orderSender        = $orderSender;
         $this->invoiceSender      = $invoiceSender;
         $this->orderCommentSender = $orderCommentSender;
         $this->transactionBuilder = $transactionBuilder;
         $this->resourceConnection = $resourceConnection;
         $this->moduleManager      = $moduleManager;
-        $this->objectManager      = $objectManager;
-        $this->customFieldFactory = $customFieldFactory;
+        $this->objectManager      = $instantiator->_objectManager;
         $this->customFields       = $this->customFieldFactory->create();
     }
 
@@ -104,6 +95,7 @@ class OrderUpdate
     public function updateTotals($order, $data)
     {
         $orderTotal = $order->getGrandTotal();
+        error_log('order id: ' . "\n" . json_encode($order->getIncrementId(), JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         $totalPaid  = isset($data['total']) ? $data['total'] : $orderTotal;
         $paidDiff   = $totalPaid - $orderTotal;
 
