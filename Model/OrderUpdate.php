@@ -83,6 +83,9 @@ class OrderUpdate
             $this->generateInvoice($order, $data['status_message']);
         }
 
+        if($order->getStatus() === 'canceled')
+            $order->cancel();
+            
         $order->save();
     }
 
@@ -216,7 +219,7 @@ class OrderUpdate
      * @param bool $restoreStock 
      * 
      */
-    private function updateStock($order, $restoreStock = true)
+    public function updateStock($order, $restoreStock = true)
     {
         // Only execute if inventory is enabled
         if (!$this->isInventoryEnabled())
