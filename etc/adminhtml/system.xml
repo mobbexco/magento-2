@@ -103,6 +103,12 @@
                         <source_model>Mobbex\Webpay\Model\Config\Source\MultivendorSelect</source_model>
                     </field>
 
+                    <field id="payment_mode" translate="label comment" sortOrder="30" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Operatoria en 2 pasos</label>
+                        <source_model>Mobbex\Webpay\Model\Config\Source\PaymentModeSelect</source_model>
+                    </field>
+
                     <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>
@@ -116,6 +122,12 @@
                         <field id="order_status_in_process" translate="label" type="select" sortOrder="20"
                             showInDefault="1" showInWebsite="1" showInStore="0">
                             <label>Estado del pedido cuando el pago está en curso</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
+                        <field id="order_status_authorized" translate="label" type="select" sortOrder="21"
+                            showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido cuando el pago fue autorizado</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
@@ -150,7 +162,7 @@
                         </field>
                     </group>
 
-                    <group id="email_settings" translate="label" sortOrder="24" showInDefault="1" showInWebsite="1"
+                    <group id="email_settings" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1"
                         showInStore="1">
                         <label>Email Settings</label>
 
