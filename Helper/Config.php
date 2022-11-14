@@ -23,6 +23,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'embed'                  => 'payment/webpay/checkout/embed_payment',
         'multicard'              => 'payment/webpay/checkout/multicard',
         'multivendor'            => 'payment/webpay/checkout/multivendor',
+        'payment_mode'           => 'payment/webpay/checkout/payment_mode',
         'wallet'                 => 'payment/webpay/checkout/wallet_active',
         'own_dni_field'          => 'payment/webpay/checkout/own_dni_field',
         'dni_column'             => 'payment/webpay/checkout/dni_column',

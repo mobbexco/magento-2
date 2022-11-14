@@ -162,7 +162,7 @@
                         </field>
                     </group>
 
-                    <group id="email_settings" translate="label" sortOrder="24" showInDefault="1" showInWebsite="1"
+                    <group id="email_settings" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1"
                         showInStore="1">
                         <label>Email Settings</label>
 

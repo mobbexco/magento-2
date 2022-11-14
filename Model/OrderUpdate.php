@@ -76,13 +76,10 @@ class OrderUpdate
         //Update stock reservations
         $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
 
-        if ($order->getStatus() !== 'canceled' && !$refunded && ($order->getStatus() === 'mobbex_failed' || $order->getStatus() === 'mobbex_refunded' || $order->getStatus() === 'mobbex_rejected')){
-            //Refund stock
-            $this->updateStock($order);
-        } else if($refunded && $data['status_code'] < 400 && $data['status_code'] >= 200){
-            //Discount stock
+        if ($refunded && $statusName == 'order_status_approved')
             $this->updateStock($order, false);
-        }
+        else if (!$refunded && in_array($order->getStatus(), ['mobbex_failed', 'mobbex_refunded', 'mobbex_rejected']))
+            $this->updateStock($order);
 
         // Notify the customer
         $notified = $this->sendOrderEmail($order, $data['status_message']);

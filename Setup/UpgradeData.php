@@ -67,11 +67,6 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
             ],
             'mobbex_authorized' => [
                 'label' => 'Autorizado (Mobbex)',
-                'state' => 'holded',
-            ],
-            'mobbex_captured' => [
-                'label' => 'Capturado (Mobbex)',
-                'state' => 'processing',
             ],
         ]);
     }
