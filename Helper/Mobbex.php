@@ -315,15 +315,17 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
         foreach ($addressesData as $address) {
             $region = $this->regionFactory->create()->load($address['region_id'])->getData();
+            $street = (string) $address['street'];
+
             $addresses[] = [
                 'type'         => isset($address["address_type"]) ? $address["address_type"] : '',
                 'country'      => isset($address["country_id"]) ? $this->repository->convertCountryCode($address["country_id"]) : '',
-                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['street']))),
-                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($address['street'])), '', trim($address['street'])),
+                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street))),
+                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street)), '', trim($street)),
                 'streetNotes'  => '',
                 'zipCode'      => isset($address["postcode"]) ? $address["postcode"] : '',
                 'city'         => isset($address["city"]) ? $address["city"] : '',
-                'state'        => (isset($address["country_id"]) && isset($region['code'])) ? str_replace($address["country_id"] . '-', '', $region['code']) : ''
+                'state'        => (isset($address["country_id"]) && isset($region['code'])) ? str_replace((string) $address["country_id"] . '-', '', (string) $region['code']) : ''
             ];
         }
 
