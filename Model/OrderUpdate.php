@@ -95,7 +95,6 @@ class OrderUpdate
     public function updateTotals($order, $data)
     {
         $orderTotal = $order->getGrandTotal();
-        error_log('order id: ' . "\n" . json_encode($order->getIncrementId(), JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         $totalPaid  = isset($data['total']) ? $data['total'] : $orderTotal;
         $paidDiff   = $totalPaid - $orderTotal;
 

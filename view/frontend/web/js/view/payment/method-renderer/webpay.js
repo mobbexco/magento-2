@@ -57,7 +57,7 @@ require(['jquery'], function ($) {
             callback(response.data);
         },
         error: function () {
-            displayAlert('Error', 'No se obtener la información del pago.', returnUrl + '&status=500');
+            displayAlert('Error', 'No se ha podido obtener la información del pago.', returnUrl + '&status=500');
         }
     });
 
