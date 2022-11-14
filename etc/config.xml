@@ -20,6 +20,7 @@
                         <order_status_approved>processing</order_status_approved>
                         <order_status_in_process>pending</order_status_in_process>
                         <order_status_cancelled>mobbex_failed</order_status_cancelled>
+                        <order_status_authorized>mobbex_authorized</order_status_authorized>
                         <order_status_refunded>mobbex_refunded</order_status_refunded>
                         <order_status_revision>mobbex_revision</order_status_revision>
                         <order_status_rejected>mobbex_rejected</order_status_rejected>

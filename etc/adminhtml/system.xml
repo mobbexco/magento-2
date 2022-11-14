@@ -125,6 +125,12 @@
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
+                        <field id="order_status_authorized" translate="label" type="select" sortOrder="21"
+                            showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido cuando el pago fue autorizado</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
                         <field id="order_status_cancelled" translate="label" type="select" sortOrder="21"
                             showInDefault="1" showInWebsite="1" showInStore="0">
                             <label>Estado del pedido cuando el pago es cancelado</label>

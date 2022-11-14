@@ -200,8 +200,10 @@ class OrderUpdate
      */
     public function getStatusConfigName($statusCode)
     {
-        if ($statusCode == 2 || $statusCode == 3 || $statusCode == 201) {
+        if ($statusCode == 2 || $statusCode == 201) {
             $name = 'order_status_in_process';
+        } else if ($statusCode == 3) {
+            $name = 'order_status_authorized';
         } else if ($statusCode == 100) {
             $name = 'order_status_revision';
         } else if ($statusCode == 602 || $statusCode == 605) {
