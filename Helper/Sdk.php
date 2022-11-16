@@ -33,7 +33,7 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
         [
             'magento' => $this->productMetadata->getVersion(),
             'webpay'  => $this->moduleResource->getDbVersion('Mobbex_Webpay'),
-            'sdk'     => \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk'),
+            'sdk'     => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
         ], $this->config->getAll(), [$this->helper, 'executeHook']);
 
         // Init api conector
