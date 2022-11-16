@@ -6,7 +6,11 @@
 * Composer >= 1
 
 ## Instalación
-> Los siguientes comandos deben ejecutarse en el directorio de instalación de Magento.
+> **Note**
+> Recuerde que todos los comandos deben ejecutarse en el directorio de instalación de Magento
+
+> **Warning**
+> Si está utilizando composer 1 para la instalación, primero añada el repositorio a composer mediante el comando `composer config repositories.mobbexco-php-plugins-sdk vcs https://github.com/mobbexco/php-plugins-sdk`
 
 1. Descargue el paquete:
     ```
