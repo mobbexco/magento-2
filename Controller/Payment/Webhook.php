@@ -10,11 +10,11 @@ use Exception;
  */
 class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 {
-    /** @var \Mobbex\Webpay\Helper\Instantiator */
-    protected $instantiator;
-
     /** @var \Mobbex\Webpay\Model\OrderUpdate */
     protected $_orderUpdate;
+
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
 
     public function __construct(
         \Mobbex\Webpay\Helper\Instantiator $instantiator,

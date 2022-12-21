@@ -42,12 +42,13 @@ class RefundObserverBeforeSave implements ObserverInterface
         $payment = $order->getPayment();
 
         $paymentMethod = $payment->getMethodInstance()->getCode();
+        $mobbexData    = $payment->getAdditionalInformation('mobbex_data');
 
-        if ($paymentMethod != 'webpay') {
+        if ($paymentMethod != 'webpay' || empty($mobbexData['payment']['id'])) {
             return;
         }
         
-        $paymentId = $payment->getAdditionalInformation('mobbex_data')['payment']['id'];
+        $paymentId = $mobbexData['payment']['id'];
 
 
         // If amount is invalid throw exception
