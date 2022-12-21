@@ -19,13 +19,14 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
     public function __construct(
         \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Framework\App\Action\Context $context,
+        \Mobbex\Webpay\Model\TransactionFactory $transactionFactory,
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
     ) {
         parent::__construct($context);
-        $instantiator->setProperties($this, ['config', 'logger', 'helper', 'mobbexTransactionFactory', 'quoteFactory', '_order']);
+        $instantiator->setProperties($this, ['config', 'logger', 'helper', 'quoteFactory', '_order']);
         $this->orderUpdate       = $orderUpdate;
         $this->_request          = $this->getRequest();
-        $this->mobbexTransaction = $this->mobbexTransactionFactory->create();
+        $this->mobbexTransaction = $transactionFactory->create();
     }
 
     /**
