@@ -18,7 +18,7 @@ class Instantiator extends \Magento\Framework\App\Helper\AbstractHelper
         'helper'                   => '\Mobbex\Webpay\Helper\Mobbex',
         'logger'                   => '\Mobbex\Webpay\Helper\Logger',
         'customFieldFactory'       => '\Mobbex\Webpay\Model\CustomFieldFactory',
-        'mobbexTransactionFactory' => '\Mobbex\Webpay\Model\MobbexTransactionFactory',
+        'mobbexTransactionFactory' => '\Mobbex\Webpay\Model\TransactionFactory',
         'quoteFactory'             => '\Magento\Quote\Model\QuoteFactory',
         'redirectFactory'          => '\Magento\Framework\Controller\Result\RedirectFactory',
         'orderUpdate'              => '\Mobbex\Webpay\Model\OrderUpdate',

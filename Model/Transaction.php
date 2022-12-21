@@ -5,17 +5,17 @@ namespace Mobbex\Webpay\Model;
 use Magento\Framework\Model\AbstractModel;
 
 /**
- * Class Mobbex Transaction
+ * Class Transaction
  * @package Mobbex\Webpay\Model
  */
-class MobbexTransaction extends AbstractModel
+class Transaction extends AbstractModel
 {
     /**
      * Initialize Model
      */
     protected function _construct()
     {
-        $this->_init(\Mobbex\Webpay\Model\Resource\MobbexTransaction::class);
+        $this->_init(\Mobbex\Webpay\Model\Resource\Transaction::class);
     }
 
     /**
