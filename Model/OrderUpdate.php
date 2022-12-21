@@ -27,6 +27,15 @@ class OrderUpdate
     /** @var \Magento\Framework\Module\Manager */
     protected $moduleManager;
 
+    /** @var \Magento\Sales\Model\Order\Invoice */
+    protected $invoice;
+
+    /** @var \Magento\Sales\Model\Order\CreditmemoFactory */
+    protected $creditmemoFactory;
+
+    /** @var \Magento\Sales\Model\Service\CreditmemoService */
+    protected $creditmemoService;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
@@ -34,9 +43,12 @@ class OrderUpdate
         \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender,
         \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
-        \Magento\Framework\Module\Manager $moduleManager
+        \Magento\Framework\Module\Manager $moduleManager,
+        \Magento\Sales\Model\Order\Invoice $invoice,
+        \Magento\Sales\Model\Order\CreditmemoFactory $creditmemoFactory,
+        \Magento\Sales\Model\Service\CreditmemoService $creditmemoService
     ) {
-        $instantiator->setProperties($this, ['config', 'customFieldFactory', '_order']);
+        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', '_order']);
         $this->orderSender        = $orderSender;
         $this->invoiceSender      = $invoiceSender;
         $this->orderCommentSender = $orderCommentSender;
@@ -45,6 +57,9 @@ class OrderUpdate
         $this->moduleManager      = $moduleManager;
         $this->objectManager      = $instantiator->_objectManager;
         $this->customFields       = $this->customFieldFactory->create();
+        $this->invoice            = $invoice;
+        $this->creditmemoFactory  = $creditmemoFactory;
+        $this->creditmemoService  = $creditmemoService;
     }
 
     /**
@@ -60,6 +75,9 @@ class OrderUpdate
 
         if ($orderStatus == $order->getStatus())
             return;
+
+        if ($orderStatus == 'canceled')
+            $this->cancelOrder($order);
 
         //Set order status
         $order->setState($orderStatus)->setStatus($orderStatus);
@@ -80,9 +98,6 @@ class OrderUpdate
             $this->generateInvoice($order, $data['status_message']);
         }
 
-        if($order->getStatus() === 'canceled')
-            $order->cancel();
-            
         $order->save();
     }
 
@@ -268,5 +283,42 @@ class OrderUpdate
                 return false;
 
         return true;
+    }
+
+    /**
+     * Try to cancel or refund an order.
+     * 
+     * @param \Magento\Sales\Model\Order $order
+     * 
+     * @return \Magento\Sales\Model\Order|\Magento\Sales\Model\Order\Creditmemo|null
+     */
+    public function cancelOrder($order)
+    {
+        // First, try to cancel
+        if ($order->canCancel())
+            return $order->cancel();
+
+        // Exit if it is not refundable
+        if (!$order->canCreditmemo())
+            return;
+
+        $invoices = $order->getInvoiceCollection() ?: [];
+
+        foreach ($invoices as $invoiceResource)
+            $invoiceId = $invoiceResource->getIncrementId();
+
+        if (empty($invoiceId))
+            return;
+    
+        // Instance invoice and create credit memo
+        $invoice    = $this->invoice->loadByIncrementId($invoiceId);
+        $creditmemo = $this->creditmemoFactory->createByOrder($order)->setInvoice($invoice);
+    
+        // Back to stock all the items
+        foreach ($creditmemo->getAllItems() as $item)
+            $item->setBackToStock(true);
+
+        // Try to refund and return credit memo
+        return $this->creditmemoService->refund($creditmemo);
     }
 }
