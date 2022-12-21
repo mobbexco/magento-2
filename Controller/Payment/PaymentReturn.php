@@ -62,11 +62,6 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
 
                 $this->logger->debug('debug', 'PaymentReturn Controller > Order', $this->_order->debug());
 
-                // Cancel order to return stock when payment is not attempted
-                if (empty($status)) {
-                    $order->cancel();
-                    $order->save();
-                }
                 if ($status > 1 && $status < 400) {
                     return $this->redirectFactory->create()->setPath('checkout/onepage/success');
                 } else {
