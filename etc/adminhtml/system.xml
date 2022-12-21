@@ -99,7 +99,7 @@
 
                     <field id="multivendor" translate="label comment" sortOrder="20" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Allow multiple vendors</label>
+                        <label>Permitir múltiples vendedores</label>
                         <source_model>Mobbex\Webpay\Model\Config\Source\MultivendorSelect</source_model>
                     </field>
 
@@ -246,7 +246,13 @@
                         <label>Estilos del botón de financiación</label>
                         <comment>Modifica los estilos del botón de financiación respetando la sintaxis de CSS.</comment>
                     </field>
-
+                </group>
+                <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Advanced</label>
+                    <field id="site_id" translate="label comment" sortOrder="19" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Añadir identificador del sitio</label>
+                        <comment>Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.</comment>
+                    </field>
                 </group>
             </group>
         </section>
