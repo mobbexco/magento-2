@@ -143,8 +143,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
-            $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()]),
-            'mobbexProcessPayment'
+            $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()])
         );
 
         $this->logger->debug('debug', "Checkout Response: ", $mobbexCheckout->response);
@@ -218,7 +217,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
                 $this->getAddresses([$quote->getBillingAddress()->getData(), $quote->getShippingAddress()->getData()]),
-                'mobbexProcessPayment'
+                'mobbexQuoteCheckoutRequest'
             );
 
             $this->logger->debug('debug', "Checkout Response: ", $mobbexCheckout->response); 
