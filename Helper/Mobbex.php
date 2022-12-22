@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '3.2.1';
+    const VERSION = '3.3.0';
 
     /** @var \Mobbex\Webpay\Helper\Instantiator */
     public $instantiator;
