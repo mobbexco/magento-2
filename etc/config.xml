@@ -16,6 +16,7 @@
                 <checkout>
                     <embed_payment>1</embed_payment>
                     <payment_mode>payment.v2</payment_mode>
+                    <timeout>5</timeout>
                     <order_status_settings>
                         <order_status_approved>processing</order_status_approved>
                         <order_status_in_process>pending</order_status_in_process>

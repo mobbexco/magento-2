@@ -109,6 +109,12 @@
                         <source_model>Mobbex\Webpay\Model\Config\Source\PaymentModeSelect</source_model>
                     </field>
 
+                    <field id="timeout" translate="label comment" sortOrder="31" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Tiempo de vida del checkout</label>
+                        <comment>Permite establecer la dureación del checkout en minutos.</comment>
+                    </field>
+
                     <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>
