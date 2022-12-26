@@ -38,7 +38,7 @@ class Capture extends \Magento\Backend\App\Action
         } catch (\Exception $e) {
             // Add message to admin panel and debug
             $this->messageManager->addErrorMessage($e->getMessage());
-            $this->logger->debug('err', $e->getMessage(), isset($e->data) ? $e->data : []);
+            $this->logger->log('error', $e->getMessage(), isset($e->data) ? $e->data : []);
         }
 
         return $resultRedirect->setPath('sales/order/view', ['order_id' => $id]);

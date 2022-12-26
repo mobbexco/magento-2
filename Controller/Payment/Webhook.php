@@ -51,7 +51,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
                 $orderId = $quote->getReservedOrderId();
             }
             
-            $this->logger->debug('debug', "WebHook Controller > ", compact('orderId', 'data'));
+            $this->logger->log('debug', "WebHook Controller > ", compact('orderId', 'data'));
 
             //Save webhook data en database
             $this->mobbexTransaction->saveTransaction($data);
@@ -76,7 +76,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             $response['result'] = true;
             
         } catch (\Exception $e) {
-            $this->logger->createJsonResponse('err', 'WebHook Controller > Error Paynment Data: ' . $e->getMessage());
+            $this->logger->createJsonResponse('error', 'WebHook Controller > Error Paynment Data: ' . $e->getMessage());
         }
 
         return $this->logger->createJsonResponse('debug', 'WebHook Received OK: ', $response);
