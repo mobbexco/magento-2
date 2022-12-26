@@ -59,7 +59,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Event\ObserverFactory $observerFactory,
         \Magento\Directory\Model\RegionFactory $regionFactory
     ) {
-        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession', 'repository']);
+        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
         $this->scopeConfig        = $scopeConfig;
         $this->_storeManager      = $_storeManager;
         $this->imageHelper        = $imageHelper;
@@ -318,7 +318,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             $addresses[] = [
                 'type'         => isset($address["address_type"]) ? $address["address_type"] : '',
-                'country'      => isset($address["country_id"]) ? $this->repository->convertCountryCode($address["country_id"]) : '',
+                'country'      => isset($address["country_id"]) ? \Mobbex\Repository::convertCountryCode($address["country_id"]) : '',
                 'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street))),
                 'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street)), '', trim($street)),
                 'streetNotes'  => '',
