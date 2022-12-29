@@ -24,7 +24,7 @@ class Transaction extends AbstractModel
      * @param array $filter  ['column_name' => 'value']
      * @return array
      */
-    public function getTransactions($order_id, $filter = [])
+    public function getTransactions($filter = [])
     {
         //Get the model collection
         $collection = $this->getCollection();
@@ -32,7 +32,7 @@ class Transaction extends AbstractModel
         foreach ($filter as $column => $value)
             $collection->addFieldToFilter($column, $value);
         //Get model data
-        $data = isset($filter['parent']) && $filter['parent'] ? $collection->getData()[0] : $collection->getData();
+        $data = isset($filter['parent']) && isset($collection->getData()[0]) && $filter['parent'] ? $collection->getData()[0] : $collection->getData();
 
         return !empty($data) ? $data : false;
     }
