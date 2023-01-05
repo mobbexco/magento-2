@@ -22,7 +22,7 @@ class Capture extends \Magento\Backend\App\Action
             $order = $this->_order->load($id);
 
             // Get transaction data from db
-            $transaction = $this->mobbexTransactionFactory->create()->getTransaction($order->getIncrementId(), [1, 1]);
+            $transaction = $this->mobbexTransactionFactory->create()->getTransactions(['order_id' => $order->getIncrementId(), 'parent' => 1]);
 
             // Make capture request
             $result = \Mobbex\Api::request([
