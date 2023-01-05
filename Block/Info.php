@@ -27,9 +27,10 @@ class Info extends \Magento\Payment\Block\Info
         )
     {
         parent::__construct($context, $data);
-        $instantiator->setProperties($this, ['mobbexTransactionFactory']);
+        $instantiator->setProperties($this, ['mobbexTransactionFactory', 'customFieldFactory']);
         $this->_state = $_state;
         $this->mobbexTransaction = $this->mobbexTransactionFactory->create();
+        $this->customField       = $this->customFieldFactory->create();
     }
 
     /**
@@ -51,7 +52,8 @@ class Info extends \Magento\Payment\Block\Info
 
         $data = [
             (string) __('Transaction ID') => isset($mobbexData['payment_id']) ? $mobbexData['payment_id'] : '',
-            (string) __('Total')          => isset($mobbexData['total']) ? $mobbexData['total'] : '',
+            (string) __('Total')          => '$'.(isset($mobbexData['total']) ? $mobbexData['total'] : '0'),
+            (string) __('Total Refunded') => '$'.($this->customField->getCustomField($this->getInfo()->getOrder()->getIncrementId(), 'order', 'total_refunded') ?: '0'),
         ];
 
         if($cards){
@@ -61,7 +63,7 @@ class Info extends \Magento\Payment\Block\Info
                     $data[(string) __('Card') . ' ' . ($key + 1)]                = isset($card['source_name']) ? $card['source_name'] : '';
                     $data[(string) __('Card') . ' ' . ($key + 1).' Number']      = isset($card['source_number']) ? $card['source_number'] : '';
                     $data[(string) __('Card') . ' ' . ($key + 1).' Installment'] = !empty($card['source_installment']) ? json_decode($card['source_installment'], true)['description'] . ' ' . json_decode($card['source_installment'], true)['count'] . ' cuota/s' : '';
-                    $data[(string) __('Card') . ' ' . ($key + 1).' Amount']      = isset($card['total']) ? $card['total'] : '';
+                    $data[(string) __('Card') . ' ' . ($key + 1).' Amount']      = '$'.(isset($card['total']) ? $card['total'] : '0');
                 }
             }
         } else {

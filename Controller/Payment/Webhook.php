@@ -11,7 +11,7 @@ use Exception;
 class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 {
     /** @var \Mobbex\Webpay\Model\OrderUpdate */
-    protected $_orderUpdate;
+    protected $orderUpdate;
 
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
@@ -23,10 +23,11 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
     ) {
         parent::__construct($context);
-        $instantiator->setProperties($this, ['config', 'logger', 'helper', 'quoteFactory', '_order']);
+        $instantiator->setProperties($this, ['config', 'logger', 'helper', 'quoteFactory', 'customFieldFactory', '_order']);
         $this->orderUpdate       = $orderUpdate;
         $this->_request          = $this->getRequest();
         $this->mobbexTransaction = $transactionFactory->create();
+        $this->customField       = $this->customFieldFactory->create();
     }
 
     /**
@@ -53,12 +54,18 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             
             $this->logger->debug('debug', "WebHook Controller > ", compact('orderId', 'data'));
 
+            //Avoid duplicated child webhooks
+            if (!$data['parent'] && $this->mobbexTransaction->getTransactions(['payment_id' => $data['payment_id']]))
+                return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
+
             //Save webhook data en database
             $this->mobbexTransaction->saveTransaction($data);
 
-            if($data['parent'] == false) {
+            if($data['status_code'] === '602' || $data['status_code'] === '603')
+                return $this->processRefund($data, $orderId);
+
+            if($data['parent'] == false)
                 return;
-            }
 
             if (empty($orderId) || empty($data['status_code']))
                 throw new Exception('Empty Order ID or payment status', 1);
@@ -80,6 +87,26 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
         }
 
         return $this->logger->createJsonResponse('debug', 'WebHook Received OK: ', $response);
+    }
+
+    public function processRefund($data)
+    {
+        //Load Order
+        $this->_order->loadByIncrementId($data['order_id']);
+        
+        //Get previous refunds
+        $totalRefunded = (int) $this->customField->getCustomField($data['order_id'], 'order', 'total_refunded') + $data['total'];
+        $paidTotal     = $this->_order->getGrandTotal() - $totalRefunded;
+
+        //Save total refunded
+        $this->customField->saveCustomField($data['order_id'], 'order', 'total_refunded', $totalRefunded);
+
+        if ($data['parent'] || $paidTotal <= 0){
+            $this->orderUpdate->createCreditMemo($this->_order);
+            $this->orderUpdate->updateStatus($this->_order, $data);
+        }
+
+        return $this->logger->createJsonResponse('debug', 'Webhook > processRefund | WebHook Received OK: ', $data);
     }
 
     /**
