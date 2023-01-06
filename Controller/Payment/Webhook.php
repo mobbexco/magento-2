@@ -61,7 +61,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             //Save webhook data en database
             $this->mobbexTransaction->saveTransaction($data);
 
-            if($data['status_code'] === '602' || $data['status_code'] === '603')
+            if(in_array($data['status_code'], ['601', '602', '603', '604', '605', '610']))
                 return $this->processRefund($data, $orderId);
 
             if($data['parent'] == false)
