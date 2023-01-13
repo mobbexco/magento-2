@@ -12,7 +12,7 @@ mkdir tmp
 cp composer.json registration.php tmp
 
 # Require autoload on registration.php
-printf "\nrequire_once 'vendor/autoload.php';" >> registration.php
+printf "\nrequire_once __DIR__ . '/vendor/autoload.php';" >> registration.php
 perl -i -0777pe 's/"autoload".*},/"autoload": {},/s' composer.json
 
 # Install dependencies
