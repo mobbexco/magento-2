@@ -217,6 +217,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
                 $this->getAddresses([$quote->getBillingAddress()->getData(), $quote->getShippingAddress()->getData()]),
+                'none',
                 'mobbexQuoteCheckoutRequest'
             );
 
