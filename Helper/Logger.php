@@ -2,31 +2,29 @@
 
 namespace Mobbex\Webpay\Helper;
 
-use Zend\Log\Writer\Stream;
-
 class Logger extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    /** @var Zend\Log\Logger */
-    public $logger;
-
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
     /** @var \Magento\Framework\Controller\Result\JsonFactory */
     public $resultJsonFactory;
 
+    /** @var \Mobbex\Webpay\Model\LogsFactory */
+    public $logsFactory;
+
     public function __construct(
-        \Zend\Log\Logger $logger,
         \Mobbex\Webpay\Helper\Config $config,
-        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
+        \Mobbex\Webpay\Model\LogsFactory $logsFactory
     ) {
-        $this->logger            = $logger;
         $this->config            = $config;
         $this->resultJsonFactory = $resultJsonFactory;
+        $this->log               = $logsFactory->create();
     }
 
     /**
-     * Creates a json response & log document in base of $mode.
+     * Creates a json response & log document in base of $mode
      * @param string $mode 
      * @param string $message
      * @param string $data
@@ -39,7 +37,7 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Creates log document to log errors & useful data.
+     * Store log data in Mobbex logs table.
      * @param string $mode 
      * @param string $message
      * @param string $data
@@ -47,10 +45,21 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     public function debug($mode, $message, $data = [])
     {
         //Log data
-        $writer = new Stream(BP . '/var/log/' . "mobbex_$mode" . "_" . date('m_Y') . ".log");
-        $this->logger->addWriter($writer);
+        $data = [
+            'type'          => $mode,
+            'message'       => $message,
+            'data'          => json_encode($data),
+            'day'           => date("d"),
+            'month'         => date("m"),
+            'year'          => date("Y"),
+            'creation_time' => date("H:i:s"),
+        ]; 
 
+        //Save log
         if ($mode !== 'debug' || $this->config->get('debug_mode'))
-            $this->logger->{$mode}($message, $data);
+            $this->log->saveLog($data);
+
+        if($mode === 'fatal')
+            die;
     }
 }

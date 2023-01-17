@@ -138,6 +138,50 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
+        /* Add mobbex logs table */
+        if (!$setup->tableExists('mobbex_logs')) {
+            $table = $connection->newTable($setup->getTable('mobbex_logs'))
+            ->addColumn('log_id', Table::TYPE_INTEGER, null, array(
+                'identity'  => true,
+                'unsigned'  => true,
+                'nullable'  => false,
+                'primary'   => true,
+            ), 'Id')
+                ->addColumn('type', Table::TYPE_TEXT, null, array(
+                    'nullable'  => false,
+                ), 'Type')
+                ->addColumn('message', Table::TYPE_TEXT, null, array(
+                    'nullable'  => false,
+                ), 'Message')
+                ->addColumn(
+                    'data',
+                    Table::TYPE_TEXT, null,array(
+                    'nullable'  => false,
+                ), 'Data')
+                ->addColumn(
+                    'day',
+                    Table::TYPE_TEXT, null,array(
+                    'nullable'  => false,
+                ), 'Day')
+                ->addColumn(
+                    'month',
+                    Table::TYPE_TEXT, null,array(
+                    'nullable'  => false,
+                ), 'Month')
+                ->addColumn(
+                    'year',
+                    Table::TYPE_TEXT, null,array(
+                    'nullable'  => false,
+                ), 'Year')
+                ->addColumn(
+                    'creation_time',
+                    Table::TYPE_TEXT, null,array(
+                    'nullable'  => false,
+                ), 'Creation Time');
+
+            $connection->createTable($table);
+        }
+
         /* Add payment fee columns */
 
         if (version_compare($context->getVersion(), '1.2.0', '<=')) {
