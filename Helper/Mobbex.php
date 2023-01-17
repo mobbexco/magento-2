@@ -146,7 +146,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()])
         );
 
-        $this->logger->debug('debug', "Checkout Response: ", $mobbexCheckout->response);
+        $this->logger->debug('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
 
         return $mobbexCheckout->response;
     }
@@ -220,12 +220,12 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 'mobbexQuoteCheckoutRequest'
             );
 
-            $this->logger->debug('debug', "Checkout Response: ", $mobbexCheckout->response); 
+            $this->logger->debug('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
             
             return ['data' => $mobbexCheckout->response, 'order_id' => $quote->getId()];
 
         } catch (\Exception $e) {
-            $this->logger->debug('err', $e->getMessage(), isset($e->data) ? $e->data : []);
+            $this->logger->debug('error', 'Helper Mobbex > getCheckoutFromQuote | '.$e->getMessage(), isset($e->data) ? $e->data : []);
             return false;
         }
         
@@ -370,7 +370,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             return $value;
         } catch (\Exception $e) {
-            $this->logger->debug('err', 'Mobbex Hook Error: ', $e->getMessage());
+            $this->logger->debug('error', 'Helper Mobbex > executeHook | Mobbex Hook Error: ', $e->getMessage());
         }
     }
 

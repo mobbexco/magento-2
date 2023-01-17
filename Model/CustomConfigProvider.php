@@ -44,7 +44,7 @@ class CustomConfigProvider implements ConfigProviderInterface
         ];
 
         //Log data in debug mode
-        $this->logger->debug('debug', 'CustomConfigProvider > :', $config);
+        $this->logger->debug('debug', 'CustomConfigProvider > getConfig', $config);
 
         return $config;
     }
