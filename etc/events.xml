@@ -5,7 +5,7 @@
     <event name="controller_action_catalog_product_save_entity_after">
         <observer name="mobbex_product_config_save" instance="Mobbex\Webpay\Observer\ProductSaveObserver"/>
     </event>
-    <event name="sales_order_creditmemo_save_before">
+    <event name="sales_order_payment_refund">
         <observer name="mobbex_creditmemo_before_save_observer" instance="Mobbex\Webpay\Observer\RefundObserverBeforeSave"/>
     </event>
     <event name="catalog_category_prepare_save">
