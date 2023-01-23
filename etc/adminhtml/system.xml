@@ -160,6 +160,11 @@
                             <label>Deshabilitar creación automática de facturas</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
+
+                        <field id="memo_stock" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Permitir que las devoluciones desde consola devuelvan stock</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
                     </group>
 
                     <group id="email_settings" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1"
