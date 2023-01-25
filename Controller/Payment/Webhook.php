@@ -104,6 +104,9 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
         if ($data['parent'] || $paidTotal <= 0){
             $this->orderUpdate->createCreditMemo($this->_order);
             $this->orderUpdate->updateStatus($this->_order, $data);
+        } else if($this->config->get('partial_refund_status')){
+            $this->_order->setState($this->config->get('order_status_partial_refund'))->setStatus($this->config->get('order_status_partial_refund'));
+            $this->_order->save();
         }
 
         return $this->logger->createJsonResponse('debug', 'Webhook > processRefund | WebHook Received OK: ', $data);

@@ -68,6 +68,9 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
             'mobbex_authorized' => [
                 'label' => 'Autorizado (Mobbex)',
             ],
+            'mobbex_partial_refund' => [
+                'label' => 'Devuelto Parcialmente (Mobbex)',
+            ],
         ]);
     }
 

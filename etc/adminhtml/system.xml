@@ -155,7 +155,19 @@
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
-                        <field id="disable_invoices" translate="label" type="select" sortOrder="24" showInDefault="1"
+                        <field id="partial_refund_status" translate="label" type="select" sortOrder="25" showInDefault="1"
+                            showInWebsite="1" showInStore="0">
+                            <label>Permitir que las devoluciones parciales cambien el estado de la orden</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
+
+                        <field id="order_status_partial_refund" translate="label" type="select" sortOrder="26"
+                            showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Estado del pedido tras una devolución parcial</label>
+                            <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
+                        </field>
+
+                        <field id="disable_invoices" translate="label" type="select" sortOrder="27" showInDefault="1"
                             showInWebsite="1" showInStore="0">
                             <label>Deshabilitar creación automática de facturas</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
