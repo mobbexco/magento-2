@@ -22,15 +22,27 @@ class CancelOrderObserver implements ObserverInterface
     public function execute($observer)
     {
         //get order
-        if(isset($this->params['form_key'])){
-            $this->_order->load($this->params['order_id']);
-        } else {
-            $this->_order->loadByIncrementId($this->params['order_id']);
+        if(isset($this->params['form_key']) && isset($this->params['order_id'])){
+            $this->updateStock($this->_order->load($this->params['order_id']));
+        } else if(isset($this->params["selected"])){
+            foreach ($this->params['selected'] as $orderId)
+                $this->updateStock($this->_order->load($orderId));
+        } else if(isset($this->params['order_id'])){
+            $this->updateStock($this->_order->loadByIncrementId($this->params['order_id']));    
         }
+    }
+
+    /**
+     *  Avoid to refund stock if order was refunded previusly
+     *  @param Order
+     */
+    public function updateStock($order)
+    {
         //Check if order was refunded
-        $refunded = $this->customFields->getCustomField($this->_order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
+        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
+
         //If order was refunded discount stock to avoid duplicate refund
-        if($refunded)
-            $this->orderUpdate->updateStock($this->_order, false);
+        if ($refunded)
+            $this->orderUpdate->updateStock($order, false);
     }
 }
