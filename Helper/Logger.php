@@ -15,6 +15,9 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\Controller\Result\JsonFactory */
     public $resultJsonFactory;
 
+    /** @var \Magento\Framework\Message\ManagerInterface */ 
+    public $messageManager;
+
     public $modes = [
         'error' => 'error',
         'debug' => 'debug',
@@ -24,11 +27,13 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Zend\Log\Logger $logger,
         \Mobbex\Webpay\Helper\Config $config,
-        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
+        \Magento\Framework\Message\ManagerInterface $messageManager
     ) {
         $this->logger            = $logger;
         $this->config            = $config;
         $this->resultJsonFactory = $resultJsonFactory;
+        $this->messageManager    = $messageManager;
     }
 
     /**
@@ -49,7 +54,7 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
      * 
      * Mode debug: Log data only if debug mode is active
      * Mode error: Always log data.
-     * Mode fatal: Always log data & stop code execution.
+     * Mode critical: Always log data & stop code execution.
      * 
      * @param string $mode 
      * @param string $message
@@ -66,7 +71,9 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
         if ($mode !== 'debug' || $this->config->get('debug_mode'))
             $this->logger->{$method}($message, $data);
 
-        if($mode === 'fatal')
+        if($mode === 'critical'){
+            $this->messageManager->addError(__($message));
             die;
+        }
     }
 }
