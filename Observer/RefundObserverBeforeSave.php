@@ -71,7 +71,7 @@ class RefundObserverBeforeSave implements ObserverInterface
             $result = \Mobbex\Api::request([
                 'method' => 'POST',
                 'uri'    => 'operations/' . $paymentId . '/refund',
-                'body'   => ['total' => floatval($amount)]
+                'body'   => ['total' => floatval($amount), 'emitEvent' => false]
             ]) ?: [];
 
             return !empty($result);
