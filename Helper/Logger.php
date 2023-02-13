@@ -71,9 +71,7 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
         if ($mode !== 'debug' || $this->config->get('debug_mode'))
             $this->logger->{$method}($message, $data);
 
-        if($mode === 'critical'){
-            $this->messageManager->addError(__($message));
-            die;
-        }
+        if($mode === 'critical')
+            die($message);
     }
 }
