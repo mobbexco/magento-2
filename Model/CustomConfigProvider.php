@@ -75,7 +75,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'image' => $method['subgroup_logo']
                 ];
             }
-            if(count($data['paymentMethods']) <= 1 && $this->config->get('checkout_title'))
+            if(count($data['paymentMethods']) == 1 && $this->config->get('checkout_title'))
                 $data['paymentMethods'][0]['name'] = $this->config->get('checkout_title');
                 
         } else {
