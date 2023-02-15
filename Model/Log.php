@@ -5,17 +5,17 @@ namespace Mobbex\Webpay\Model;
 use Magento\Framework\Model\AbstractModel;
 
 /**
- * Class Logs
+ * Class Log
  * @package Mobbex\Webpay\Model
  */
-class Logs extends AbstractModel
+class Log extends AbstractModel
 {
     /**
      * Initialize Model
      */
     protected function _construct()
     {
-        $this->_init(\Mobbex\Webpay\Model\Resource\Logs::class);
+        $this->_init(\Mobbex\Webpay\Model\Resource\Log::class);
     }
 
     /**

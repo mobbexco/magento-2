@@ -20,7 +20,7 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     ) {
         $this->config            = $config;
         $this->resultJsonFactory = $resultJsonFactory;
-        $this->log               = $logsFactory->create();
+        $this->log               = $logsFactory;
     }
 
     /**
@@ -49,17 +49,14 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
             'type'          => $mode,
             'message'       => $message,
             'data'          => json_encode($data),
-            'day'           => date("d"),
-            'month'         => date("m"),
-            'year'          => date("Y"),
-            'creation_time' => date("H:i:s"),
+            'date'          => date('Y-m-d H:i:s'),
         ]; 
 
         //Save log
         if ($mode !== 'debug' || $this->config->get('debug_mode'))
-            $this->log->saveLog($data);
+            $this->log->create()->saveLog($data);
 
-        if($mode === 'fatal')
-            die;
+        if($mode === 'critical')
+            die($message);
     }
 }

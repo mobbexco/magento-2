@@ -141,12 +141,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
         /* Add mobbex logs table */
         if (!$setup->tableExists('mobbex_logs')) {
             $table = $connection->newTable($setup->getTable('mobbex_logs'))
-            ->addColumn('log_id', Table::TYPE_INTEGER, null, array(
-                'identity'  => true,
-                'unsigned'  => true,
-                'nullable'  => false,
-                'primary'   => true,
-            ), 'Id')
+                ->addColumn('log_id', Table::TYPE_INTEGER, null, array(
+                    'identity'  => true,
+                    'unsigned'  => true,
+                    'nullable'  => false,
+                    'primary'   => true,
+                ), 'Id')
                 ->addColumn('type', Table::TYPE_TEXT, null, array(
                     'nullable'  => false,
                 ), 'Type')
@@ -155,29 +155,14 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 ), 'Message')
                 ->addColumn(
                     'data',
-                    Table::TYPE_TEXT, null,array(
+                    Table::TYPE_TEXT, null, array(
                     'nullable'  => false,
                 ), 'Data')
                 ->addColumn(
-                    'day',
-                    Table::TYPE_TEXT, null,array(
+                    'date',
+                    Table::TYPE_DATETIME, null, array(
                     'nullable'  => false,
-                ), 'Day')
-                ->addColumn(
-                    'month',
-                    Table::TYPE_TEXT, null,array(
-                    'nullable'  => false,
-                ), 'Month')
-                ->addColumn(
-                    'year',
-                    Table::TYPE_TEXT, null,array(
-                    'nullable'  => false,
-                ), 'Year')
-                ->addColumn(
-                    'creation_time',
-                    Table::TYPE_TEXT, null,array(
-                    'nullable'  => false,
-                ), 'Creation Time');
+                ), 'Creation Date');
 
             $connection->createTable($table);
         }
