@@ -96,13 +96,13 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
         
         //Get previous refunds
         $totalRefunded = (int) $this->customField->getCustomField($data['order_id'], 'order', 'total_refunded') + $data['total'];
-        $paidTotal     = $this->_order->getGrandTotal() - $totalRefunded;
+        $totalPaid     = $this->_order->getGrandTotal() - $totalRefunded;
 
         //Save total refunded
         $this->customField->saveCustomField($data['order_id'], 'order', 'total_refunded', $totalRefunded);
 
-        if ($data['parent'] || $paidTotal <= 0){
-            $this->orderUpdate->createCreditMemo($this->_order);
+        if ($data['parent'] || $totalPaid <= 0){
+            $this->orderUpdate->cancelOrder($this->_order);
             $this->orderUpdate->updateStatus($this->_order, $data);
         }
 

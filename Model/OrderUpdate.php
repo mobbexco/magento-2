@@ -305,6 +305,10 @@ class OrderUpdate
         return $this->createCreditMemo($order);
     }
 
+    /**
+     * Creates a Magento Credit Memo for a given order
+     * @param Order $order
+     */
     public function createCreditMemo($order)
     {
         $invoices = $order->getInvoiceCollection() ?: [];
