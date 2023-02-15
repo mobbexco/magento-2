@@ -26,6 +26,7 @@
                         <order_status_revision>mobbex_revision</order_status_revision>
                         <order_status_rejected>mobbex_rejected</order_status_rejected>
                         <disable_invoices>0</disable_invoices>
+                        <memo_stock>1</memo_stock>
                     </order_status_settings>
                     <email_settings>
                         <create_order_email>1</create_order_email>
