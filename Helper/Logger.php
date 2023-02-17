@@ -10,17 +10,17 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\Controller\Result\JsonFactory */
     public $resultJsonFactory;
 
-    /** @var \Mobbex\Webpay\Model\LogsFactory */
-    public $logsFactory;
+    /** @var \Mobbex\Webpay\Model\LogFactory */
+    public $logFactory;
 
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-        \Mobbex\Webpay\Model\LogsFactory $logsFactory
+        \Mobbex\Webpay\Model\LogFactory $logFactory
     ) {
         $this->config            = $config;
         $this->resultJsonFactory = $resultJsonFactory;
-        $this->log               = $logsFactory;
+        $this->logFactory        = $logFactory;
     }
 
     /**
@@ -44,17 +44,14 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function debug($mode, $message, $data = [])
     {
-        //Log data
-        $data = [
-            'type'          => $mode,
-            'message'       => $message,
-            'data'          => json_encode($data),
-            'date'          => date('Y-m-d H:i:s'),
-        ]; 
-
-        //Save log
-        if ($mode !== 'debug' || $this->config->get('debug_mode'))
-            $this->log->create()->saveLog($data);
+        // Save log to db
+        if ($mode != 'debug' || $this->config->get('debug_mode'))
+            $this->logFactory->create()->saveLog([
+                'type'          => $mode,
+                'message'       => $message,
+                'data'          => json_encode($data),
+                'date'          => date('Y-m-d H:i:s'),
+            ]);
 
         if($mode === 'critical')
             die($message);
