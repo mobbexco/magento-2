@@ -55,8 +55,8 @@ class RefundObserverBeforeSave implements ObserverInterface
         // If amount is invalid throw exception
         if ($amount <= 0 || $amount > $order->getGrandTotal()) {
             $message = __('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
-            $this->messageManager->addErrorMessage($message); 
-            $this->logger->debug('err', $message);
+            $this->messageManager->addErrorMessage($message);
+            $this->logger->debug('error', "RefundObserverBeforeSave > execute | $message");
 
             throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
         }
@@ -77,7 +77,7 @@ class RefundObserverBeforeSave implements ObserverInterface
             return !empty($result);
 
         } catch (\Exception $e) {
-            $this->logger->debug('err', $e->getMessage(), isset($e->data) ? $e->data : []);
+            $this->logger->debug('error', 'RefundObserverBeforeSave > execute | ' . $e->getMessage(), isset($e->data) ? $e->data : []);
         }
     }
 }
