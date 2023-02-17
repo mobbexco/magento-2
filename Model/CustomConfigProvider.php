@@ -33,8 +33,8 @@ class CustomConfigProvider implements ConfigProviderInterface
                         'embed' => $this->config->get('embed'),
                         'wallet' => $this->config->get('wallet')
                     ],
-                    'banner'            => $this->config->get('header_logo'),
-                    'paymentMethods'    => !empty($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->get('header_name') ?: 'Pagar con Mobbex', 'image' => '']],
+                    'banner'            => $this->config->get('checkout_banner'),
+                    'paymentMethods'    => !empty($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->get('checkout_title') ?: 'Pagar con Mobbex', 'image' => '']],
                     'walletCreditCards' => !empty($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
                     'paymentUrl'        => !empty($checkoutData['paymentUrl']) ? $checkoutData['paymentUrl'] : '',
                     'checkoutId'        => !empty($checkoutData['checkoutId']) ? $checkoutData['checkoutId'] : '',
@@ -71,18 +71,18 @@ class CustomConfigProvider implements ConfigProviderInterface
                 $data['paymentMethods'][] = [
                     'id'    => $method['subgroup'],
                     'value' => $method['group'] . ':' . $method['subgroup'],
-                    'name'  => $method['group'] == 'card' && $method['subgroup'] == 'card_input' && $this->config->get('header_name') ? $this->config->get('header_name') : $method['subgroup_title'],
+                    'name'  => $method['group'] == 'card' && $method['subgroup'] == 'card_input' && $this->config->get('checkout_title') ? $this->config->get('checkout_title') : $method['subgroup_title'],
                     'image' => $method['subgroup_logo']
                 ];
             }
-            if(count($data['paymentMethods']) <= 1 && $this->config->get('header_name'))
-                $data['paymentMethods'][0]['name'] = $this->config->get('header_name');
+            if(count($data['paymentMethods']) == 1 && $this->config->get('checkout_title'))
+                $data['paymentMethods'][0]['name'] = $this->config->get('checkout_title');
                 
         } else {
             $data['paymentMethods'][] = [
                 'id'    => 'mobbex',
                 'value' => '',
-                'name'  => $this->config->get('header_name'),
+                'name'  => $this->config->get('checkout_title'),
                 'image' => ''
             ];
         }

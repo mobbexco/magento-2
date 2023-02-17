@@ -15,8 +15,8 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'theme'                  => 'payment/webpay/appearance/theme_type',
         'background'             => 'payment/webpay/appearance/background_color',
         'color'                  => 'payment/webpay/appearance/primary_color',
-        'header_name'            => 'payment/webpay/appearance/title_checkout',
-        'header_logo'            => 'payment/webpay/appearance/banner_checkout',
+        'checkout_title'         => 'payment/webpay/appearance/checkout_title',
+        'checkout_banner'        => 'payment/webpay/appearance/checkout_banner',
         'widget_style'           => 'payment/webpay/appearance/widget_style',
         'button_logo'            => 'payment/webpay/appearance/button_logo',
         'button_text'            => 'payment/webpay/appearance/button_text',
@@ -25,6 +25,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'multicard'              => 'payment/webpay/checkout/multicard',
         'multivendor'            => 'payment/webpay/checkout/multivendor',
         'payment_mode'           => 'payment/webpay/checkout/payment_mode',
+        'timeout'                => 'payment/webpay/checkout/timeout',
         'site_id'                => 'payment/webpay/advanced/site_id',
         'own_dni_field'          => 'payment/webpay/checkout/own_dni_field',
         'dni_column'             => 'payment/webpay/checkout/dni_column',
@@ -39,6 +40,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'order_status_rejected'  => 'payment/webpay/checkout/order_status_settings/order_status_rejected',
         'order_status_cancelled' => 'payment/webpay/checkout/order_status_settings/order_status_cancelled',
         'disable_invoices'       => 'payment/webpay/checkout/order_status_settings/disable_invoices',
+        'memo_stock'             => 'payment/webpay/checkout/order_status_settings/memo_stock',
     ];
 
     /** Mobbex Catalog Settings */

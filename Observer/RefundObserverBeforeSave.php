@@ -27,7 +27,8 @@ class RefundObserverBeforeSave implements ObserverInterface
     public function __construct(Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
     {
         $this->messageManager = $context->getMessageManager();
-        $instantiator->setProperties($this, ['logger']);
+        $instantiator->setProperties($this, ['logger', 'mobbexTransactionFactory', 'sdk']);
+        $this->transaction = $this->mobbexTransactionFactory->create();
     }
 
     /**
@@ -36,31 +37,31 @@ class RefundObserverBeforeSave implements ObserverInterface
     public function execute(Observer $observer)
     {
         $creditMemo = $observer->getData('creditmemo');
-        $amount = $creditMemo->getGrandTotal();
+        $amount     = $creditMemo->getGrandTotal();
 
-        $order = $creditMemo->getOrder();
-        $payment = $order->getPayment();
+        $order      = $creditMemo->getOrder();
+        $payment    = $order->getPayment();
 
         $paymentMethod = $payment->getMethodInstance()->getCode();
-        $mobbexData    = $payment->getAdditionalInformation('mobbex_data');
 
-        if ($paymentMethod != 'webpay' || empty($mobbexData['payment']['id'])) {
+        if ($paymentMethod != 'webpay')
             return;
-        }
-        
-        $paymentId = $mobbexData['payment']['id'];
 
+        $trx = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);
+
+        if(!$trx)
+            return;
 
         // If amount is invalid throw exception
-        if ($amount <= 0) {
-            $message = __('Refund Error: Sorry! This is not a refundable transaction.');
+        if ($amount <= 0 || $amount > $order->getGrandTotal()) {
+            $message = __('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
             $this->messageManager->addErrorMessage($message);
-            $this->logger->debug('error', 'RefundObserverBeforeSave > execute | '.$message);
+            $this->logger->debug('error', "RefundObserverBeforeSave > execute | $message");
 
             throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
         }
 
-        $this->processRefund($amount, $paymentId);
+        $this->processRefund($amount, $trx['payment_id']);
     }
 
     public function processRefund($amount, $paymentId)
@@ -69,8 +70,8 @@ class RefundObserverBeforeSave implements ObserverInterface
 
             $result = \Mobbex\Api::request([
                 'method' => 'POST',
-                'uri'    => "operations/" . $paymentId . '/refund',
-                'body'   => json_encode(['total' => floatval($amount)])
+                'uri'    => 'operations/' . $paymentId . '/refund',
+                'body'   => ['total' => floatval($amount), 'emitEvent' => false]
             ]) ?: [];
 
             return !empty($result);
