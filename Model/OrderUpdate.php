@@ -328,7 +328,7 @@ class OrderUpdate
 
         // Back to stock all the items
         foreach ($creditmemo->getAllItems() as $item)
-            $item->setBackToStock(true);
+            $item->setBackToStock((bool) $this->config->get('memo_stock'));
 
         // Try to refund and return credit memo
         return $this->creditmemoService->refund($creditmemo);

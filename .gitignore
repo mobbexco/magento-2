@@ -1,4 +1,6 @@
 .DS_Store
+composer.lock
 mobbex*.zip
 /.vscode
 /.idea
+vendor
