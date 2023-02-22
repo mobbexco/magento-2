@@ -301,7 +301,19 @@ class OrderUpdate
         // Exit if it is not refundable
         if (!$order->canCreditmemo())
             return;
+        
+        return $this->createCreditMemo($order);
+    }
 
+    /**
+     * Creates a Magento Credit Memo for a given order.
+     * 
+     * @param Order $order
+     * 
+     * @return \Magento\Sales\Model\Order\Creditmemo
+     */
+    public function createCreditMemo($order)
+    {
         $invoices = $order->getInvoiceCollection() ?: [];
 
         foreach ($invoices as $invoiceResource)
@@ -309,11 +321,11 @@ class OrderUpdate
 
         if (empty($invoiceId))
             return;
-    
+
         // Instance invoice and create credit memo
         $invoice    = $this->invoice->loadByIncrementId($invoiceId);
         $creditmemo = $this->creditmemoFactory->createByOrder($order)->setInvoice($invoice);
-    
+
         // Back to stock all the items
         foreach ($creditmemo->getAllItems() as $item)
             $item->setBackToStock((bool) $this->config->get('memo_stock'));
