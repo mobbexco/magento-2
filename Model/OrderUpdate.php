@@ -306,8 +306,11 @@ class OrderUpdate
     }
 
     /**
-     * Creates a Magento Credit Memo for a given order
+     * Creates a Magento Credit Memo for a given order.
+     * 
      * @param Order $order
+     * 
+     * @return \Magento\Sales\Model\Order\Creditmemo
      */
     public function createCreditMemo($order)
     {

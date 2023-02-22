@@ -40,35 +40,35 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
         ];
 
         try {
-            // Getrequest data
+            // Get request data
             $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : $this->_request->getPostValue();
             $orderId  = $this->_request->getParam('order_id');
             $quoteId  = $this->_request->getParam('quote_id');
             $data     = $this->formatWebhookData($postData['data'], $orderId);
-            
+
             // If order ID is empty, try to load from quote id
             if (empty($orderId) && !empty($quoteId)) {
                 $quote = $this->quoteFactory->create()->load($quoteId);
                 $orderId = $quote->getReservedOrderId();
             }
-            
+
             $this->logger->debug('debug', "WebHook Controller > ", compact('orderId', 'data'));
 
             //Avoid duplicated child webhooks
-            if (!$data['parent'] && $this->mobbexTransaction->getTransactions(['payment_id' => $data['payment_id']]))
+            if (!$data['parent'] && $data['payment_id'] && $this->mobbexTransaction->getTransactions(['payment_id' => $data['payment_id']]))
                 return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
 
             //Save webhook data en database
             $this->mobbexTransaction->saveTransaction($data);
 
-            if(in_array($data['status_code'], ['601', '602', '603', '604', '605', '610']))
-                return $this->processRefund($data, $orderId);
-
-            if($data['parent'] == false)
-                return;
-
             if (empty($orderId) || empty($data['status_code']))
-                throw new Exception('Empty Order ID or payment status', 1);
+                throw new \Exception('Empty Order ID or payment status', 1);
+
+            if(in_array($data['status_code'], ['601', '602', '603', '604', '605', '610']))
+                return $this->processRefund($data);
+
+            if (!$data['parent'])
+                return;
 
             $order = $this->_order->loadByIncrementId($orderId);
 
@@ -93,9 +93,9 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
     {
         //Load Order
         $this->_order->loadByIncrementId($data['order_id']);
-        
+
         //Get previous refunds
-        $totalRefunded = (int) $this->customField->getCustomField($data['order_id'], 'order', 'total_refunded') + $data['total'];
+        $totalRefunded = (float) $this->customField->getCustomField($data['order_id'], 'order', 'total_refunded') + $data['total'];
         $totalPaid     = $this->_order->getGrandTotal() - $totalRefunded;
 
         //Save total refunded
