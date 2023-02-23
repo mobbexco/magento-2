@@ -27,7 +27,7 @@ class RefundObserverBeforeSave implements ObserverInterface
     public function __construct(Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
     {
         $this->messageManager = $context->getMessageManager();
-        $instantiator->setProperties($this, ['logger', 'mobbexTransactionFactory', 'sdk']);
+        $instantiator->setProperties($this, ['logger', 'config', 'mobbexTransactionFactory', 'sdk']);
         $this->transaction = $this->mobbexTransactionFactory->create();
     }
 
@@ -49,7 +49,7 @@ class RefundObserverBeforeSave implements ObserverInterface
 
         $trx = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);
 
-        if(!$trx)
+        if (!$trx || !$this->config->get('online_refund'))
             return;
 
         // If amount is invalid throw exception

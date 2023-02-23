@@ -58,6 +58,9 @@
                     </widget_style>
                     <button_logo>https://res.mobbex.com/images/sources/mobbex.png</button_logo>
                 </appearance>
+                <advanced>
+                    <online_refund>1</online_refund>
+                </advanced>
             </webpay>
         </payment>
     </default>
