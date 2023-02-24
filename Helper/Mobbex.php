@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '3.3.0';
+    const VERSION = '3.4.0';
 
     /** @var \Mobbex\Webpay\Helper\Instantiator */
     public $instantiator;
@@ -217,6 +217,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
                 $this->getAddresses([$quote->getBillingAddress()->getData(), $quote->getShippingAddress()->getData()]),
+                'none',
                 'mobbexQuoteCheckoutRequest'
             );
 
