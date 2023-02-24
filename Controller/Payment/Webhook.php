@@ -58,11 +58,11 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             if (!$data['parent'] && $data['payment_id'] && $this->mobbexTransaction->getTransactions(['payment_id' => $data['payment_id']]))
                 return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
 
-            //Save webhook data en database
-            $this->mobbexTransaction->saveTransaction($data);
-
             if (empty($orderId) || empty($data['status_code']))
                 throw new \Exception('Empty Order ID or payment status', 1);
+
+            // Save transaction to db
+            $trx = $this->mobbexTransaction->saveTransaction($data);
 
             if(in_array($data['status_code'], ['601', '602', '603', '604', '605', '610']))
                 return $this->processRefund($data);
@@ -74,6 +74,13 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 
             // Execute own hook to extend functionalities
             $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
+
+            // Exit if it is a expired operation and the order has already been paid
+            if ($data['status_code'] == 401 && $order->getTotalPaid() > 0)
+                return $this->logger->createJsonResponse('debug', 'Expired operation webhook received after payment', [$orderId, $trx->getId()]);
+
+            // Save payment data on additional information
+            $order->getPayment()->setAdditionalInformation('paymentResponse', $data);
 
             // Update order data
             $this->orderUpdate->updateTotals($order, $data);
