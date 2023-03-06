@@ -2,42 +2,31 @@
 
 namespace Mobbex\Webpay\Helper;
 
-use Zend\Log\Writer\Stream;
-
 class Logger extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    /** @var Zend\Log\Logger */
-    public $logger;
-
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
     /** @var \Magento\Framework\Controller\Result\JsonFactory */
     public $resultJsonFactory;
 
-    /** @var \Magento\Framework\Message\ManagerInterface */ 
-    public $messageManager;
-
-    public $modes = [
-        'error' => 'error',
-        'debug' => 'debug',
-        'fatal' => 'crit',
-    ];
+    /** @var \Mobbex\Webpay\Model\LogFactory */
+    public $logFactory;
 
     public function __construct(
-        \Zend\Log\Logger $logger,
         \Mobbex\Webpay\Helper\Config $config,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-        \Magento\Framework\Message\ManagerInterface $messageManager
+        \Mobbex\Webpay\Model\LogFactory $logFactory
     ) {
-        $this->logger            = $logger;
         $this->config            = $config;
         $this->resultJsonFactory = $resultJsonFactory;
-        $this->messageManager    = $messageManager;
+        $this->logFactory        = $logFactory;
     }
 
     /**
      * Creates a json response & logs the data.
+     *
+     * Creates a json response & log document in base of $mode
      * @param string $mode 
      * @param string $message
      * @param string $data
@@ -50,7 +39,7 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Creates log document to log errors & useful data.
+     * Store log data in Mobbex logs table.
      * 
      * Mode debug: Log data only if debug mode is active
      * Mode error: Always log data.
@@ -62,14 +51,14 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function log($mode, $message, $data = [])
     {
-        //set mode
-        $method = $this->modes[$mode];
-        //Log data
-        $writer = new Stream(BP . '/var/log/' . "mobbex_$mode" . "_" . date('m_Y') . ".log");
-        $this->logger->addWriter($writer);
-
-        if ($mode !== 'debug' || $this->config->get('debug_mode'))
-            $this->logger->{$method}($message, $data);
+        // Save log to db
+        if ($mode != 'debug' || $this->config->get('debug_mode'))
+            $this->logFactory->create()->saveLog([
+                'type'          => $mode,
+                'message'       => $message,
+                'data'          => json_encode($data),
+                'date'          => date('Y-m-d H:i:s'),
+            ]);
 
         if($mode === 'critical')
             die($message);

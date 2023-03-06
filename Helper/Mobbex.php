@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '3.3.0';
+    const VERSION = '3.4.0';
 
     /** @var \Mobbex\Webpay\Helper\Instantiator */
     public $instantiator;
@@ -146,7 +146,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()])
         );
 
-        $this->logger->log('debug', "Checkout Response: ", $mobbexCheckout->response);
+        $this->logger->log('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
 
         return $mobbexCheckout->response;
     }
@@ -217,15 +217,16 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
                 $this->getAddresses([$quote->getBillingAddress()->getData(), $quote->getShippingAddress()->getData()]),
+                'none',
                 'mobbexQuoteCheckoutRequest'
             );
 
-            $this->logger->log('debug', "Checkout Response: ", $mobbexCheckout->response); 
+            $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
             
             return ['data' => $mobbexCheckout->response, 'order_id' => $quote->getId()];
 
         } catch (\Exception $e) {
-            $this->logger->log('error', $e->getMessage(), isset($e->data) ? $e->data : []);
+            $this->logger->log('error', 'Helper Mobbex > getCheckoutFromQuote | '.$e->getMessage(), isset($e->data) ? $e->data : []);
             return false;
         }
         
@@ -370,7 +371,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             return $value;
         } catch (\Exception $e) {
-            $this->logger->log('error', 'Mobbex Hook Error: ', $e->getMessage());
+            $this->logger->log('error', 'Helper Mobbex > executeHook | Mobbex Hook Error: ', $e->getMessage());
         }
     }
 

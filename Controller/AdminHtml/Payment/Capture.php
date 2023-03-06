@@ -22,7 +22,7 @@ class Capture extends \Magento\Backend\App\Action
             $order = $this->_order->load($id);
 
             // Get transaction data from db
-            $transaction = $this->mobbexTransactionFactory->create()->getTransaction($order->getIncrementId(), [1, 1]);
+            $transaction = $this->mobbexTransactionFactory->create()->getTransactions(['order_id' => $order->getIncrementId(), 'parent' => 1]);
 
             // Make capture request
             $result = \Mobbex\Api::request([
@@ -38,7 +38,7 @@ class Capture extends \Magento\Backend\App\Action
         } catch (\Exception $e) {
             // Add message to admin panel and debug
             $this->messageManager->addErrorMessage($e->getMessage());
-            $this->logger->log('error', $e->getMessage(), isset($e->data) ? $e->data : []);
+            $this->logger->log('error', 'Capture > execute | '.$e->getMessage(), isset($e->data) ? $e->data : []);
         }
 
         return $resultRedirect->setPath('sales/order/view', ['order_id' => $id]);

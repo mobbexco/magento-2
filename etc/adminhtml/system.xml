@@ -109,6 +109,12 @@
                         <source_model>Mobbex\Webpay\Model\Config\Source\PaymentModeSelect</source_model>
                     </field>
 
+                    <field id="timeout" translate="label comment" sortOrder="31" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Tiempo de vida del checkout</label>
+                        <comment>Permite establecer la dureación del checkout en minutos.</comment>
+                    </field>
+
                     <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>
@@ -158,6 +164,11 @@
                         <field id="disable_invoices" translate="label" type="select" sortOrder="24" showInDefault="1"
                             showInWebsite="1" showInStore="0">
                             <label>Deshabilitar creación automática de facturas</label>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
+
+                        <field id="memo_stock" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0">
+                            <label>Permitir que las devoluciones desde consola devuelvan stock</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
                     </group>
@@ -252,6 +263,11 @@
                     <field id="site_id" translate="label comment" sortOrder="19" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Añadir identificador del sitio</label>
                         <comment>Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.</comment>
+                    </field>
+                    <field id="online_refund" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Devolución Online</label>
+                        <comment>Si está activa, los credit memos nuevos generarán devoluciones en Mobbex.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
                 </group>
             </group>

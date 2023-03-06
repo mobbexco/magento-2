@@ -60,7 +60,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
                 // Get Order
                 $order = $this->_order->loadByIncrementId($order_id);
 
-                $this->logger->log('debug', 'PaymentReturn Controller > Order', $this->_order->debug());
+                $this->logger->log('debug', 'PaymentReturn > execute', $this->_order->debug());
 
                 if ($status > 1 && $status < 400) {
                     return $this->redirectFactory->create()->setPath('checkout/onepage/success');
@@ -72,7 +72,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
 
             } else {
                 $this->_messageManager->addError(__("Invalid order number"));
-                $this->logger->log('error', 'Payment Return called without order id');
+                $this->logger->log('error', 'PaymentReturn > execute | Called without order id');
                 return $this->redirectFactory->create()->setPath('home');
             }
 
@@ -89,7 +89,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
         //Get Quote
         $quote = $this->quoteFactory->create()->load($order->getQuoteId());
         //Debug data
-        $this->logger->log('debug', 'Return Controller > Quote', $quote->debug());
+        $this->logger->log('debug', 'PaymentReturn > restoreCart', $quote->debug());
         //Restore cart
         $quote->setReservedOrderId(null);
         $quote->setIsActive(true);

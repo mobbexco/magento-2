@@ -16,6 +16,7 @@
                 <checkout>
                     <embed_payment>1</embed_payment>
                     <payment_mode>payment.v2</payment_mode>
+                    <timeout>5</timeout>
                     <order_status_settings>
                         <order_status_approved>processing</order_status_approved>
                         <order_status_in_process>pending</order_status_in_process>
@@ -25,6 +26,7 @@
                         <order_status_revision>mobbex_revision</order_status_revision>
                         <order_status_rejected>mobbex_rejected</order_status_rejected>
                         <disable_invoices>0</disable_invoices>
+                        <memo_stock>1</memo_stock>
                     </order_status_settings>
                     <email_settings>
                         <create_order_email>1</create_order_email>
@@ -56,6 +58,9 @@
                     </widget_style>
                     <button_logo>https://res.mobbex.com/images/sources/mobbex.png</button_logo>
                 </appearance>
+                <advanced>
+                    <online_refund>1</online_refund>
+                </advanced>
             </webpay>
         </payment>
     </default>
