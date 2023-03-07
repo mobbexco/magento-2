@@ -18,7 +18,7 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Module\ResourceInterface $moduleResource,
         \Magento\Framework\App\ProductMetadataInterface $productMetadata
     ) {
-        $instantiator->setProperties($this, ['config', 'helper', '_urlBuilder']);
+        $instantiator->setProperties($this, ['config', 'helper', '_urlBuilder', 'logger']);
         $this->moduleResource  = $moduleResource;
         $this->productMetadata = $productMetadata;
     }
@@ -30,10 +30,14 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
     {
         // Set platform information
         \Mobbex\Platform::init('magento_2', $this->moduleResource->getDbVersion('Mobbex_Webpay'), $this->_urlBuilder->getUrl('/'),
-        [
-            'platform' => $this->productMetadata->getVersion(),
-            'sdk'      => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
-        ], $this->config->getAll(), [$this->helper, 'executeHook']);
+            [
+                'platform' => $this->productMetadata->getVersion(),
+                'sdk'      => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
+            ], 
+            $this->config->getAll(), 
+            [$this->helper, 'executeHook'],
+            [$this->logger, 'log']
+        );
 
         // Init api conector
         \Mobbex\Api::init();

@@ -23,7 +23,7 @@ class Checkout implements \Magento\Framework\App\Action\HttpGetActionInterface
             $checkoutData = $this->helper->getCheckout();
             return $this->logger->createJsonResponse('debug', 'Checkout created OK:', $checkoutData);
         } catch (\Exception $e) {
-            return $this->logger->createJsonResponse('err', $e->getMessage(), isset($e->data) ? $e->data : []);
+            return $this->logger->createJsonResponse('error', $e->getMessage(), isset($e->data) ? $e->data : []);
         }
     }
 }

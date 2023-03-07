@@ -44,7 +44,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
     {
         try {
             //Debug Params
-            $this->logger->debug('debug', 'PaymentReturn Controller > Request', ["params" => $this->_request->getParams()]);
+            $this->logger->log('debug', 'PaymentReturn Controller > Request', ["params" => $this->_request->getParams()]);
 
             // Get data
             extract($this->_request->getParams());
@@ -60,7 +60,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
                 // Get Order
                 $order = $this->_order->loadByIncrementId($order_id);
 
-                $this->logger->debug('debug', 'PaymentReturn > execute', $this->_order->debug());
+                $this->logger->log('debug', 'PaymentReturn > execute', $this->_order->debug());
 
                 if ($status > 1 && $status < 400) {
                     return $this->redirectFactory->create()->setPath('checkout/onepage/success');
@@ -72,12 +72,12 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
 
             } else {
                 $this->_messageManager->addError(__("Invalid order number"));
-                $this->logger->debug('err', 'PaymentReturn > execute | Called without order id');
+                $this->logger->log('error', 'PaymentReturn > execute | Called without order id');
                 return $this->redirectFactory->create()->setPath('home');
             }
 
         } catch (Exception $e) {
-            return $this->logger->createJsonResponse('err', 'PaymentReturn Controller > Error: ' . $e->getMessage());
+            return $this->logger->createJsonResponse('error', 'PaymentReturn Controller > Error: ' . $e->getMessage());
         }
     }
 
@@ -89,7 +89,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
         //Get Quote
         $quote = $this->quoteFactory->create()->load($order->getQuoteId());
         //Debug data
-        $this->logger->debug('debug', 'PaymentReturn > restoreCart', $quote->debug());
+        $this->logger->log('debug', 'PaymentReturn > restoreCart', $quote->debug());
         //Restore cart
         $quote->setReservedOrderId(null);
         $quote->setIsActive(true);

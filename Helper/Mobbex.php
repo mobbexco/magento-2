@@ -59,7 +59,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Event\ObserverFactory $observerFactory,
         \Magento\Directory\Model\RegionFactory $regionFactory
     ) {
-        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession', 'repository']);
+        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
         $this->scopeConfig        = $scopeConfig;
         $this->_storeManager      = $_storeManager;
         $this->imageHelper        = $imageHelper;
@@ -146,7 +146,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()])
         );
 
-        $this->logger->debug('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
+        $this->logger->log('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
 
         return $mobbexCheckout->response;
     }
@@ -221,12 +221,12 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 'mobbexQuoteCheckoutRequest'
             );
 
-            $this->logger->debug('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
+            $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
             
             return ['data' => $mobbexCheckout->response, 'order_id' => $quote->getId()];
 
         } catch (\Exception $e) {
-            $this->logger->debug('error', 'Helper Mobbex > getCheckoutFromQuote | '.$e->getMessage(), isset($e->data) ? $e->data : []);
+            $this->logger->log('error', 'Helper Mobbex > getCheckoutFromQuote | '.$e->getMessage(), isset($e->data) ? $e->data : []);
             return false;
         }
         
@@ -319,7 +319,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             $addresses[] = [
                 'type'         => isset($address["address_type"]) ? $address["address_type"] : '',
-                'country'      => isset($address["country_id"]) ? $this->repository->convertCountryCode($address["country_id"]) : '',
+                'country'      => isset($address["country_id"]) ? \Mobbex\Repository::convertCountryCode($address["country_id"]) : '',
                 'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street))),
                 'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street)), '', trim($street)),
                 'streetNotes'  => '',
@@ -371,7 +371,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             return $value;
         } catch (\Exception $e) {
-            $this->logger->debug('error', 'Helper Mobbex > executeHook | Mobbex Hook Error: ', $e->getMessage());
+            $this->logger->log('error', 'Helper Mobbex > executeHook | Mobbex Hook Error: ', $e->getMessage());
         }
     }
 
