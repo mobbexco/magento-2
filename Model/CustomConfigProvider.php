@@ -89,16 +89,18 @@ class CustomConfigProvider implements ConfigProviderInterface
 
         if($this->config->get('wallet') && !empty($checkoutData['data']['wallet'])) {
             foreach ($checkoutData['data']['wallet'] as $key => $card) {
-                $data['wallet'][] = [
-                    'id'           => 'wallet-card-' . $key,
-                    'value'        => 'card-' . $key,
-                    'name'         => $card['name'],
-                    'img'          => $card['source']['card']['product']['logo'],
-                    'maxlength'    => $card['source']['card']['product']['code']['length'],
-                    'placeholder'  => $card['source']['card']['product']['code']['name'],
-                    'hiddenValue'  => $card['card']['card_number'],
-                    'installments' => $card['installments']
-                ];
+                if(!empty($card['installments'])){
+                    $data['wallet'][] = [
+                        'id'           => 'wallet-card-' . $key,
+                        'value'        => 'card-' . $key,
+                        'name'         => $card['name'],
+                        'img'          => $card['source']['card']['product']['logo'],
+                        'maxlength'    => $card['source']['card']['product']['code']['length'],
+                        'placeholder'  => $card['source']['card']['product']['code']['name'],
+                        'hiddenValue'  => $card['card']['card_number'],
+                        'installments' => $card['installments']
+                    ];
+                }
             }
         }
 
