@@ -138,9 +138,17 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
-        /* Add mobbex logs table */
-        if (!$setup->tableExists('mobbex_logs')) {
-            $table = $connection->newTable($setup->getTable('mobbex_logs'))
+        /* Rename mobbex logs table */
+
+        if ($setup->tableExists('mobbex_logs'))
+            $setup->run(
+                'ALTER TABLE ' . $setup->getTable('mobbex_logs') . ' RENAME TO '. $setup->getTable('mobbex_log') . ';'
+            );
+        
+        /* Add mobbex log table */
+
+        if (!$setup->tableExists('mobbex_log')) {
+            $table = $connection->newTable($setup->getTable('mobbex_log'))
                 ->addColumn('log_id', Table::TYPE_INTEGER, null, array(
                     'identity'  => true,
                     'unsigned'  => true,
