@@ -142,7 +142,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
         if ($setup->tableExists('mobbex_logs'))
             $setup->run(
-                'ALTER TABLE ' . $setup->getTable('mobbex_logs') . ' RENAME TO mobbex_log;'
+                'ALTER TABLE ' . $setup->getTable('mobbex_logs') . ' RENAME TO '. $setup->getTable('mobbex_log') . ';'
             );
         
         /* Add mobbex log table */
