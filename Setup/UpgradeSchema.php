@@ -30,6 +30,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ->addColumn('parent', Table::TYPE_BOOLEAN, null, array(
                 'nullable'  => false,
                 ), 'Parent')
+            ->addColumn('childs', Table::TYPE_TEXT, null, array(
+                'nullable'  => false,
+                ), 'Childs')
             ->addColumn('operation_type', Table::TYPE_TEXT, null, array(
                 'nullable'  => false,
                 ), 'Operation type')
@@ -111,6 +114,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
         
             $connection->createTable($table);
         }
+        elseif (!$connection->tableColumnExists($setup->getTable('mobbex_transaction'), 'childs'))
+            $setup->run(
+                'ALTER TABLE ' . $setup->getTable('mobbex_transaction') . ' ADD COLUMN `childs` TEXT NOT NULL;'
+            );
 
         /* Add mobbex custom field table */
         if (!$setup->tableExists('mobbex_customfield')) {
