@@ -168,7 +168,7 @@
                         </field>
 
                         <field id="memo_stock" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Permitir que las devoluciones desde consola devuelvan stock</label>
+                            <label>Permitir que las devoluciones desde consola devuelvan stock (Beta)</label>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
                     </group>
@@ -265,7 +265,7 @@
                         <comment>Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.</comment>
                     </field>
                     <field id="online_refund" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Devolución Online</label>
+                        <label>Devolución Online (Beta)</label>
                         <comment>Si está activa, los credit memos nuevos generarán devoluciones en Mobbex.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
