@@ -50,22 +50,21 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
             extract($this->_request->getParams());
 
             if (empty($order_id) && !empty($quote_id)) {
-                $quote = $this->quoteFactory->create()->load($quote_id);
+                $quote    = $this->quoteFactory->create()->load($quote_id);
                 $order_id = $quote->getReservedOrderId();
             }
 
-            
             // if data looks fine
             if (isset($order_id)) {
                 // Get Order
-                $order = $this->_order->loadByIncrementId($order_id);
+                $this->_order->loadByIncrementId($order_id);
 
                 $this->logger->log('debug', 'PaymentReturn > execute', $this->_order->debug());
 
                 if ($status > 1 && $status < 400) {
                     return $this->redirectFactory->create()->setPath('checkout/onepage/success');
                 } else {
-                    $this->restoreCart($order);
+                    $this->restoreCart($quote_id);
                     return $this->redirectFactory->create()->setPath('checkout/');
                 }
 
@@ -82,12 +81,15 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
     }
 
     /**
-     * @param $order
+     * Restore the customer selected items in the cart.
+     * @param string $quote_id
      */
-    private function restoreCart($order)
+    private function restoreCart($quote_id)
     {
+        //First cancel the order
+        $this->cancelOrder();
         //Get Quote
-        $quote = $this->quoteFactory->create()->load($order->getQuoteId());
+        $quote = $this->quoteFactory->create()->load($quote_id);
         //Debug data
         $this->logger->log('debug', 'PaymentReturn > restoreCart', $quote->debug());
         //Restore cart
@@ -99,5 +101,16 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
         $this->_checkoutSession->replaceQuote($quote);
         $this->_cart->setQuote($quote);
         $this->_checkoutSession->restoreQuote();
+    }
+
+    /**
+     * Cancel orders
+     */
+    private function cancelOrder()
+    {
+        $this->_order->cancel();
+        $this->_order->setState(\Magento\Sales\Model\Order::STATE_CANCELED)->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
+        $this->_order->addStatusToHistory(\Magento\Sales\Model\Order::STATE_CANCELED, 'Orden cancelada', false);
+        $this->_order->save();
     }
 }
