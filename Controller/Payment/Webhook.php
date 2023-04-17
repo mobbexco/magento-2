@@ -44,6 +44,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : $this->_request->getPostValue();
             $orderId  = $this->_request->getParam('order_id');
             $quoteId  = $this->_request->getParam('quote_id');
+            $token    = $this->_request->getParam('mbbx_token');
             $data     = $this->mobbexTransaction->formatWebhookData($postData['data'], $orderId);
 
             // If order ID is empty, try to load from quote id
@@ -52,7 +53,11 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
                 $orderId = $quote->getReservedOrderId();
             }
 
-            $this->logger->log('debug', "WebHook Controller > execute", compact('orderId', 'data'));
+            $this->logger->log('debug', "WebHook Controller > execute", compact('orderId', 'data', 'token'));
+
+            // Validate token
+            if (!$this->config->validateToken($token))
+                throw new \Exception("Invalid Token: $token", 1);
 
             //Avoid duplicated child webhooks
             if (!$data['parent'] && $data['payment_id'] && $this->mobbexTransaction->getTransactions(['payment_id' => $data['payment_id']]))
@@ -90,7 +95,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             $response['result'] = true;
             
         } catch (\Exception $e) {
-            $this->logger->createJsonResponse('error', 'WebHook Controller > Error Paynment Data: ' . $e->getMessage());
+            $this->logger->createJsonResponse('error', 'WebHook Controller > Error Payment Data: ' . $e->getMessage());
         }
 
         return $this->logger->createJsonResponse('debug', 'WebHook Received OK: ', $response);

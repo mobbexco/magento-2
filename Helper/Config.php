@@ -141,4 +141,32 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
         return compact('common_plans', 'advanced_plans');
     }
+
+    /**
+     * Validate a token generated from credentials configured.
+     * 
+     * @param mixed $token
+     * 
+     * @return bool True if token is valid.
+     */
+    public function validateToken($token)
+    {
+        return password_verify(
+            "{$this->get('api_key')}|{$this->get('access_token')}",
+            $token
+        );
+    }
+
+    /**
+     * Generate a token using current credentials configured.
+     * 
+     * @return string 
+     */
+    public function generateToken()
+    {
+        return password_hash(
+            "{$this->get('api_key')}|{$this->get('access_token')}",
+            PASSWORD_DEFAULT
+        );
+    }
 }
