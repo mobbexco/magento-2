@@ -146,6 +146,9 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()])
         );
 
+        //Add order id to the response
+        $mobbexCheckout->response['orderId'] = $orderId;
+
         $this->logger->log('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
 
         return $mobbexCheckout->response;
@@ -211,8 +214,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $mobbexCheckout = new \Mobbex\Modules\Checkout(
                 $quote->getId(),
                 (float) $quote->getGrandTotal(),
-                $this->getEndpointUrl('paymentreturn', ['order_id' => $quote->getId()]),
-                $this->getEndpointUrl('webhook', ['order_id' => $quote->getId()]),
+                $this->getEndpointUrl('paymentreturn', ['quote_id' => $quote->getId()]),
+                $this->getEndpointUrl('webhook', ['quote_id' => $quote->getId()]),
                 isset($items) ? $items : [],
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
@@ -223,7 +226,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
             
-            return ['data' => $mobbexCheckout->response, 'order_id' => $quote->getId()];
+            return ['data' => $mobbexCheckout->response, 'quote_id' => $quote->getId()];
 
         } catch (\Exception $e) {
             $this->logger->log('error', 'Helper Mobbex > getCheckoutFromQuote | '.$e->getMessage(), isset($e->data) ? $e->data : []);

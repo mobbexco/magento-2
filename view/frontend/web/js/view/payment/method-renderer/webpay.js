@@ -89,17 +89,17 @@ function embedPayment(response){
         type: 'checkout',
 
         onResult: (data) => {
-            location.href = returnUrl + '&status=' + data.status.code 
+            location.href = returnUrl + '&order_id=' + response.orderId + '&status=' + data.status.code 
         },
 
         onClose: () => {
             jQuery("body").trigger('processStop');
-            location.href = returnUrl + '&status=500'
+            location.href = returnUrl + "&order_id=" + response.orderId + "&status=500";
         },
 
         onError: (error) => {
             jQuery("body").trigger('processStop');
-            location.href = returnUrl + '&status=500'
+            location.href = returnUrl + "&order_id=" + response.orderId + "&status=500";
         }
     }
 
@@ -142,10 +142,14 @@ function executeWallet(response) {
     
     window.MobbexJS.operation.process(options)
         .then(data => {
-            window.top.location = returnUrl + '&status=' + data.data.status.code;
+            window.top.location = returnUrl + "&order_id=" + response.orderId + "&status=" + data.data.status.code;
         })
         .catch(error => {
-            displayAlert('Error', 'No se pudo completar el pago.', returnUrl + '&status=500');
+            displayAlert(
+              "Error",
+              "No se pudo completar el pago.",
+              returnUrl + "&order_id=" + response.orderId + "&status=500"
+            );
         })
 }
 
@@ -205,7 +209,7 @@ define(
             },
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
-                returnUrl = urlBuilder.build('webpay/payment/paymentreturn/') + `?order_id=${window.checkoutConfig.payment.webpay.orderId}`;
+                returnUrl = urlBuilder.build('webpay/payment/paymentreturn/') + `?quote_id=${window.checkoutConfig.payment.webpay.orderId}`;
                 createCheckout(urlBuilder.build('webpay/payment/checkout/'), response => {
                     $("body").trigger('processStop');
                     if(!response || !response.id){
