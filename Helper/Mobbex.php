@@ -139,7 +139,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $orderId,
             (float) $orderAmount,
             $this->getEndpointUrl('paymentreturn', ['order_id' => $orderId]),
-            $this->getEndpointUrl('webhook', ['order_id' => $orderId]),
+            $this->getEndpointUrl('webhook', ['order_id' => $orderId, 'mbbx_token' => $this->config->generateToken()]),
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
