@@ -13,14 +13,19 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\App\ProductMetadataInterface */
     public $productMetadata;
 
+    /** @var \Mobbex\Webpay\Model\Cache */
+    public $cache;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Framework\Module\ResourceInterface $moduleResource,
-        \Magento\Framework\App\ProductMetadataInterface $productMetadata
+        \Magento\Framework\App\ProductMetadataInterface $productMetadata,
+        \Mobbex\Webpay\Model\Cache $cache
     ) {
         $instantiator->setProperties($this, ['config', 'helper', '_urlBuilder', 'logger']);
         $this->moduleResource  = $moduleResource;
         $this->productMetadata = $productMetadata;
+        $this->cache           = $cache;
     }
 
     /**
@@ -38,6 +43,8 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
             [$this->helper, 'executeHook'],
             [$this->logger, 'log']
         );
+
+        \Mobbex\Platform::loadModels($this->cache);
 
         // Init api conector
         \Mobbex\Api::init();
