@@ -35,6 +35,7 @@ Para actualizar el módulo ejecute el siguiente comando, y luego repita los paso
 ```
 composer update mobbexco/magento-2
 ```
+> Si al ejecutar el comando se presentan conflictos con dependencias ejecute el comando `composer remove mobbexco/magento-2` y vuelva a realizar los pasos de la instalación.
 
 ## Hooks
 
