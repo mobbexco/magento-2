@@ -31,6 +31,8 @@ class Transaction extends AbstractModel
         //Filter the data
         foreach ($filter as $column => $value)
             $collection->addFieldToFilter($column, $value);
+        //Sort the transactions in descendent order
+        $collection->setOrder('id', 'DESC');
         //Get model data
         $data = isset($filter['parent']) && isset($collection->getData()[0]) && $filter['parent'] ? $collection->getData()[0] : $collection->getData();
 
