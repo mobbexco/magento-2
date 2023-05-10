@@ -12,7 +12,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'debug_mode'             => 'payment/webpay/debug_mode',
         'financial_active'       => 'payment/webpay/financial_active',
         'finance_widget_on_cart' => 'payment/webpay/finance_widget_on_cart',
-        'theme'                  => 'payment/webpay/appearance/theme_type',
+        'theme'                  => 'payment/webpay/appearance/theme',
         'background'             => 'payment/webpay/appearance/background_color',
         'color'                  => 'payment/webpay/appearance/primary_color',
         'checkout_title'         => 'payment/webpay/appearance/checkout_title',
