@@ -227,7 +227,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $query = str_replace(
             'DB_PREFIX_mobbex_'.$table,
             $setup->getTable("mobbex_$table"),
-            file_get_contents(__DIR__ . "/../../php-plugins-sdk/src/sql/mobbex_$table.sql")
+            file_get_contents(__DIR__ . "/../../php-plugins-sdk/src/sql/$table.sql")
         );
 
         //Execute query
