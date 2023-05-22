@@ -111,6 +111,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      * @param string $catalogType
      * 
      * @return array|string
+     * 
      */
     public function getCatalogSetting($id, $object, $catalogType = 'product')
     {
@@ -121,22 +122,50 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Get active plans for a given products.
-     * @param array $products
-     * @return array $array
+     * Get all active plans from a given product and his categories
+     * 
+     * @param object $product
+     * 
+     * @return array
+     * 
      */
-    public function getProductPlans($products)
+    public function getProductPlans($product)
+    {
+        $common_plans = $advanced_plans = [];
+
+        foreach (['common_plans', 'advanced_plans'] as $value) {
+            //Get product active plans
+            ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
+            //Get product category active plans
+            foreach ($product->getCategoryIds() as $categoryId)
+                ${$value} = array_merge(${$value}, $this->getCatalogSetting($categoryId, $value, 'category'));
+        }
+
+        // Avoid duplicated plans
+        $common_plans   = array_unique($common_plans);
+        $advanced_plans = array_unique($advanced_plans);
+
+       return compact('common_plans', 'advanced_plans');
+    }
+
+    /**
+     * Get all plans from given products
+     * 
+     * @param array $products
+     * 
+     * @return array $array
+     * 
+     */
+    public function getAllProductsPlans($products)
     {
         $common_plans = $advanced_plans = [];
 
         foreach ($products as $product) {
-            foreach (['common_plans', 'advanced_plans'] as $value) {
-                //Get product active plans
-                ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
-                //Get product category active plans
-                foreach ($product->getCategoryIds() as $categoryId)
-                    ${$value} = array_unique(array_merge(${$value}, $this->getCatalogSetting($categoryId, $value, 'category')));
-            }
+            // Merge all product plans
+            $product_plans  = $this->getProductPlans($product);
+            // Merge all catalog plans
+            $common_plans   = array_merge($common_plans, $product_plans['common_plans']);
+            $advanced_plans = array_merge($advanced_plans, $product_plans['advanced_plans']);
         }
 
         return compact('common_plans', 'advanced_plans');
@@ -148,6 +177,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      * @param mixed $token
      * 
      * @return bool True if token is valid.
+     * 
      */
     public function validateToken($token)
     {
@@ -161,6 +191,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      * Generate a token using current credentials configured.
      * 
      * @return string 
+     * 
      */
     public function generateToken()
     {

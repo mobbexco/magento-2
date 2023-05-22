@@ -126,7 +126,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         //Get products active plans
-        extract($this->config->getProductPlans($products));
+        extract($this->config->getAllProductsPlans($products));
         
         if (!empty($this->_orderInterface->getShippingDescription())) {
             $items[] = [
@@ -192,7 +192,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $products = [];
             foreach ($quote->getItemsCollection() as $item)
             $products[] = $item->getProduct();
-            extract($this->config->getProductPlans($products));
+            extract($this->config->getAllProductsPlans($products));
             
             // Add shipping item if possible
             if ($shippingAmount)
