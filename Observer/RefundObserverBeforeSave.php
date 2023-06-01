@@ -52,16 +52,24 @@ class RefundObserverBeforeSave implements ObserverInterface
         if (!$trx || !$this->config->get('online_refund'))
             return;
 
-        // If amount is invalid throw exception
-        if ($amount <= 0 || $amount > $order->getGrandTotal()) {
+        $data = json_decode($trx['data'], true);
+
+        if ($amount <= 0 || $amount > $data['checkout']['total']) {
+            
             $message = __('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
             $this->messageManager->addErrorMessage($message);
-            $this->logger->log('error', "RefundObserverBeforeSave > execute | $message");
+            
+            // If amount is invalid throw exception
+            try {
+                throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
+            } catch (\Exception $e) {
+                $this->logger->log('error', "RefundObserverBeforeSave > execute | $message");
+            }
 
-            throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
+        } else {
+            $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
         }
 
-        $this->processRefund($amount, $trx['payment_id']);
     }
 
     public function processRefund($amount, $paymentId)
