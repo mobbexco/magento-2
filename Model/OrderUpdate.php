@@ -326,9 +326,19 @@ class OrderUpdate
         $invoice    = $this->invoice->loadByIncrementId($invoiceId);
         $creditmemo = $this->creditmemoFactory->createByOrder($order)->setInvoice($invoice);
 
+        //Check if order was refunded previously
+        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
+        
+        //Delete the restored stock to avoid duplicated stock restoration
+        if($refunded)
+            $this->updateStock($order, false);
+
         // Back to stock all the items
         foreach ($creditmemo->getAllItems() as $item)
             $item->setBackToStock((bool) $this->config->get('memo_stock'));
+
+        //Set order as refunded
+        $this->customFields->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
 
         // Try to refund and return credit memo
         return $this->creditmemoService->refund($creditmemo);

@@ -44,5 +44,8 @@ class CancelOrderObserver implements ObserverInterface
         //If order was refunded discount stock to avoid duplicate refund
         if ($refunded)
             $this->orderUpdate->updateStock($order, false);
+
+        //Set order as refunded
+        return $this->customFields->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
     }
 }
