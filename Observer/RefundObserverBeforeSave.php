@@ -49,33 +49,30 @@ class RefundObserverBeforeSave implements ObserverInterface
 
         $trx = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);
 
-        if (!$trx || !$this->config->get('online_refund'))
-            return;
+        if (!$trx || !isset($trx['data']) || !$this->config->get('online_refund'))
+            return $this->logger->log('error', 'RefundObserverBeforeSave > execute | This is not a refundable transaction.', ['transaction' => $trx['data'], 'online_refund' => $this->config->get('online_refund')]);
 
         $data = json_decode($trx['data'], true);
 
-        if ($amount <= 0 || $amount > $data['checkout']['total']) {
-            
-            $message = __('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
-            $this->messageManager->addErrorMessage($message);
-            
-            // If amount is invalid throw exception
-            try {
-                throw new \Magento\Framework\Exception\LocalizedException(new \Magento\Framework\Phrase($message));
-            } catch (\Exception $e) {
-                $this->logger->log('error', "RefundObserverBeforeSave > execute | $message");
-            }
+        try {
 
-        } else {
-            $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
+            if ($amount <= 0 || !isset($data['checkout']['total']) || $amount > $data['checkout']['total'])
+                throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
+            else
+                $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
+
+        } catch (\Exception $e) {
+            $this->messageManager->addErrorMessage(__($e->get_message));
+            $this->logger->log(
+                'error', 
+                'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
+                ['refund_amount' => $amount, 'checkout_total' => isset($data['checkout']['total']) ? $data['checkout']['total'] : '', 'exception_data' => isset($e->data) ? $e->data : []]
+            );
         }
-
     }
 
     public function processRefund($amount, $paymentId)
     {
-        try {
-
             $result = \Mobbex\Api::request([
                 'method' => 'POST',
                 'uri'    => 'operations/' . $paymentId . '/refund',
@@ -83,9 +80,5 @@ class RefundObserverBeforeSave implements ObserverInterface
             ]) ?: [];
 
             return !empty($result);
-
-        } catch (\Exception $e) {
-            $this->logger->log('error', 'RefundObserverBeforeSave > execute | ' . $e->getMessage(), isset($e->data) ? $e->data : []);
-        }
     }
 }
