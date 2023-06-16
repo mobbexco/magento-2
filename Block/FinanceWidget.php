@@ -50,7 +50,7 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         }
         
         $this->total = $action == 'catalog_product_view' ? $product->getPriceInfo()->getPrice('final_price')->getValue() : $quote->getGrandTotal();
-        extract($this->config->getProductPlans($this->products));
+        extract($this->config->getAllProductsPlans($this->products));
         $this->sources = \Mobbex\Repository::getSources($this->total, \Mobbex\Repository::getInstallments($this->products, $common_plans, $advanced_plans));
     }
 
