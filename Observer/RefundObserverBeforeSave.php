@@ -50,7 +50,7 @@ class RefundObserverBeforeSave implements ObserverInterface
         $trx = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);
 
         if (!$trx || !isset($trx['data']) || !$this->config->get('online_refund'))
-            return $this->logger->log('error', 'RefundObserverBeforeSave > execute | This is not a refundable transaction.', ['transaction' => $trx['data'], 'online_refund' => $this->config->get('online_refund')]);
+            return $this->logger->log('error', 'RefundObserverBeforeSave > execute | This is not a refundable transaction.', ['transaction' => isset($trx['data']) ? $trx['data'] : [], 'online_refund' => $this->config->get('online_refund')]);
 
         $data = json_decode($trx['data'], true);
 
@@ -62,7 +62,7 @@ class RefundObserverBeforeSave implements ObserverInterface
                 $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
 
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage(__($e->get_message));
+            $this->messageManager->addErrorMessage(__($e->getMessage));
             $this->logger->log(
                 'error', 
                 'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
