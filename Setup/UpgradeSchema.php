@@ -206,6 +206,31 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->addColumn($creditmemoTable, 'fee', $feeColumn);
         }
 
+        //Install tables from sdk sql scripts
+        $this->installTable('cache', $connection, $setup);
+
         $setup->endSetup();
+    }
+
+    /**
+     * Install a table from sdk sql scripts.
+     * @param string $table Table name without db & mobbex prefix .
+     * @param object $connection.
+     * @param object $setup.
+     */
+    public function installTable($table, $connection, $setup)
+    {
+        if($setup->tableExists("mobbex_$table"))
+            return;
+
+        //Get query
+        $query = str_replace(
+            'DB_PREFIX_mobbex_'.$table,
+            $setup->getTable("mobbex_$table"),
+            file_get_contents(__DIR__ . "/../../php-plugins-sdk/src/sql/$table.sql")
+        );
+
+        //Execute query
+        $connection->query($query);
     }
 }
