@@ -1,5 +1,5 @@
 #!/bin/sh
-ver="3.5.0"
+ver="3.6.0"
 
 # Remove installed packages
 rm -r vendor composer.lock
@@ -16,7 +16,7 @@ printf "\nrequire_once __DIR__ . '/vendor/autoload.php';" >> registration.php
 perl -i -0777pe 's/"autoload".*},/"autoload": {},/s' composer.json
 
 # Install dependencies
-composer update
+composer install --no-dev
 
 # Compress archive
 if type 7z > /dev/null; then
