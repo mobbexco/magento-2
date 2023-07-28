@@ -50,10 +50,12 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         parent::__construct($context);
-        $this->configWriter = $configWriter;
+        $this->_configWriter = $configWriter;
+        $this->_scopeConfig = $scopeConfig;
         $this->customField = $customFieldFactory->create();
     }
 
@@ -62,12 +64,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Save a config value to db.
      * 
-     * @param string $path Config identifier.
+     * @param string $name Config identifier.
      * @param mixed $value Value to set.
      */
-    public function save($path, $value)
+    public function save($name, $value)
     {
-        $this->configWriter->save($path, $value);
+        // Save the configuration value
+        $this->_configWriter->save($this->settingPaths[$name], $value);
+        // Clear the scope configuration cache
+        $this->_scopeConfig->clean();
     }
 
     /**

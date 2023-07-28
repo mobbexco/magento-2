@@ -32,8 +32,10 @@ class CheckoutForm
     public function afterProcess(LayoutProcessor $subject, $jsLayout)
     {
         // Exit if dni field option is disabled
-        if (!$this->config->get('own_dni_field') || $this->config->get('dni_column'))
+        if ($this->config->get('dni_column'))
             return $jsLayout;
+        else if (!$this->config->get('own_dni_field'))
+            $this->config->save('own_dni_field', 1);
 
         // Create DNI field
         $dniFieldCode = 'mbbx_dni';
