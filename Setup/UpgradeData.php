@@ -22,6 +22,9 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
     /** @var \Magento\Framework\DB\Adapter\AdapterInterface */
     public $connection;
 
+    /** @var \Magento\Eav\Setup\EavSetup */
+    public $eavSetup;
+
     public function __construct(
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
