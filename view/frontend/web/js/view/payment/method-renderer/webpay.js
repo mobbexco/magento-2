@@ -1,6 +1,7 @@
-let embed     = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
-let wallet    = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
-let returnUrl = '';
+let embed           = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
+let wallet          = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
+let mbbxPaymentData = false;
+let returnUrl       = '';
 
 // Add Mobbex script
 var script = document.createElement('script');
@@ -92,9 +93,13 @@ function embedPayment(response){
             location.href = returnUrl + '&order_id=' + response.orderId + '&status=' + data.status.code 
         },
 
-        onClose: () => {
-            jQuery("body").trigger('processStop');
-            location.href = returnUrl + "&order_id=" + response.orderId + "&status=500";
+        onPayment: (data) => {
+            mbbxPaymentData = data.data;
+        },
+
+        onClose: (cancelled) => {
+            jQuery("body").trigger("processStop");
+            location.href = returnUrl + "&order_id=" + response.orderId + '&status=' + (mbbxPaymentData ? mbbxPaymentData.status.code : '500');
         },
 
         onError: (error) => {
