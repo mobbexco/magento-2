@@ -20,4 +20,4 @@ jobs:
     - name: Install dependencies
       run: composer install --dev
     - name: Execute PHP Paralel Lint
-      run: mobbex/vendor/php-parallel-lint/php-parallel-lint/parallel-lint ./mobbex --exclude mobbex/vendor
+      run: vendor/php-parallel-lint/php-parallel-lint/parallel-lint --exclude mobbex/vendor
