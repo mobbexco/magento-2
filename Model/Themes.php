@@ -16,8 +16,8 @@ class Themes implements ArrayInterface
     public function toOptionArray()
     {
         return [
-            ['value' => 'light', 'label' => __('Claro')],
-            ['value' => 'dark', 'label' => __('Oscuro')]
+            ['value' => 'light', 'label' => __('Light')],
+            ['value' => 'dark', 'label' => __('Dark')]
         ];
     }
 }
