@@ -7,12 +7,6 @@
         "OSL-3.0",
         "AFL-3.0"
     ],
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://repo.magento.com/"
-        }
-    ],
     "authors": [
         {
             "email": "info@mobbex.com",
@@ -21,6 +15,9 @@
     ],
     "require": {
         "mobbexco/php-plugins-sdk": "1.4.0"
+    },
+    "require-dev": {
+        "php-parallel-lint/php-parallel-lint": "*"
     },
     "conflict": {
         "mobbexco/magento-2-marketplace": "<1.2.1"
