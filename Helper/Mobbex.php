@@ -200,13 +200,17 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 'description' => 'Shipping',
                 'total'       => $shippingAmount,
             ];
-            
+
+            // Get the name checking the position
+            $firstName = isset($shippingAddress['firstname']) ? $shippingAddress['firstname'] : '';
+            $lastName  = isset($shippingAddress['lastname'])  ? $shippingAddress['lastname']  : '';
+
             $customer = [
                 'email'          => $quote->getCustomerEmail(),
-                'name'           => "$shippingAddress[firstname] $shippingAddress[lastname]",
+                'name'           => "$firstName $lastName",
                 'identification' => '',
                 'uid'            => $quote->getCustomerId(),
-                'phone'          => $shippingAddress['telephone'],
+                'phone'          => isset($shippingAddress['telephone']) ? $shippingAddress['telephone'] : '',
             ];
             
             try {
