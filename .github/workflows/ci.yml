@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        php: [5.6, 7.0, 7.4, 8.0, 8.2]
+        php: [7.3, 7.4, 8.1]
 
     steps:
     - uses: actions/checkout@v3
@@ -19,5 +19,5 @@ jobs:
         tools: composer
     - name: Install dependencies
       run: composer install --dev
-    - name: Execute PHP Paralel Lint
-      run: vendor/php-parallel-lint/php-parallel-lint/parallel-lint --exclude vendor .
+    - name: Execute PHP php-compatibility
+      uses: extdn/github-actions-m2/php-compatibility/8.1@master
