@@ -61,10 +61,12 @@ class CustomConfigProvider implements ConfigProviderInterface
 
         if(!empty($checkoutData['data']['paymentMethods'])) {
             foreach ($checkoutData['data']['paymentMethods'] as $method) {
+                $isCard = $method['group'] == 'card' && $method['subgroup'] == 'card_input';
+
                 $data['paymentMethods'][] = [
                     'id'    => $method['subgroup'],
                     'value' => $method['group'] . ':' . $method['subgroup'],
-                    'name'  => $method['group'] == 'card' && $method['subgroup'] == 'card_input' && $this->config->get('checkout_title') ? $this->config->get('checkout_title') : $method['subgroup_title'],
+                    'name'  => ($isCard && $this->config->get('checkout_title')) || empty($method['subgroup_title']) ? $this->config->get('checkout_title') : $method['subgroup_title'],
                     'image' => $method['subgroup_logo']
                 ];
             }
