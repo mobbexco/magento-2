@@ -230,10 +230,7 @@ define(
                 })
             },
             getBanner: function () {
-                if (window.checkoutConfig.payment.webpay['banner'] !== undefined) 
-                    return window.checkoutConfig.payment.webpay['banner'];
-
-                return false;
+                return window.checkoutConfig.payment.webpay.config.banner;
             },
             getPaymentMethods: function () {
                 return window.checkoutConfig.payment.webpay['paymentMethods'];

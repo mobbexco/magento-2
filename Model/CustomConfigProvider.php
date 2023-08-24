@@ -23,24 +23,22 @@ class CustomConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {   
-        //get checkout mockup
-        $checkoutData = $this->formatCheckoutData($this->helper->createCheckoutFromQuote());
+        $checkoutData = $this->formatCheckoutData(
+            $this->config->get('unified_mode') ?: $this->helper->createCheckoutFromQuote()
+        );
 
         $config = [
             'payment' => [
                 'webpay' => [
-                    'config' => [
-                        'embed' => $this->config->get('embed'),
-                        'wallet' => $this->config->get('wallet')
+                    'walletCreditCards' => $checkoutData['wallet'],
+                    'paymentMethods'    => $checkoutData['paymentMethods'],
+                    'config'            => [
+                        'embed'  => $this->config->get('embed'),
+                        'wallet' => $this->config->get('wallet'),
+                        'banner' => $this->config->get('checkout_banner'),
                     ],
-                    'banner'            => $this->config->get('checkout_banner'),
-                    'paymentMethods'    => !empty($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [['id' => 'mbbx', 'value' => '', 'name' => $this->config->get('checkout_title') ?: 'Pagar con Mobbex', 'image' => '']],
-                    'walletCreditCards' => !empty($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
-                    'paymentUrl'        => !empty($checkoutData['paymentUrl']) ? $checkoutData['paymentUrl'] : '',
-                    'checkoutId'        => !empty($checkoutData['checkoutId']) ? $checkoutData['checkoutId'] : '',
-                    'orderId'           => !empty($checkoutData['orderId']) ? $checkoutData['orderId'] : '',
-                ]
-            ]
+                ],
+            ],
         ];
 
         //Log data in debug mode
@@ -56,14 +54,9 @@ class CustomConfigProvider implements ConfigProviderInterface
     */
     public function formatCheckoutData($checkoutData)
     {
-
         $data = [
             'paymentMethods' => [],
             'wallet'         => [],
-            'paymentUrl'     => !empty($checkoutData['data']['url']) ? $checkoutData['data']['url'] : '',
-            'checkoutId'     => !empty($checkoutData['data']['id']) ? $checkoutData['data']['id'] : '',
-            'orderId'        => !empty($checkoutData['order_id']) ? $checkoutData['order_id'] : '',
-            'data'           => !empty($checkoutData['data']) ? $checkoutData['data'] : []
         ];
 
         if(!empty($checkoutData['data']['paymentMethods'])) {
@@ -80,7 +73,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                 
         } else {
             $data['paymentMethods'][] = [
-                'id'    => 'mobbex',
+                'id'    => 'webpay',
                 'value' => '',
                 'name'  => $this->config->get('checkout_title'),
                 'image' => ''

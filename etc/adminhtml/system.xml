@@ -264,6 +264,11 @@
                         <label>Añadir identificador del sitio</label>
                         <comment>Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.</comment>
                     </field>
+                    <field id="unified_mode" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Modo unificado</label>
+                        <comment>Muestra un sólo método de pago de Mobbex al finalizar la compra. Si tiene varios activos, el listado se mostrará una vez abierto el modal de pago.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                     <field id="online_refund" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Devolución Online (Beta)</label>
                         <comment>Si está activa, los credit memos nuevos generarán devoluciones en Mobbex.</comment>
