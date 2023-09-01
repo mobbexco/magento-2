@@ -16,9 +16,6 @@
     "require": {
         "mobbexco/php-plugins-sdk": "1.4.0"
     },
-    "require-dev": {
-        "php-parallel-lint/php-parallel-lint": "*"
-    },
     "conflict": {
         "mobbexco/magento-2-marketplace": "<1.2.1"
     },
