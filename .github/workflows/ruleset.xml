@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ruleset name="PHPCompatibilityMagento">
+    <description>Magento specific ruleset which checks for PHP cross version compatibility.</description>
+    <rule ref="PHPCompatibility">
+        <exclude name="PHPCompatibility.Keywords.ForbiddenNamesAsDeclared.resourceFound"/>
+    </rule>
+   <rule ref="Generic.PHP.Syntax"/>
+</ruleset>
