@@ -19,5 +19,11 @@ jobs:
         tools: composer
     - name: Install dependencies
       run: composer install --dev
-    - name: Execute PHP php-compatibility
-      uses: extdn/github-actions-m2/php-compatibility/8.1@master
+    - name: Intall PHPCS and code standard
+      run: composer global require "phpcompatibility/php-compatibility" "squizlabs/php_codesniffer=*"
+    - name: Configure standard
+      run: ~/.composer/vendor/bin/phpcs --config-set installed_paths ~/.composer/vendor/phpcompatibility/php-compatibility
+    - name: Log standards installed
+      run: ~/.composer/vendor/bin/phpcs -i
+    - name: Execute tests
+      run: ~/.composer/vendor/bin/phpcs -p . --standard=PHPCompatibility
