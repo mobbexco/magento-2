@@ -16,5 +16,10 @@
                 <value id="mobbex" type="host">https://mobbex.com</value>
             </values>
         </policy>
+        <policy id="img-src">
+            <values>
+                <value id="mobbex" type="host">*.mobbex.com</value>
+            </values>
+        </policy>
     </policies>
 </csp_whitelist>
