@@ -61,6 +61,12 @@
                 <advanced>
                     <online_refund>1</online_refund>
                 </advanced>
+                <notifications>
+                    <emit_notifications>1</emit_notifications>
+                    <emit_customer_success_notification>1</emit_customer_success_notification>
+                    <emit_customer_failure_notification>1</emit_customer_failure_notification>
+                    <emit_customer_waiting_notification>1</emit_customer_waiting_notification>
+                </notifications>
             </webpay>
         </payment>
     </default>
