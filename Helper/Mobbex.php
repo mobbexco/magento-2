@@ -253,8 +253,10 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Get yhe entity of a product
+     * Get the entity of a product
+     * 
      * @param object $item
+     * 
      * @return string $entity
      */
     public function getEntity($item)
@@ -268,6 +270,10 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         if($this->config->getCatalogSetting($product->getId(), 'entity'))
             return $this->config->getCatalogSetting($product->getId(), 'entity');
 
+        // Execute own hook to get entity from vnecoms vendor or product vendor
+        if(!empty($this->executeHook('mobbexGetVendorEntity', false, $item)))
+            return $this->executeHook('mobbexGetVendorEntity', false, $item);
+
         // Try to get entity from category
         $categories = $product->getCategoryIds();
         foreach ($categories as $category) {
@@ -275,8 +281,6 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 return $this->config->getCatalogSetting($category, 'entity', 'category'); 
         }
 
-        // Execute own hook to get entity from vnecoms vendor or product vendor
-        return $this->executeHook('mobbexGetVendorEntity', false, $item);
 	}
 
     /**
