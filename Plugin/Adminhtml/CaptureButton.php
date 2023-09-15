@@ -37,7 +37,7 @@ class CaptureButton
             return;
 
         // Get url of capture controller
-        $url = $context->getUrl('webpay_admin/payment/capture', [
+        $url = $context->getUrl('sugapay_admin/payment/capture', [
             'order_id' => $context->getRequest()->getParam('order_id')
         ]);
 

@@ -43,8 +43,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Why Mobbex WebPay? Because others use generic names like "Payment", "Cart" and other boring stuff,
-we are cool... and WebPay is cool like us :D
+Why Mobbex SugaPay? Because others use generic names like "Payment", "Cart" and other boring stuff,
+we are cool... and SugaPay is cool like us :D
 
 */
 

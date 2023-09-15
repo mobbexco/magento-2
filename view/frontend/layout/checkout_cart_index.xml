@@ -6,7 +6,7 @@
                 name="mbbx.finance.widget"
                 cacheable="false"
                 template="Mobbex_Webpay::finance-widget.phtml"
-                ifconfig="payment/webpay/finance_widget_on_cart"/>
+                ifconfig="payment/sugapay/finance_widget_on_cart"/>
         </referenceContainer>
     </body>
 </page>

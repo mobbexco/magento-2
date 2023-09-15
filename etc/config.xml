@@ -3,7 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <default>
         <payment>
-            <webpay>
+            <sugapay>
                 <payment_action>capture</payment_action>
                 <model>Mobbex\Webpay\Model\Mobbex</model>
                 <active>1</active>
@@ -61,7 +61,7 @@
                 <advanced>
                     <online_refund>1</online_refund>
                 </advanced>
-            </webpay>
+            </sugapay>
         </payment>
     </default>
 </config>

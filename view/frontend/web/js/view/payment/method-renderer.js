@@ -10,8 +10,8 @@ define(
         'use strict';
         rendererList.push(
             {
-                type: 'webpay',
-                component: 'Mobbex_Webpay/js/view/payment/method-renderer/webpay'
+                type: 'sugapay',
+                component: 'Mobbex_Webpay/js/view/payment/method-renderer/sugapay'
             }
         );
         return Component.extend({});

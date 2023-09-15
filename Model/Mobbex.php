@@ -12,7 +12,7 @@ use Magento\Sales\Model\Order;
  */
 class Mobbex extends AbstractMethod
 {
-    const CODE = 'webpay';
+    const CODE = 'sugapay';
 
     /**
      * @var string
@@ -119,7 +119,7 @@ class Mobbex extends AbstractMethod
             ]
         );
 
-        $orderMinAmount  = (float)$this->_scopeConfig->getValue('payment/webpay/min_amount');
+        $orderMinAmount  = (float)$this->_scopeConfig->getValue('payment/sugapay/min_amount');
 
         if ($orderMinAmount) {
             $orderTotal = (float)$quote->getGrandTotal();
