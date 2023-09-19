@@ -9,179 +9,48 @@ use Magento\Framework\Setup\UpgradeSchemaInterface;
 
 class UpgradeSchema implements UpgradeSchemaInterface
 {
+    public $tables = [
+        'transaction',
+        'cache',
+        'custom_fields',
+        'log',
+    ];
+
+    public function __construct(\Mobbex\Webpay\Helper\Sdk $sdk) {
+        //Init sdk
+        $sdk->init();
+    }
+
     public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
+        //Init connection
         $setup->startSetup();
         $connection = $setup->getConnection();
 
-        /* Add mobbex transaction table */
-        if (!$setup->tableExists('mobbex_transaction')) {
-            $table = $connection
-            ->newTable($setup->getTable('mobbex_transaction'))
-            ->addColumn('id', Table::TYPE_INTEGER, null, array(
-                'identity'  => true,
-                'unsigned'  => true,
-                'nullable'  => false,
-                'primary'   => true,
-                ), 'Id')
-            ->addColumn('order_id', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Order id')
-            ->addColumn('parent', Table::TYPE_BOOLEAN, null, array(
-                'nullable'  => false,
-                ), 'Parent')
-            ->addColumn('childs', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Childs')
-            ->addColumn('operation_type', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Operation type')
-            ->addColumn('payment_id', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Payment id')
-            ->addColumn('description', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Description')
-            ->addColumn('status_code', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Status code')
-            ->addColumn('status_message', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Status message')
-            ->addColumn('source_name', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Source name')
-            ->addColumn('source_type', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Source type')
-            ->addColumn('source_reference', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Source reference')
-            ->addColumn('source_number', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Source number')
-            ->addColumn('source_expiration', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'source expiration')
-            ->addColumn('source_installment', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Source installment')
-            ->addColumn('installment_name', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Installment name')
-            ->addColumn('installment_amount', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Installment amount')
-            ->addColumn('installment_count', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Installment count')
-            ->addColumn('source_url', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Source url')
-            ->addColumn('cardholder', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Cardholder')
-            ->addColumn('entity_name', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Entity name')
-            ->addColumn('entity_uid', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Entity uid')
-            ->addColumn('customer', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Customer')
-            ->addColumn('checkout_uid', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Checkout uid')
-            ->addColumn('total', Table::TYPE_DECIMAL, '18,2', array(
-                'nullable'  => false,
-                ), 'Total')
-            ->addColumn('currency', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Currency')
-            ->addColumn('risk_analysis', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-                ), 'Risk analysis')
-            ->addColumn('data', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-            ), 'Data')
-            ->addColumn('created', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-            ), 'Created')
-            ->addColumn('updated', Table::TYPE_TEXT, null, array(
-                'nullable'  => false,
-            ), 'Updated');
-        
-            $connection->createTable($table);
-        }
-        elseif (!$connection->tableColumnExists($setup->getTable('mobbex_transaction'), 'childs'))
-            $setup->run(
-                'ALTER TABLE ' . $setup->getTable('mobbex_transaction') . ' ADD COLUMN `childs` TEXT NOT NULL;'
-            );
-
-        /* Add mobbex custom field table */
-        if (!$setup->tableExists('mobbex_customfield')) {
-            $table = $connection->newTable($setup->getTable('mobbex_customfield'))
-                ->addColumn('customfield_id', Table::TYPE_INTEGER, null, array(
-                    'identity'  => true,
-                    'unsigned'  => true,
-                    'nullable'  => false,
-                    'primary'   => true,
-                    ), 'Id')
-                ->addColumn('row_id', Table::TYPE_INTEGER, null, array(
-                    'nullable'  => false,
-                    ), 'Row id')
-                ->addColumn('object', Table::TYPE_TEXT, null, array(
-                    'nullable'  => false,
-                    ), 'Object')
-                ->addColumn('field_name', Table::TYPE_TEXT, null, array(
-                    'nullable'  => false,
-                    ), 'Field name')
-                ->addColumn('data', Table::TYPE_TEXT, null, array(
-                    'nullable'  => false,
-                ),
-            'Data');
-        
-            $connection->createTable($table);
-        }
-
-        /* Rename mobbex logs table */
-
+        //Change old table names        
+        //logs
         if ($setup->tableExists('mobbex_logs'))
-            $setup->run(
-                'ALTER TABLE ' . $setup->getTable('mobbex_logs') . ' RENAME TO '. $setup->getTable('mobbex_log') . ';'
-            );
-        
-        /* Add mobbex log table */
+            $setup->run('ALTER TABLE ' . $setup->getTable('mobbex_logs') . ' RENAME TO ' . $setup->getTable('mobbex_log') . ';');
 
-        if (!$setup->tableExists('mobbex_log')) {
-            $table = $connection->newTable($setup->getTable('mobbex_log'))
-                ->addColumn('log_id', Table::TYPE_INTEGER, null, array(
-                    'identity'  => true,
-                    'unsigned'  => true,
-                    'nullable'  => false,
-                    'primary'   => true,
-                ), 'Id')
-                ->addColumn('type', Table::TYPE_TEXT, null, array(
-                    'nullable'  => false,
-                ), 'Type')
-                ->addColumn('message', Table::TYPE_TEXT, null, array(
-                    'nullable'  => false,
-                ), 'Message')
-                ->addColumn(
-                    'data',
-                    Table::TYPE_TEXT, null, array(
-                    'nullable'  => false,
-                ), 'Data')
-                ->addColumn(
-                    'date',
-                    Table::TYPE_DATETIME, null, array(
-                    'nullable'  => false,
-                ), 'Creation Date');
+        foreach ($this->tables as $tableName) {
+            //Get definition
+            $definition = \Mobbex\Model\Table::getTableDefinition($tableName);
 
-            $connection->createTable($table);
+            //Modify customfield definition for compatibility
+            if ($tableName === 'custom_fields') {
+                //Change table name
+                $tableName = 'customfield';
+                
+                //adapt definition to magento 2 customfield definition
+                foreach ($definition as &$column)
+                    if ($column['Field'] === 'id')
+                        $column['Field'] = 'customfield_id';
+            }
+
+            //Create the table
+            $table = new \Mobbex\Model\Table($tableName, $definition);
         }
-
+        
         /* Add payment fee columns */
 
         if (version_compare($context->getVersion(), '1.2.0', '<=')) {
@@ -206,31 +75,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->addColumn($creditmemoTable, 'fee', $feeColumn);
         }
 
-        //Install tables from sdk sql scripts
-        $this->installTable('cache', $connection, $setup);
-
         $setup->endSetup();
-    }
-
-    /**
-     * Install a table from sdk sql scripts.
-     * @param string $table Table name without db & mobbex prefix .
-     * @param object $connection.
-     * @param object $setup.
-     */
-    public function installTable($table, $connection, $setup)
-    {
-        if($setup->tableExists("mobbex_$table"))
-            return;
-
-        //Get query
-        $query = str_replace(
-            'DB_PREFIX_mobbex_'.$table,
-            $setup->getTable("mobbex_$table"),
-            file_get_contents(__DIR__ . "/../../php-plugins-sdk/src/sql/$table.sql")
-        );
-
-        //Execute query
-        $connection->query($query);
     }
 }

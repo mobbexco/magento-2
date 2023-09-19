@@ -13,6 +13,7 @@ class Instantiator extends \Magento\Framework\App\Helper\AbstractHelper
 
     public $classes = [
         'sdk'                      => '\Mobbex\Webpay\Helper\Sdk',
+        'db'                       => '\Mobbex\Webpay\Helper\Db',
         'repository'               => '\Mobbex\Repository',
         'config'                   => '\Mobbex\Webpay\Helper\Config',
         'helper'                   => '\Mobbex\Webpay\Helper\Mobbex',
