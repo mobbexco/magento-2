@@ -253,7 +253,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Get the entity of a product
+     * Get the entity from item
      * 
      * @param object $item
      * 
@@ -262,7 +262,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     public function getEntity($item)
     {
         // Checks if multivendor mode is active
-        if(!$this->config->get('multivendor') == 'active' || !$this->config->get('multivendor') == 'unified_mode')
+        if($this->config->get('multivendor') != 'active' || $this->config->get('multivendor') != 'unified')
             return;
 
         $product = $item->getProduct();
