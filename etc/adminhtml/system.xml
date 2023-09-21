@@ -275,6 +275,29 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
                 </group>
+                <group id="notifications" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Notificationes</label>
+                    <field id="emit_notifications" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Emitir Notificaciones</label>
+                        <comment>Permite desactivar todas las notificationes al cliente enviadas por el servicio. No desactiva los Webhooks.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="emit_customer_success_notification" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Notificar pagos exitosos</label>
+                        <comment>Permite desactivar los avisos de pagos exitosos via email, sms o whatstapp.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="emit_customer_failure_notification" translate="label comment" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Notificar pagos fallidos</label>
+                        <comment>Permite desactivar los avisos de pagos fallidos via email, sms o whatstapp.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="emit_customer_waiting_notification" translate="label comment" sortOrder="35" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Notificar pagos en espera</label>
+                        <comment>Permite desactivar los avisos de pagos en espera como Códigos de Barra o QR via email, sms o whatstapp.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                </group>
             </group>
         </section>
     </system>
