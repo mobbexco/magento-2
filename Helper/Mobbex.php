@@ -244,7 +244,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         if($this->config->get('debug_mode'))
             $data['XDEBUG_SESSION_START'] = 'PHPSTORM';
             
-        return $this->_urlBuilder->getUrl("webpay/payment/$controller", [
+        return $this->_urlBuilder->getUrl("sugapay/payment/$controller", [
             '_secure'      => true,
             '_current'     => true,
             '_use_rewrite' => true,

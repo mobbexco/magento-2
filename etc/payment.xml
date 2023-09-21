@@ -7,6 +7,6 @@
         </group>
     </groups>
     <methods>
-        <method name="webpay" />
+        <method name="sugapay" />
     </methods>
 </payment>
