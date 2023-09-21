@@ -16,6 +16,9 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
+    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    public $helper;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Framework\App\Action\Context $context,
@@ -78,7 +81,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             $order = $this->_order->loadByIncrementId($orderId);
 
             // Execute own hook to extend functionalities
-            $this->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
+            $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
 
             // Exit if it is a expired operation and the order has already been paid
             if ($data['status_code'] == 401 && $order->getTotalPaid() > 0)

@@ -257,11 +257,12 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
      * 
      * @param object $item
      * 
-     * @return string $entity
+     * @return string|null $entity
      */
     public function getEntity($item)
     {
-        if(!$this->config->get('multivendor') == 'active')
+        // Checks if multivendor mode is active
+        if(!$this->config->get('multivendor') == 'active' || !$this->config->get('multivendor') == 'unified_mode')
             return;
 
         $product = $item->getProduct();
@@ -270,9 +271,11 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         if($this->config->getCatalogSetting($product->getId(), 'entity'))
             return $this->config->getCatalogSetting($product->getId(), 'entity');
 
-        // Execute own hook to get entity from vnecoms vendor or product vendor
-        if(!empty($this->executeHook('mobbexGetVendorEntity', false, $item)))
-            return $this->executeHook('mobbexGetVendorEntity', false, $item);
+        // Executes our own hook to try to get entity from vnecoms vendor or product vendor
+        $entity = $this->executeHook('mobbexGetVendorEntity', false, $item);
+
+        if(!empty($entity))
+            return $entity;
 
         // Try to get entity from category
         $categories = $product->getCategoryIds();
