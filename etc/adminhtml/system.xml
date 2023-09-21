@@ -3,9 +3,9 @@
     xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
-            <group id="webpay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="sugapay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
 
-                <label>Mobbex WebPays</label>
+                <label>Mobbex SugaPays</label>
 
                 <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">

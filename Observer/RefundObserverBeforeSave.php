@@ -44,7 +44,7 @@ class RefundObserverBeforeSave implements ObserverInterface
 
         $paymentMethod = $payment->getMethodInstance()->getCode();
 
-        if ($paymentMethod != 'webpay')
+        if ($paymentMethod != 'sugapay')
             return;
 
         $trx = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);

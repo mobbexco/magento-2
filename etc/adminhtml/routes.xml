@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
     <router id="admin">
-        <route id="webpay_admin" frontName="webpay_admin">
+        <route id="sugapay_admin" frontName="sugapay_admin">
             <module name="Mobbex_Webpay" />
         </route>
     </router>

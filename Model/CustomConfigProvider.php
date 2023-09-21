@@ -29,7 +29,7 @@ class CustomConfigProvider implements ConfigProviderInterface
 
         $config = [
             'payment' => [
-                'webpay' => [
+                'sugapay' => [
                     'walletCreditCards' => $checkoutData['wallet'],
                     'paymentMethods'    => $checkoutData['paymentMethods'],
                     'config'            => [
@@ -75,7 +75,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                 
         } else {
             $data['paymentMethods'][] = [
-                'id'    => 'webpay',
+                'id'    => 'sugapay',
                 'value' => '',
                 'name'  => $this->config->get('checkout_title'),
                 'image' => ''

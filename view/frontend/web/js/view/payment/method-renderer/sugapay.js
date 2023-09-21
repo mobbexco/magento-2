@@ -1,5 +1,5 @@
-let embed           = window.checkoutConfig.payment.webpay.config.embed && window.checkoutConfig.payment.webpay.config.embed != '0';
-let wallet          = window.checkoutConfig.payment.webpay.config.wallet && window.checkoutConfig.payment.webpay.config.wallet != '0';
+let embed           = window.checkoutConfig.payment.sugapay.config.embed && window.checkoutConfig.payment.sugapay.config.embed != '0';
+let wallet          = window.checkoutConfig.payment.sugapay.config.wallet && window.checkoutConfig.payment.sugapay.config.wallet != '0';
 let mbbxPaymentData = false;
 let returnUrl       = '';
 
@@ -34,7 +34,7 @@ require(['jquery'], function ($) {
             } else {
                 mbbxCurrentMehtod = $(this).attr('value');
             }
-            $('#webpay').trigger('click');
+            $('#sugapay').trigger('click');
             if($(this).closest(".payment-method").has('#mbbx-banner'))
                 $('#mbbx-banner').show()
             $(this).closest(".payment-method").after($('#mbbx-place-order'));
@@ -203,7 +203,7 @@ define(
         'use strict';
         return Component.extend({
             defaults: {
-                template: 'Mobbex_Webpay/payment/webpay',
+                template: 'Mobbex_Webpay/payment/sugapay',
                 redirectAfterPlaceOrder: false
             },
             onSelect: function () {
@@ -214,8 +214,8 @@ define(
             },
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
-                returnUrl = urlBuilder.build('webpay/payment/paymentreturn/') + `?quote_id=${window.checkoutConfig.payment.webpay.orderId}`;
-                createCheckout(urlBuilder.build('webpay/payment/checkout/'), response => {
+                returnUrl = urlBuilder.build('sugapay/payment/paymentreturn/') + `?quote_id=${window.checkoutConfig.payment.sugapay.orderId}`;
+                createCheckout(urlBuilder.build('sugapay/payment/checkout/'), response => {
                     $("body").trigger('processStop');
                     if(!response || !response.id){
                         displayAlert('Error', 'Error al obtener la información del pedido.', returnUrl + '&status=500');
@@ -230,13 +230,13 @@ define(
                 })
             },
             getBanner: function () {
-                return window.checkoutConfig.payment.webpay.config.banner;
+                return window.checkoutConfig.payment.sugapay.config.banner;
             },
             getPaymentMethods: function () {
-                return window.checkoutConfig.payment.webpay['paymentMethods'];
+                return window.checkoutConfig.payment.sugapay['paymentMethods'];
             },
             getWalletCards: function () {
-                return window.checkoutConfig.payment.webpay['walletCreditCards'];
+                return window.checkoutConfig.payment.sugapay['walletCreditCards'];
             }
         });
     }
