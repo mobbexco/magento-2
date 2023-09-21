@@ -107,7 +107,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $products[]   = $product;
             $price        = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
             $subscription = $this->getProductSubscription($product->getId());
-            $entity       = $this->getEntity($product);
+            $entity       = $this->getEntity($item);
             
             if($subscription['enable'] === 'yes') {
                 $items[] = [
@@ -183,7 +183,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                     'description' => $item->getName(),
                     'quantity'    => $item->getQty(),
                     'total'       => (float) $item->getPrice(),
-                    'entity'      => $this->getEntity($item->getProduct()),
+                    'entity'      => $this->getEntity($item),
                 ];
             }
         }
@@ -253,22 +253,37 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Get yhe entity of a product
-     * @param object $product
-     * @return string $entity
+     * Get the entity from item
+     * 
+     * @param object $item
+     * 
+     * @return string|null $entity
      */
-    public function getEntity($product)
+    public function getEntity($item)
     {
+        // Checks if multivendor mode is active
+        if($this->config->get('multivendor') != 'active' && $this->config->get('multivendor') != 'unified')
+            return;
+
+        $product = $item->getProduct();
+
+        // Try to get entity from product
         if($this->config->getCatalogSetting($product->getId(), 'entity'))
             return $this->config->getCatalogSetting($product->getId(), 'entity');
 
+        // Executes our own hook to try to get entity from vnecoms vendor or product vendor
+        $entity = $this->executeHook('mobbexGetVendorEntity', false, $item);
+
+        if(!empty($entity))
+            return $entity;
+
+        // Try to get entity from category
         $categories = $product->getCategoryIds();
         foreach ($categories as $category) {
             if($this->config->getCatalogSetting($category, 'entity', 'category'))
                 return $this->config->getCatalogSetting($category, 'entity', 'category'); 
         }
 
-        return '';
 	}
 
     /**

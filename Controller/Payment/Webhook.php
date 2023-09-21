@@ -16,6 +16,9 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
+    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    public $helper;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Framework\App\Action\Context $context,
