@@ -32,6 +32,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'own_dni_field'                      => 'payment/sugapay/checkout/own_dni_field',
         'dni_column'                         => 'payment/sugapay/checkout/dni_column',
         'create_order_email'                 => 'payment/sugapay/checkout/email_settings/create_order_email',
+        'email_before_payment'               => 'payment/sugapay/checkout/email_settings/email_before_payment',
         'update_order_email'                 => 'payment/sugapay/checkout/email_settings/update_order_email',
         'create_invoice_email'               => 'payment/sugapay/checkout/email_settings/create_invoice_email',
         'order_status_approved'              => 'payment/sugapay/checkout/order_status_settings/order_status_approved',
