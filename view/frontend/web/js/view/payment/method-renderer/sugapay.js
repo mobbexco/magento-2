@@ -5,7 +5,7 @@ let returnUrl       = '';
 
 // Add Mobbex script
 var script = document.createElement('script');
-script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.0.23.js`;
+script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.1.0.js`;
 script.async = true;
 document.body.appendChild(script);
 
