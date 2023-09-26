@@ -183,6 +183,13 @@
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
 
+                        <field id="email_before_payment" translate="label comment" sortOrder="28" type="select"
+                            showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Email Antes del Pago</label>
+                            <comment>Envia el email al crear orden antes de la realización del pago.</comment>
+                            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        </field>
+
                         <field id="update_order_email" translate="label comment" sortOrder="26" type="select"
                             showInDefault="1" showInWebsite="1" showInStore="1">
                             <label>Email al actualizar orden</label>

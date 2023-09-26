@@ -85,15 +85,20 @@ class Mobbex extends AbstractMethod
         // get order
         $order = $payment->getOrder();
 
-        // make sure emails are sent after a successful payment
-        $order->setCanSendNewEmailFlag(false);
+        $sendEmail = $this->_scopeConfig->getValue(
+            'payment/sugapay/checkout/email_settings/email_before_payment',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+
+        // Set if can send email
+        $order->setCanSendNewEmailFlag(!!$sendEmail);
 
         // set default payment status
         $stateObject->setState(Order::STATE_NEW);
         $stateObject->setStatus(Order::STATE_NEW);
 
-        // mark customer as not notified
-        $stateObject->setIsNotified(false);
+        // Set if is notified
+        $stateObject->setIsNotified(!!$sendEmail);
     }
 
     /**

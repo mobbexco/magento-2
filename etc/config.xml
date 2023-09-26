@@ -30,6 +30,7 @@
                     </order_status_settings>
                     <email_settings>
                         <create_order_email>1</create_order_email>
+                        <email_before_payment>0</email_before_payment>
                     </email_settings>
                 </checkout>
                 <appearance>

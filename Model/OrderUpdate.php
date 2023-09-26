@@ -186,6 +186,10 @@ class OrderUpdate
      */
     public function sendOrderEmail($order, $message)
     {
+        //Return if the mail was sended during order creation
+        if($this->config->get('email_before_payment'))
+            return;
+
         $emailSent       = $order->getEmailSent();
         $canSendCreation = $this->config->get('create_order_email');
         $canSendUpdate   = $this->config->get('update_order_email');
