@@ -5,7 +5,7 @@
         <section id="payment">
             <group id="sugapay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
 
-                <label>Mobbex SugaPays</label>
+                <label>Mobbex Sugapay</label>
 
                 <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
