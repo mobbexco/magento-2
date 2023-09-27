@@ -62,7 +62,7 @@ class RefundObserverBeforeSave implements ObserverInterface
                 $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
 
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage(__($e->getMessage));
+            $this->messageManager->addErrorMessage(__($e->getMessage()));
             $this->logger->log(
                 'error', 
                 'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
