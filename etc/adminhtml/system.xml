@@ -5,7 +5,7 @@
         <section id="payment">
             <group id="sugapay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
 
-                <label>Mobbex SugaPays</label>
+                <label>Mobbex Sugapay</label>
 
                 <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
@@ -283,7 +283,7 @@
                     </field>
                 </group>
                 <group id="notifications" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Notificationes</label>
+                    <label>Notificaciones</label>
                     <field id="emit_notifications" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Emitir Notificaciones</label>
                         <comment>Permite desactivar todas las notificationes al cliente enviadas por el servicio. No desactiva los Webhooks.</comment>
