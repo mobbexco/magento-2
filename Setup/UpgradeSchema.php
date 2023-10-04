@@ -16,9 +16,19 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'log',
     ];
 
-    public function __construct(\Mobbex\Webpay\Helper\Sdk $sdk) {
-        //Init sdk
-        $sdk->init();
+    /**
+     * Constructor.
+     * 
+     * Only load classes that do not use the area code to prevent 
+     * 'Area code is not set' error on setup:upgrade execution.
+     * 
+     * @param \Mobbex\Webpay\Helper\Db $db 
+     */
+    public function __construct(
+        \Mobbex\Webpay\Helper\Db $db
+    ) {
+        // Do not load SDK using helper (fix for Magento 2.4.3)
+        \Mobbex\Platform::loadModels(null, $db);
     }
 
     public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
