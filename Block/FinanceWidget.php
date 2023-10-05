@@ -4,11 +4,23 @@ namespace Mobbex\Webpay\Block;
 
 class FinanceWidget extends \Magento\Backend\Block\Template
 {
-    /** @var \Mobbex\Webpay\Helper\Instantiator */
-    public $instantiator;
+    /** @var \Magento\Backend\Block\Template\Context */
+    public $context;
 
     /** @var \Magento\Framework\Registry */
     public $registry;
+
+    /** @var \Magento\Framework\Pricing\Helper\Data */
+    public $priceHelper;
+
+    /** @var \Magento\Checkout\Model\Session */
+    public $checkoutSession;
+
+    /** @var \Mobbex\Webpay\Helper\Sdk */
+    public $sdk;
+
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
 
     /** Amount ot calculate payment methods */
     public $total = 0;
@@ -19,17 +31,37 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     /** Sources to show in finance widget */
     public $sources = [];
 
+    /**
+     * Constructor.
+     *
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\Pricing\Helper\Data $priceHelper
+     * @param \Magento\Checkout\Model\Session $CheckoutSession
+     * @param \Mobbex\Webpay\Helper\Sdk $sdk
+     * @param \Mobbex\Webpay\Helper\Config $config
+     * @param array $data
+     * 
+     */
     public function __construct(
-        \Mobbex\Webpay\Helper\Instantiator $instantiator, 
+        \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
         \Magento\Framework\Pricing\Helper\Data $priceHelper,
-        \Magento\Backend\Block\Template\Context $context,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Mobbex\Webpay\Helper\Sdk $sdk,
+        \Mobbex\Webpay\Helper\Config $config,
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $instantiator->setProperties($this, ['sdk', 'config', '_checkoutSession']);
-        $this->registry = $registry;
-        $this->priceHelper = $priceHelper;
+
+        $this->registry         = $registry;
+        $this->priceHelper      = $priceHelper;
+        $this->_checkoutSession = $checkoutSession;
+        $this->sdk              = $sdk;
+        $this->config           = $config;
+
+        //Init mobbex php sdk
+        $this->sdk->init();
 
         // Get current action name
         $action = $this->_request->getFullActionName();

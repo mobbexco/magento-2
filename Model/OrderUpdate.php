@@ -6,8 +6,14 @@ use Magento\Sales\Model\Order\Payment\Transaction;
 
 class OrderUpdate
 {
-    /** @var Mobbex\Webpay\Helper\Instantiator */
-    protected $instantiator;
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
 
     /** @var OrderSender */
     protected $orderSender;
@@ -36,8 +42,33 @@ class OrderUpdate
     /** @var \Magento\Sales\Model\Service\CreditmemoService */
     protected $creditmemoService;
 
+    /** @var \Magento\Framework\ObjectManagerInterface */
+    protected $_objectManager;
+    
+    /**
+     * Constructor.
+     * 
+     * @param \Mobbex\Webpay\Helper\Config $config
+     * @param \Mobbex\Webpay\Helper\Logger $logger
+     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+     * @param \Magento\Sales\Model\Order $order
+     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
+     * @param \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
+     * @param \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender
+     * @param \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder
+     * @param \Magento\Framework\App\ResourceConnection $resourceConnection
+     * @param \Magento\Framework\Module\Manager $moduleManager
+     * @param \Magento\Sales\Model\Order\Invoice $invoice
+     * @param \Magento\Sales\Model\Order\CreditmemoFactory $creditmemoFactory
+     * @param \Magento\Sales\Model\Service\CreditmemoService $creditmemoService
+     * @param \Magento\Framework\ObjectManagerInterface $_objectManager
+     * 
+     */
     public function __construct(
-        \Mobbex\Webpay\Helper\Instantiator $instantiator,
+        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Sales\Model\Order $order,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender,
@@ -46,17 +77,20 @@ class OrderUpdate
         \Magento\Framework\Module\Manager $moduleManager,
         \Magento\Sales\Model\Order\Invoice $invoice,
         \Magento\Sales\Model\Order\CreditmemoFactory $creditmemoFactory,
-        \Magento\Sales\Model\Service\CreditmemoService $creditmemoService
+        \Magento\Sales\Model\Service\CreditmemoService $creditmemoService,
+        \Magento\Framework\ObjectManagerInterface $_objectManager
     ) {
-        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', '_order']);
+        $this->config = $config;
+        $this->logger = $logger;
+        $this->_order = $order;
         $this->orderSender        = $orderSender;
         $this->invoiceSender      = $invoiceSender;
         $this->orderCommentSender = $orderCommentSender;
         $this->transactionBuilder = $transactionBuilder;
         $this->resourceConnection = $resourceConnection;
         $this->moduleManager      = $moduleManager;
-        $this->objectManager      = $instantiator->_objectManager;
-        $this->customFields       = $this->customFieldFactory->create();
+        $this->objectManager      = $_objectManager;
+        $this->customFields       = $customFieldFactory->create();
         $this->invoice            = $invoice;
         $this->creditmemoFactory  = $creditmemoFactory;
         $this->creditmemoService  = $creditmemoService;

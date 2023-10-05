@@ -10,27 +10,69 @@ use Exception;
  */
 class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 {
-    /** @var \Mobbex\Webpay\Model\OrderUpdate */
-    protected $orderUpdate;
+    /** @var \Magento\Framework\App\Action\Context */
+    public $context;
 
-    /** @var \Mobbex\Webpay\Helper\Logger */
-    public $logger;
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
 
     /** @var \Mobbex\Webpay\Helper\Mobbex */
     public $helper;
 
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    /** @var \Magento\Quote\Model\QuoteFactory */
+    public $quoteFactory;
+
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    public $customFieldFactory;
+
+    /** @var \Mobbex\Webpay\Model\OrderUpdate */
+    protected $orderUpdate;
+
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
+
+    public $_request;
+
+    /**
+     * Constructor.
+     * 
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Mobbex\Webpay\Helper\Sdk $sdk
+     * @param \Mobbex\Webpay\Helper\Config $config
+     * @param \Mobbex\Webpay\Helper\Mobbex $helper
+     * @param \Mobbex\Webpay\Helper\Logger $logger
+     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
+     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+     * @param \Mobbex\Webpay\Model\TransactionFactory $transactionFactory
+     * @param \Magento\Sales\Model\Order $order
+     * @param \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
+     */
     public function __construct(
-        \Mobbex\Webpay\Helper\Instantiator $instantiator,
         \Magento\Framework\App\Action\Context $context,
+        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Mobbex\Webpay\Model\TransactionFactory $transactionFactory,
+        \Magento\Sales\Model\Order $order,
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
     ) {
+        error_log('llego al webhok: ' . "\n" . json_encode('si', JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         parent::__construct($context);
-        $instantiator->setProperties($this, ['config', 'logger', 'helper', 'quoteFactory', 'customFieldFactory', '_order']);
+
+        $this->config            = $config;
+        $this->helper            = $helper;
+        $this->logger            = $logger;
+        $this->quoteFactory      = $quoteFactory;
         $this->orderUpdate       = $orderUpdate;
-        $this->_request          = $this->getRequest();
         $this->mobbexTransaction = $transactionFactory->create();
-        $this->customField       = $this->customFieldFactory->create();
+        $this->customField       = $customFieldFactory->create();
+        $this->_order            = $order;
+        $this->_request          = $this->getRequest();
     }
 
     /**

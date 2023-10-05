@@ -11,26 +11,35 @@ class Info extends \Magento\Payment\Block\Info
     /** @var State */
     protected $_state;
 
+    /** @var \Mobbex\Webpay\Model\TransactionFactory */
+    public $mobbexTransactionFactory;
+
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    public $customFieldFactory;
+
     /**
-     * Constructor
+     * Constructor.
      *
      * @param Context $context
      * @param State $_state
-     * @param Instantiator $instantiator
+     * @param \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
+     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
      * @param array $data
+     * 
      */
     public function __construct(
         Context $context, 
         State $_state,
-        \Mobbex\Webpay\Helper\Instantiator $instantiator,
+        \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         array $data = []
         )
     {
         parent::__construct($context, $data);
-        $instantiator->setProperties($this, ['mobbexTransactionFactory', 'customFieldFactory']);
+
         $this->_state = $_state;
-        $this->mobbexTransaction = $this->mobbexTransactionFactory->create();
-        $this->customField       = $this->customFieldFactory->create();
+        $this->mobbexTransaction = $mobbexTransactionFactory->create();
+        $this->customField       = $customFieldFactory->create();
     }
 
     /**

@@ -7,11 +7,38 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CancelOrderObserver implements ObserverInterface
 {
-    public function __construct(\Magento\Framework\App\Action\Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
+    /** @var \Magento\Framework\App\Action\Context */
+    public $context;
+
+    /** @var \Mobbex\Webpay\Model\OrderUpdate */
+    public $orderUpdate;
+
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    public $customFieldFactory;
+
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
+
+    /**
+     * Constructor.
+     * 
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
+     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+     * @param \Magento\Sales\Model\Order $order
+     * 
+     */
+    public function __construct(
+        \Magento\Framework\App\Action\Context $context,
+        \Mobbex\Webpay\Model\OrderUpdate $orderUpdate,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Sales\Model\Order $order
+    )
     {
-        $instantiator->setProperties($this, ['customFieldFactory', 'orderUpdate', '_order']);
+        $this->orderUpdate  = $orderUpdate;
+        $this->_order       = $order;
         $this->params       = $context->getRequest()->getParams();
-        $this->customFields = $this->customFieldFactory->create();
+        $this->customFields = $customFieldFactory->create();
     }
 
     /**

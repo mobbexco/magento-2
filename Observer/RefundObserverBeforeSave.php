@@ -13,22 +13,41 @@ use Magento\Framework\Message\ManagerInterface;
  */
 class RefundObserverBeforeSave implements ObserverInterface
 {
-    /**
-     * @var Context
-     */
-    protected $context;
-    
-    /**
-     * @var \Mobbex\Webpay\Helper\Instantiator
-     */
-    protected $instantiator;
+    /** @var \Mobbex\Webpay\Helper\Sdk */
+    public $sdk;
 
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
 
-    public function __construct(Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    /**
+     * Constructor.
+     * 
+     * @param Context $context
+     * @param \Mobbex\Webpay\Helper\Sdk $sdk
+     * @param \Mobbex\Webpay\Helper\Config $config
+     * @param \Mobbex\Webpay\Helper\Logger $logger
+     * @param \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
+     * 
+     */
+    public function __construct(
+        Context $context,
+        \Mobbex\Webpay\Helper\Sdk $sdk,
+        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
+    )
     {
+        $this->sdk            = $sdk;
+        $this->config         = $config;
+        $this->logger         = $logger;
         $this->messageManager = $context->getMessageManager();
-        $instantiator->setProperties($this, ['logger', 'config', 'mobbexTransactionFactory', 'sdk']);
-        $this->transaction = $this->mobbexTransactionFactory->create();
+        $this->transaction    = $mobbexTransactionFactory->create();
+
+        //Init mobbex php plugins sdk
+        $this->sdk->init();
     }
 
     /**
