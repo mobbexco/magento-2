@@ -16,14 +16,6 @@ class ProductSaveObserver implements ObserverInterface
     /** @var array */
     public $params;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Mobbex\Webpay\Helper\Mobbex $helper
-     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
-     * 
-     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Helper\Mobbex $helper,
@@ -69,8 +61,8 @@ class ProductSaveObserver implements ObserverInterface
         
         //Save mobbex custom fields
         foreach ($productConfigs as $key => $value) {
-            $customFields = $this->customFieldFactory->create();
-            $customFields->saveCustomField($observer->getProduct()->getId(), 'product', $key, $value);
+            $customField = $this->customFieldFactory->create();
+            $customField->saveCustomField($observer->getProduct()->getId(), 'product', $key, $value);
         }
 
         $this->helper->executeHook('mobbexSaveProductSettings', false, $observer->getProduct(), $this->params);

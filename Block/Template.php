@@ -21,17 +21,9 @@ class Template extends MagentoTemplate
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /**
-     * Constructor.
-     *
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Mobbex $helper
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param array $data
-     * 
-     */
+    /** @var array */
+    public $params;
+
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,

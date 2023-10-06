@@ -14,7 +14,7 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     public $priceHelper;
 
     /** @var \Magento\Checkout\Model\Session */
-    public $checkoutSession;
+    public $_checkoutSession;
 
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
@@ -31,18 +31,6 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     /** Sources to show in finance widget */
     public $sources = [];
 
-    /**
-     * Constructor.
-     *
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Framework\Pricing\Helper\Data $priceHelper
-     * @param \Magento\Checkout\Model\Session $CheckoutSession
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param array $data
-     * 
-     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,

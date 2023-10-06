@@ -22,16 +22,9 @@ class RefundObserverBeforeSave implements ObserverInterface
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /**
-     * Constructor.
-     * 
-     * @param Context $context
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
-     * 
-     */
+    /** @var class */
+    public $messageManager;
+
     public function __construct(
         Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,

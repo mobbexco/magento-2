@@ -56,20 +56,12 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\App\Action\Context */
     public $context;
 
-    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
-    public $customFieldFactory;
+    /** @var \Mobbex\Webpay\Model\CustomField */
+    public $customField;
 
     /** @var \Magento\Framework\App\Config\Storage\WriterInterface */
     public $configWriter;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\App\Config\Storage\WriterInterface $configWriter
-     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
-     * 
-     */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,

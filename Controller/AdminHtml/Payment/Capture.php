@@ -4,9 +4,6 @@ namespace Mobbex\Webpay\Controller\AdminHtml\Payment;
 
 class Capture extends \Magento\Backend\App\Action
 {
-    /** @var \Magento\Backend\Block\Template\Context */
-    public $context;
-
     /** @var \Magento\Sales\Model\Order */
     public $_order;
 
@@ -22,16 +19,6 @@ class Capture extends \Magento\Backend\App\Action
     /** @var \Mobbex\Webpay\Model\TransactionFactory */
     public $mobbexTransactionFactory;
 
-    /**
-     * Constructor.
-     *
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Sales\Model\Order $order
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
-     * 
-     */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Magento\Sales\Model\Order $order,

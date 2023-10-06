@@ -13,14 +13,6 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Mobbex\Webpay\Model\LogFactory */
     public $logFactory;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
-     * @param \Mobbex\Webpay\Model\LogFactory $logFactory
-     * 
-     */
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,

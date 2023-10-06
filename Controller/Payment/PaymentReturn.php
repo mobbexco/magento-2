@@ -51,24 +51,6 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
     /** @var \Magento\Framework\Message\ManagerInterface */
     protected $_messageManager;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Mobbex $helper
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Magento\Framework\Controller\Result\RedirectFactory$redirectFactory,
-     * @param \Magento\Framework\App\RequestInterface $request
-     * @param \Magento\Checkout\Model\Cart $cart
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Sales\Model\Order $order
-     * @param \Magento\Sales\Model\Service\InvoiceService$_invoiceService,
-     * @param \Magento\Framework\DB\Transaction $_transaction
-     * @param \Magento\Framework\Message\ManagerInterface $messageManager
-     * 
-     */
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,

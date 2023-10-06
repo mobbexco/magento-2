@@ -25,16 +25,6 @@ class CustomConfigProvider implements ConfigProviderInterface
     /** @var \Magento\Quote\Model\QuoteFactory */
     public $quoteFactory;
 
-    /**
-     * CustomConfigProvider constructor.
-     * 
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Mobbex $helper
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * 
-     */
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,

@@ -44,26 +44,10 @@ class OrderUpdate
 
     /** @var \Magento\Framework\ObjectManagerInterface */
     protected $_objectManager;
+
+    /** @var \Mobbex\Webpay\Model\CustomField */
+    public $customField;
     
-    /**
-     * Constructor.
-     * 
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
-     * @param \Magento\Sales\Model\Order $order
-     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
-     * @param \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
-     * @param \Magento\Sales\Model\Order\Email\Sender\OrderCommentSender $orderCommentSender
-     * @param \Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface $transactionBuilder
-     * @param \Magento\Framework\App\ResourceConnection $resourceConnection
-     * @param \Magento\Framework\Module\Manager $moduleManager
-     * @param \Magento\Sales\Model\Order\Invoice $invoice
-     * @param \Magento\Sales\Model\Order\CreditmemoFactory $creditmemoFactory
-     * @param \Magento\Sales\Model\Service\CreditmemoService $creditmemoService
-     * @param \Magento\Framework\ObjectManagerInterface $_objectManager
-     * 
-     */
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
@@ -89,8 +73,8 @@ class OrderUpdate
         $this->transactionBuilder = $transactionBuilder;
         $this->resourceConnection = $resourceConnection;
         $this->moduleManager      = $moduleManager;
-        $this->objectManager      = $_objectManager;
-        $this->customFields       = $customFieldFactory->create();
+        $this->_objectManager     = $_objectManager;
+        $this->customField       = $customFieldFactory->create();
         $this->invoice            = $invoice;
         $this->creditmemoFactory  = $creditmemoFactory;
         $this->creditmemoService  = $creditmemoService;
@@ -117,7 +101,7 @@ class OrderUpdate
         $order->setState($orderStatus)->setStatus($orderStatus);
 
         //Update stock reservations
-        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
+        $refunded = $this->customField->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
 
         if ($refunded && $statusName == 'order_status_approved')
             $this->updateStock($order, false);
@@ -299,7 +283,7 @@ class OrderUpdate
             $connection->query($query);
         }
 
-        return $this->customFields->saveCustomField($order->getIncrementId(), 'order', 'refunded', $restoreStock ? 'yes' : 'no');
+        return $this->customField->saveCustomField($order->getIncrementId(), 'order', 'refunded', $restoreStock ? 'yes' : 'no');
     }
 
     /**
@@ -367,7 +351,7 @@ class OrderUpdate
         $creditmemo = $this->creditmemoFactory->createByOrder($order)->setInvoice($invoice);
 
         //Check if order was refunded previously
-        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
+        $refunded = $this->customField->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
         
         //Delete the restored stock to avoid duplicated stock restoration
         if($refunded)
@@ -378,7 +362,7 @@ class OrderUpdate
             $item->setBackToStock((bool) $this->config->get('memo_stock'));
 
         //Set order as refunded
-        $this->customFields->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
+        $this->customField->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
 
         // Try to refund and return credit memo
         return $this->creditmemoService->refund($creditmemo);

@@ -69,29 +69,6 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
     public $_request;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
-     * @param \Magento\Checkout\Model\Cart $cart
-     * @param \Magento\Sales\Model\Order $order
-     * @param \Magento\Framework\UrlInterface $urlBuilder
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Store\Model\StoreManagerInterface $_storeManager
-     * @param \Magento\Catalog\Helper\Image $imageHelper
-     * @param \Magento\Framework\App\ProductMetadataInterface $productMetadata
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Sales\Api\Data\OrderInterface $_orderInterface
-     * @param \Magento\Catalog\Model\ProductRepository $productRepository
-     * @param \Magento\Framework\Event\ConfigInterface $eventConfig
-     * @param \Magento\Framework\Event\ObserverFactory $observerFactory
-     * @param \Magento\Directory\Model\RegionFactory $regionFactory
-     * 
-     */
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,

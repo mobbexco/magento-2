@@ -25,8 +25,11 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
     /** @var \Magento\Quote\Model\QuoteFactory */
     public $quoteFactory;
 
-    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
-    public $customFieldFactory;
+    /** @var \Mobbex\Webpay\Model\CustomField */
+    public $customField;
+
+    /** @var \Mobbex\Webpay\Model\Transaction */
+    public $mobbexTransaction;
 
     /** @var \Mobbex\Webpay\Model\OrderUpdate */
     protected $orderUpdate;
@@ -36,20 +39,6 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 
     public $_request;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Mobbex $helper
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Magento\Quote\Model\QuoteFactory $quoteFactory
-     * @param \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
-     * @param \Mobbex\Webpay\Model\TransactionFactory $transactionFactory
-     * @param \Magento\Sales\Model\Order $order
-     * @param \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
-     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Helper\Config $config,
@@ -61,7 +50,6 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
         \Magento\Sales\Model\Order $order,
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
     ) {
-        error_log('llego al webhok: ' . "\n" . json_encode('si', JSON_PRETTY_PRINT) . "\n", 3, 'log.log');
         parent::__construct($context);
 
         $this->config            = $config;

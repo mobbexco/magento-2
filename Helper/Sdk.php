@@ -28,19 +28,6 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Mobbex\Webpay\Helper\Db */
     public $db;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Mobbex\Webpay\Helper\Config $config
-     * @param \Mobbex\Webpay\Helper\Db $db
-     * @param \Mobbex\Webpay\Helper\Mobbex $helper
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * @param \Magento\Framework\UrlInterface $urlBuilder
-     * @param \Magento\Framework\Module\ResourceInterface $moduleResource
-     * @param \Magento\Framework\App\ProductMetadataInterface $productMetadata
-     * @param \Mobbex\Webpay\Model\Cache $cache
-     * 
-     */
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Db $db,

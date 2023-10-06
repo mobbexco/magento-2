@@ -10,11 +10,6 @@ class Db extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\App\ResourceConnection */
     public $connection;
 
-    /**
-     * Constructor.
-     * 
-     * @param \Magento\Framework\App\ResourceConnection $resource
-     */
     public function __construct(\Magento\Framework\App\ResourceConnection $resource) {
         $this->connection = $resource->getConnection();
         $this->prefix     = $resource->getTableName('');

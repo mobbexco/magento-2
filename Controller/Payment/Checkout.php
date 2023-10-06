@@ -18,14 +18,6 @@ class Checkout implements \Magento\Framework\App\Action\HttpGetActionInterface
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /**
-     * Constructor.
-     *
-     * @param \Mobbex\Webpay\Helper\Sdk $sdk
-     * @param \Mobbex\Webpay\Helper\Mobbex $helper
-     * @param \Mobbex\Webpay\Helper\Logger $logger
-     * 
-     */
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Mobbex $helper,
