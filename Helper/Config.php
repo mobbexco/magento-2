@@ -52,10 +52,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
     /** Mobbex Catalog Settings */
     public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'is_subscription', 'subscription_uid'];
-
-    /** @var \Magento\Framework\App\Action\Context */
-    public $context;
-
+    
     /** @var \Mobbex\Webpay\Model\CustomField */
     public $customField;
 

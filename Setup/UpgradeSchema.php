@@ -16,6 +16,15 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'log',
     ];
 
+    /**
+     * Constructor.
+     * 
+     * Only load classes that do not use the area code to prevent
+     * 'Area code is not set' error on setup:upgrade execution.
+     * 
+     * @param \Mobbex\Webpay\Helper\Db $db
+     * 
+     */
     public function __construct(
         \Mobbex\Webpay\Helper\Db $db
     ) {

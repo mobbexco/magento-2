@@ -25,6 +25,9 @@ class RefundObserverBeforeSave implements ObserverInterface
     /** @var class */
     public $messageManager;
 
+    /** @var \Mobbex\Webpay\Model\Transaction */
+    public $transaction;
+
     public function __construct(
         Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,

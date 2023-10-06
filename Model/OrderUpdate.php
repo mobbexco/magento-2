@@ -263,7 +263,7 @@ class OrderUpdate
             return;
 
         $connection = $this->resourceConnection->getConnection();
-        $stockId    = $this->objectManager->get('\Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite');
+        $stockId    = $this->_objectManager->get('\Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite');
 
         foreach ($order->getAllVisibleItems() as $item) {
             $product = $item->getProduct();

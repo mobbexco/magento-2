@@ -10,9 +10,6 @@ class Capture extends \Magento\Backend\App\Action
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
 
-    /** @var \Mobbex\Webpay\Helper\Config */
-    public $config;
-
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 

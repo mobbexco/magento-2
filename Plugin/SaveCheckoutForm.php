@@ -17,6 +17,12 @@ class SaveCheckoutForm
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
     public $customFieldFactory;
 
+    /** @var Session */
+    public $customerSession;
+
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
     public function __construct(Config $config, CustomFieldFactory $customFieldFactory, Session $customerSession)
     {
         $this->config = $config;
