@@ -32,6 +32,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                 'sugapay' => [
                     'walletCreditCards' => $checkoutData['wallet'],
                     'paymentMethods'    => $checkoutData['paymentMethods'],
+                    'embedUrl'          => "https://res.mobbex.com/js/embed/mobbex.embed@". \Mobbex\Webpay\Helper\Config::EMBED_VERSION .".js",
                     'config'            => [
                         'embed'  => $this->config->get('embed'),
                         'wallet' => $this->config->get('wallet'),

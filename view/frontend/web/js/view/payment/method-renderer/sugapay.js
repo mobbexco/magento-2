@@ -5,7 +5,7 @@ let returnUrl       = '';
 
 // Add Mobbex script
 var script = document.createElement('script');
-script.src = `https://res.mobbex.com/js/embed/mobbex.embed@1.1.0.js`;
+script.src = window.checkoutConfig.payment.sugapay.embedUrl;
 script.async = true;
 document.body.appendChild(script);
 
