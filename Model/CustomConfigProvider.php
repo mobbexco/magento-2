@@ -10,12 +10,37 @@ use Magento\Checkout\Model\ConfigProviderInterface;
  */
 class CustomConfigProvider implements ConfigProviderInterface
 {
-    /**
-     * CustomConfigProvider constructor.
-     */
-    public function __construct(\Mobbex\Webpay\Helper\Instantiator $instantiator) 
+    /** @var \Mobbex\Webpay\Helper\Sdk */
+    public $sdk;
+
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
+    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    public $helper;
+
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    /** @var \Magento\Quote\Model\QuoteFactory */
+    public $quoteFactory;
+
+    public function __construct(
+        \Mobbex\Webpay\Helper\Sdk $sdk,
+        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory
+    ) 
     {
-        $instantiator->setProperties($this, ['sdk', 'config', 'helper', 'logger', 'quoteFactory']);
+        $this->sdk          = $sdk;
+        $this->config       = $config;
+        $this->helper       = $helper;
+        $this->logger       = $logger;
+        $this->quoteFactory = $quoteFactory;
+
+        //Init mobbex php plugins sdk
+        $this->sdk->init();
     }
 
     /**

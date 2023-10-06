@@ -9,12 +9,27 @@ namespace Mobbex\Webpay\Controller\Payment;
 
 class Checkout implements \Magento\Framework\App\Action\HttpGetActionInterface
 {
-    /** @var \Mobbex\Webpay\Helper\Instantiator */
-    public $instantiator;
+    /** @var \Mobbex\Webpay\Helper\Sdk */
+    public $sdk;
 
-    public function __construct(\Mobbex\Webpay\Helper\Instantiator $instantiator)
+    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    public $helper;
+
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    public function __construct(
+        \Mobbex\Webpay\Helper\Sdk $sdk,
+        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Logger $logger
+    )
     {
-        $instantiator->setProperties($this, ['sdk', 'helper', 'logger']);
+        $this->sdk    = $sdk;
+        $this->helper = $helper;
+        $this->logger = $logger;
+
+        //Init mobbex php plugins sdk
+        $this->sdk->init();
     }
 
     public function execute()

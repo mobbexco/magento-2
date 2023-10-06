@@ -14,11 +14,15 @@ use Magento\Checkout\Api\Data\ShippingInformationInterface;
  */
 class SaveCheckoutForm
 {
-    /**
-     * @param Config $config
-     * @param CustomFieldFactory $customFieldFactory
-     * @param Session $customerSession
-     */
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    public $customFieldFactory;
+
+    /** @var Session */
+    public $customerSession;
+
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
     public function __construct(Config $config, CustomFieldFactory $customFieldFactory, Session $customerSession)
     {
         $this->config = $config;

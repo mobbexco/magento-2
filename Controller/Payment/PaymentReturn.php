@@ -12,8 +12,35 @@ use Magento\Framework\Controller\ResultInterface;
  */
 class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterface
 {
-    /** @var \Mobbex\Webpay\Helper\Instantiator */
-    public $instantiator;
+    /** @var \Mobbex\Webpay\Helper\Sdk */
+    public $sdk;
+
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+    
+    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    public $helper;
+
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    /** @var \Magento\Quote\Model\QuoteFactory */
+    public $quoteFactory;
+
+    /** @var \Magento\Framework\Controller\Result\RedirectFactory */
+    public $redirectFactory;
+
+    /** @var \Magento\Framework\App\RequestInterface */
+    public $_request;
+
+    /** @var \Magento\Checkout\Model\Cart */
+    public $_cart;
+
+    /** @var \Magento\Checkout\Model\Session */
+    public $_checkoutSession;
+
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
 
     /** @var Magento\Sales\Model\Service\InvoiceService */
     public $_invoiceService;
@@ -22,18 +49,39 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
     protected $_transaction;
 
     /** @var \Magento\Framework\Message\ManagerInterface */
-    protected $messageManager;
+    protected $_messageManager;
 
     public function __construct(
-        \Mobbex\Webpay\Helper\Instantiator $instantiator,
+        \Mobbex\Webpay\Helper\Sdk $sdk,
+        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Magento\Framework\Controller\Result\RedirectFactory $redirectFactory,
+        \Magento\Framework\App\RequestInterface $request,
+        \Magento\Checkout\Model\Cart $cart,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Sales\Model\Order $order,
         \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
         \Magento\Framework\DB\Transaction $_transaction,
         \Magento\Framework\Message\ManagerInterface $messageManager
     ) {
-        $instantiator->setProperties($this, ['sdk', 'config', 'helper', 'logger', 'quoteFactory','redirectFactory', '_request', '_cart', '_checkoutSession', '_order']);
-        $this->_invoiceService = $_invoiceService;
-        $this->_transaction    = $_transaction;
-        $this->_messageManager = $messageManager;
+        $this->sdk              = $sdk;
+        $this->config           = $config;
+        $this->helper           = $helper;
+        $this->logger           = $logger;
+        $this->quoteFactory     = $quoteFactory;
+        $this->redirectFactory  = $redirectFactory;
+        $this->_request         = $request;
+        $this->_cart            = $cart;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_order           = $order;
+        $this->_invoiceService  = $_invoiceService;
+        $this->_transaction     = $_transaction;
+        $this->_messageManager  = $messageManager;
+
+        //Init mobbex php plugins sdk
+        $this->sdk->init();
     }
 
     /**

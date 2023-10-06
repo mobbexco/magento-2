@@ -7,11 +7,29 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CancelOrderObserver implements ObserverInterface
 {
-    public function __construct(\Magento\Framework\App\Action\Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
+    /** @var \Mobbex\Webpay\Model\OrderUpdate */
+    public $orderUpdate;
+
+    /** @var \Mobbex\Webpay\Model\CustomField */
+    public $customField;
+
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
+
+    /** @var array */
+    public $params;
+
+    public function __construct(
+        \Magento\Framework\App\Action\Context $context,
+        \Mobbex\Webpay\Model\OrderUpdate $orderUpdate,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Sales\Model\Order $order
+    )
     {
-        $instantiator->setProperties($this, ['customFieldFactory', 'orderUpdate', '_order']);
+        $this->orderUpdate  = $orderUpdate;
+        $this->_order       = $order;
         $this->params       = $context->getRequest()->getParams();
-        $this->customFields = $this->customFieldFactory->create();
+        $this->customField  = $customFieldFactory->create();
     }
 
     /**
@@ -39,13 +57,13 @@ class CancelOrderObserver implements ObserverInterface
     public function updateStock($order)
     {
         //Check if order was refunded
-        $refunded = $this->customFields->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
+        $refunded = $this->customField->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
 
         //If order was refunded discount stock to avoid duplicate refund
         if ($refunded)
             $this->orderUpdate->updateStock($order, false);
 
         //Set order as refunded
-        return $this->customFields->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
+        return $this->customField->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
     }
 }

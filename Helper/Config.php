@@ -52,6 +52,12 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
     /** Mobbex Catalog Settings */
     public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'is_subscription', 'subscription_uid'];
+    
+    /** @var \Mobbex\Webpay\Model\CustomField */
+    public $customField;
+
+    /** @var \Magento\Framework\App\Config\Storage\WriterInterface */
+    public $configWriter;
 
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
@@ -59,6 +65,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
         parent::__construct($context);
+        
         $this->configWriter = $configWriter;
         $this->customField = $customFieldFactory->create();
     }

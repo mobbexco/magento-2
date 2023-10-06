@@ -7,10 +7,24 @@ use Magento\Framework\Event\ObserverInterface;
 
 class ProductSaveObserver implements ObserverInterface
 {
-    public function __construct(\Magento\Framework\App\Action\Context $context, \Mobbex\Webpay\Helper\Instantiator $instantiator)
+    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    public $helper;
+
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    public $customFieldFactory;
+
+    /** @var array */
+    public $params;
+
+    public function __construct(
+        \Magento\Framework\App\Action\Context $context,
+        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+    )
     {
-        $instantiator->setProperties($this, ['helper', 'customFieldFactory']);
-        $this->params = $context->getRequest()->getParams();
+        $this->helper             = $helper;
+        $this->customFieldFactory = $customFieldFactory;
+        $this->params             = $context->getRequest()->getParams();
     }
 
     /**
@@ -47,8 +61,8 @@ class ProductSaveObserver implements ObserverInterface
         
         //Save mobbex custom fields
         foreach ($productConfigs as $key => $value) {
-            $customFields = $this->customFieldFactory->create();
-            $customFields->saveCustomField($observer->getProduct()->getId(), 'product', $key, $value);
+            $customField = $this->customFieldFactory->create();
+            $customField->saveCustomField($observer->getProduct()->getId(), 'product', $key, $value);
         }
 
         $this->helper->executeHook('mobbexSaveProductSettings', false, $observer->getProduct(), $this->params);

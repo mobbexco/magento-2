@@ -10,9 +10,6 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
     const VERSION = '3.8.0';
 
-    /** @var \Mobbex\Webpay\Helper\Instantiator */
-    public $instantiator;
-
     /** @var ScopeConfigInterface */
     public $scopeConfig;
 
@@ -46,8 +43,41 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Directory\Model\RegionFactory */
     public $regionFactory;
 
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    /** @var \Magento\Quote\Model\QuoteFactory */
+    public $quoteFactory;
+
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    public $customFieldFactory;
+
+    /** @var \Magento\Checkout\Model\Cart */
+    public $_cart;
+
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
+
+    /** @var \Magento\Framework\UrlInterface */
+    public $_urlBuilder;
+
+    /** @var \Magento\Checkout\Model\Session */
+    public $_checkoutSession;
+
+    public $_request;
+
     public function __construct(
-        \Mobbex\Webpay\Helper\Instantiator $instantiator,
+        \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Checkout\Model\Cart $cart,
+        \Magento\Sales\Model\Order $order,
+        \Magento\Framework\UrlInterface $urlBuilder,
+        \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $_storeManager,
         \Magento\Catalog\Helper\Image $imageHelper,
@@ -59,7 +89,14 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Event\ObserverFactory $observerFactory,
         \Magento\Directory\Model\RegionFactory $regionFactory
     ) {
-        $instantiator->setProperties($this, ['config', 'logger', 'customFieldFactory', 'quoteFactory', '_cart', '_order', '_urlBuilder', '_checkoutSession']);
+        $this->config             = $config;
+        $this->logger             = $logger;
+        $this->customFieldFactory = $customFieldFactory;
+        $this->quoteFactory       = $quoteFactory;
+        $this->_cart              = $cart;
+        $this->_order             = $order;
+        $this->_checkoutSession   = $checkoutSession;
+        $this->_urlBuilder        = $urlBuilder;
         $this->scopeConfig        = $scopeConfig;
         $this->_storeManager      = $_storeManager;
         $this->imageHelper        = $imageHelper;

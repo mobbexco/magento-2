@@ -4,12 +4,34 @@ namespace Mobbex\Webpay\Controller\AdminHtml\Payment;
 
 class Capture extends \Magento\Backend\App\Action
 {
+    /** @var \Magento\Sales\Model\Order */
+    public $_order;
+
+    /** @var \Mobbex\Webpay\Helper\Sdk */
+    public $sdk;
+
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
+    /** @var \Mobbex\Webpay\Model\TransactionFactory */
+    public $mobbexTransactionFactory;
+
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
-        \Mobbex\Webpay\Helper\Instantiator $instantiator
+        \Magento\Sales\Model\Order $order,
+        \Mobbex\Webpay\Helper\Sdk $sdk,
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
     ) {
         parent::__construct($context);
-        $instantiator->setProperties($this, ['sdk', 'logger', 'mobbexTransactionFactory', '_order']);
+
+        $this->sdk                      = $sdk;
+        $this->_order                   = $order;
+        $this->mobbexTransactionFactory = $mobbexTransactionFactory;
+        $this->logger                   = $logger;
+
+        //Init mobbex php plugins sdk
+        $this->sdk->init();
     }
 
     public function execute()

@@ -7,7 +7,7 @@ class Db extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var string */
     public $prefix;
 
-    /** @var class */
+    /** @var \Magento\Framework\App\ResourceConnection */
     public $connection;
 
     public function __construct(\Magento\Framework\App\ResourceConnection $resource) {
