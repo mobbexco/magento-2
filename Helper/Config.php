@@ -4,6 +4,8 @@ namespace Mobbex\Webpay\Helper;
 
 class Config extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    const EMBED_VERSION = '1.1.0';
+    
     /** Module configuration paths */
     public $settingPaths = [
         'api_key'                            => 'payment/sugapay/api_key',

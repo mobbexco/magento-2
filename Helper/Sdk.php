@@ -37,7 +37,10 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
     public function init()
     {
         // Set platform information
-        \Mobbex\Platform::init('magento_2', $this->moduleResource->getDbVersion('Mobbex_Webpay'), $this->_urlBuilder->getUrl('/'),
+        \Mobbex\Platform::init(
+            'magento_2', $this->moduleResource->getDbVersion('Mobbex_Webpay'),
+            $this->_urlBuilder->getUrl('/'),
+            \Mobbex\Webpay\Helper\Config::EMBED_VERSION,
             [
                 'platform' => $this->productMetadata->getVersion(),
                 'sdk'      => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
