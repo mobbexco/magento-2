@@ -125,7 +125,7 @@ function embedPayment(response){
 function insertWalletSdk() {
     // Add mobbex wallet SDK script
     var script = document.createElement('script');
-    script.src = `https://res.mobbex.com/js/sdk/mobbex@1.0.0.js`;
+    script.src = `https://res.mobbex.com/js/sdk/mobbex@1.1.0.js`;
     script.async = true;
     document.body.appendChild(script);
 }
