@@ -127,11 +127,21 @@ class OrderUpdate
      */
     public function updateTotals($order, $data)
     {
+        //Reset fee & discount
+        $order->setFee(0);
+        $order->setDiscountAmount(0);
+
+        //Get order total
         $orderTotal  = $order->getGrandTotal();
+
+        //Calculate total paid
         $totalPaid   = isset($data['total']) ? $data['total'] : $orderTotal;
+
+        //Calculate diference between totals
         $paidDiff    = $totalPaid - $orderTotal;
         $paidDiffDes = isset($data['installment_name']) ? $data['installment_name'] : '';
 
+        //Add discount/fee
         if ($paidDiff > 0) {
             $order->setFee($paidDiff);
         } elseif ($paidDiff < 0) {
@@ -139,6 +149,7 @@ class OrderUpdate
             $order->setDiscountDescription($paidDiffDes);
         }
 
+        //Update totals
         $order->setGrandTotal($totalPaid);
         $order->setTotalPaid($totalPaid);
 
