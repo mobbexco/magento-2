@@ -180,7 +180,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
-            $this->getAddresses([$orderData->getBillingAddress()->getData(), $orderData->getShippingAddress()->getData()])
+            $this->getAddresses($orderData)
         );
 
         //Add order id to the response
@@ -260,7 +260,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 isset($items) ? $items : [],
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
-                $this->getAddresses([$quote->getBillingAddress()->getData(), $quote->getShippingAddress()->getData()]),
+                $this->getAddresses($quote),
                 'none',
                 'mobbexQuoteCheckoutRequest'
             );
@@ -365,12 +365,22 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Get Addresses data for Mobebx Checkout.
-     * @param array $addressesData
+     * 
+     * @param class $data
+     * 
      * @return array $addresses
      */
-    public function getAddresses($addressesData)
+    public function getAddresses($data)
     {
-        $addresses = [];
+        $addresses = $addressesData = array();
+
+        //Check if there are billing address
+        if($data->getBillingAddress())
+            $addressesData[] = $data->getBillingAddress()->getData();
+        
+        //Check if there are shipping address
+        if($data->getShippingAddress())
+            $addressesData[] = $data->getShippingAddress()->getData();
 
         foreach ($addressesData as $address) {
             $region = $this->regionFactory->create()->load($address['region_id'])->getData();
