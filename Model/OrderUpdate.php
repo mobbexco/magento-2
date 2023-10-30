@@ -105,7 +105,7 @@ class OrderUpdate
 
         if ($refunded && $statusName == 'order_status_approved')
             $this->updateStock($order, false);
-        else if (!$refunded && in_array($order->getStatus(), ['mobbex_failed', 'mobbex_refunded', 'mobbex_rejected']))
+        else if ($this->config->get('memo_stock') && !$refunded && in_array($order->getStatus(), ['mobbex_failed', 'mobbex_refunded', 'mobbex_rejected']))
             $this->updateStock($order);
 
         // Notify the customer
@@ -373,7 +373,8 @@ class OrderUpdate
             $item->setBackToStock((bool) $this->config->get('memo_stock'));
 
         //Set order as refunded
-        $this->customField->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
+        if($this->config->get('memo_stock'))
+            $this->customField->saveCustomField($order->getIncrementId(), 'order', 'refunded', 'yes');
 
         // Try to refund and return credit memo
         return $this->creditmemoService->refund($creditmemo);
