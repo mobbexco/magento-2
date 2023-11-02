@@ -11,9 +11,9 @@ foreach ($this->config->catalogSettings as $value)
 
 try {
     extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
-} catch (\Mobbex\Exception $e) {
+} catch (\Exception $e) {
     $commonFields = $advancedFields = $sourceNames = [];
-    $this->logger->log('error', "Template > getContent | ".$e->getMessage());
+    $this->logger->log('error', "Template > getContent | {$e->getMessage()}");
 }
 
 include $this->getTemplateFile('Mobbex_Webpay::plans-filter.phtml');
