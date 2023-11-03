@@ -2,7 +2,6 @@
 
 namespace Mobbex\Webpay\Plugin;
 
-use Mobbex\Webpay\Helper\Config;
 use Magento\Checkout\Block\Checkout\LayoutProcessor;
 
 /**
@@ -11,10 +10,13 @@ use Magento\Checkout\Block\Checkout\LayoutProcessor;
  */
 class CheckoutForm
 {
+    /** @var Mobbex\Webpay\Helper\Config */
+    public $config;
+
     /**
      * @param Config $config
      */
-    public function __construct(Config $config)
+    public function __construct(\Mobbex\Webpay\Helper\Config $config)
     {
         $this->config = $config;
     }
