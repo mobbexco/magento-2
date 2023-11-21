@@ -58,9 +58,10 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'walletCreditCards' => $checkoutData['wallet'],
                     'paymentMethods'    => $checkoutData['paymentMethods'],
                     'config'            => [
-                        'embed'  => $this->config->get('embed'),
-                        'wallet' => $this->config->get('wallet'),
-                        'banner' => $this->config->get('checkout_banner'),
+                        'embed'        => $this->config->get('embed'),
+                        'wallet'       => $this->config->get('wallet'),
+                        'banner'       => $this->config->get('checkout_banner'),
+                        'primaryColor' => $this->config->get('color'),
                     ],
                 ],
             ],
