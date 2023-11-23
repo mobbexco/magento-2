@@ -6,6 +6,7 @@ ul#wallet-cards li {
 
 img[src*='res.mobbex'],
 img[src*='res.sugaway'] {
-    max-height: 2em;
+    max-height: 3em;
     border-radius: 100%;
+    margin-right: .5em;
 }
