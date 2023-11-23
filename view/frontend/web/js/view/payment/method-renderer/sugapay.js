@@ -232,10 +232,6 @@ define(
             getBanner: function () {
                 return window.checkoutConfig.payment.sugapay.config.banner;
             },
-            getStyle: function () {
-                let color = window.checkoutConfig.payment.sugapay.config.primaryColor;
-                return "background-color:"+color+";";
-            },
             getPaymentMethods: function () {
                 return window.checkoutConfig.payment.sugapay['paymentMethods'];
             },

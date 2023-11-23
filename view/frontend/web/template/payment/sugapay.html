@@ -19,7 +19,7 @@
             
             <label data-bind="attr: {'for': item.id}" class="label" style="display: flex; align-items: center;">
                 <!-- ko if: (item.image != '') -->
-                <img data-bind="attr: {'src': item.image, 'style': $parent.getStyle() }" alt="mobbex metodos de pago">
+                <img data-bind="attr: {'src': item.image, 'style': item.style }" alt="mobbex metodos de pago">
                 <!-- /ko -->
                 <span data-bind="text: item.name"></span>
             </label>
@@ -27,7 +27,7 @@
         <!-- ko if: ((item.id == 'card_input' || $parent.getPaymentMethods().length == 1) && $parent.getBanner()) -->
         <div class="mobbex-content" style="padding: 20px 0" id="mbbx-banner">
             <img data-bind="attr: {src: $parent.getBanner()}" alt="mobbex metodos de pagos" class="mobbex-banner"
-            style="max-width: 100%;" />
+            style="max-width: 100%;border-radius:0;" />
         </div>
         <!-- /ko -->
 
@@ -42,7 +42,7 @@
                 data-bind="attr: {'id': card.id, value: card.value}"
                 class="mbbx-payment-method-input mbbx-card">
             <label data-bind="attr: {'for': card.id}" style="display: flex; align-items: center;">
-                <img data-bind="attr: {'src': card.img, 'style': $parent.getStyle()}">
+                <img data-bind="attr: {'src': card.img }">
                 <span data-bind="text: card.name"></span>
             </label>
         </div>
