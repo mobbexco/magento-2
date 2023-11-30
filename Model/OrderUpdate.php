@@ -47,6 +47,9 @@ class OrderUpdate
 
     /** @var \Mobbex\Webpay\Model\CustomField */
     public $customField;
+
+    /** @var \Magento\Sales\Api\OrderManagementInterface */
+    public $orderManagement;
     
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
@@ -62,7 +65,8 @@ class OrderUpdate
         \Magento\Sales\Model\Order\Invoice $invoice,
         \Magento\Sales\Model\Order\CreditmemoFactory $creditmemoFactory,
         \Magento\Sales\Model\Service\CreditmemoService $creditmemoService,
-        \Magento\Framework\ObjectManagerInterface $_objectManager
+        \Magento\Framework\ObjectManagerInterface $_objectManager,
+        \Magento\Sales\Api\OrderManagementInterface $orderManagement
     ) {
         $this->config = $config;
         $this->logger = $logger;
@@ -78,6 +82,7 @@ class OrderUpdate
         $this->invoice            = $invoice;
         $this->creditmemoFactory  = $creditmemoFactory;
         $this->creditmemoService  = $creditmemoService;
+        $this->orderManagement    = $orderManagement;
     }
 
     /**
@@ -331,12 +336,12 @@ class OrderUpdate
     {
         // First, try to cancel
         if ($order->canCancel())
-            return $order->cancel();
+            return $this->orderManagement->cancel($order->getId());
 
         // Exit if it is not refundable
         if (!$order->canCreditmemo())
             return;
-        
+
         return $this->createCreditMemo($order);
     }
 

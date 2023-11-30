@@ -51,6 +51,9 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
     /** @var \Magento\Framework\Message\ManagerInterface */
     protected $_messageManager;
 
+    /** @var \Magento\Sales\Api\OrderManagementInterface */
+    public $orderManagement;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
@@ -64,7 +67,8 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
         \Magento\Sales\Model\Order $order,
         \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
         \Magento\Framework\DB\Transaction $_transaction,
-        \Magento\Framework\Message\ManagerInterface $messageManager
+        \Magento\Framework\Message\ManagerInterface $messageManager,
+        \Magento\Sales\Api\OrderManagementInterface $orderManagement
     ) {
         $this->sdk              = $sdk;
         $this->config           = $config;
@@ -79,6 +83,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
         $this->_invoiceService  = $_invoiceService;
         $this->_transaction     = $_transaction;
         $this->_messageManager  = $messageManager;
+        $this->orderManagement  = $orderManagement;
 
         //Init mobbex php plugins sdk
         $this->sdk->init();
@@ -141,7 +146,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
     private function restoreCart($quote_id)
     {
         //First cancel the order
-        $this->cancelOrder();
+        $this->orderManagement->cancel($this->_order->getId());
         //Get Quote
         $quote = $this->quoteFactory->create()->load($quote_id);
         //Debug data
@@ -155,16 +160,5 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
         $this->_checkoutSession->replaceQuote($quote);
         $this->_cart->setQuote($quote);
         $this->_checkoutSession->restoreQuote();
-    }
-
-    /**
-     * Cancel orders
-     */
-    private function cancelOrder()
-    {
-        $this->_order->cancel();
-        $this->_order->setState(\Magento\Sales\Model\Order::STATE_CANCELED)->setStatus(\Magento\Sales\Model\Order::STATE_CANCELED);
-        $this->_order->addStatusToHistory(\Magento\Sales\Model\Order::STATE_CANCELED, 'Orden cancelada', false);
-        $this->_order->save();
     }
 }
