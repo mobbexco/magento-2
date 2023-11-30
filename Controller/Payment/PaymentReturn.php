@@ -95,26 +95,29 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
             $this->logger->log('debug', 'PaymentReturn Controller > Request', ["params" => $this->_request->getParams()]);
 
             // Get data
-            extract($this->_request->getParams());
+            $status  = $this->_request->getParam('status');
+            $quoteId = $this->_request->getParam('quote_id');
+            $orderId = $this->_request->getParam('order_id');
 
-            if (empty($order_id) && !empty($quote_id)) {
-                $quote    = $this->quoteFactory->create()->load($quote_id);
-                $order_id = $quote->getReservedOrderId();
+            if ($quoteId && !$orderId) {
+                $quote    = $this->quoteFactory->create()->load($quoteId);
+                $orderId = $quote->getReservedOrderId();
             }
 
             // if data looks fine
-            if (isset($order_id)) {
+            if ($orderId) {
                 // Get Order
-                $this->_order->loadByIncrementId($order_id);
+                $this->_order->loadByIncrementId($orderId);
 
                 $this->logger->log('debug', 'PaymentReturn > execute', $this->_order->debug());
+                $this->helper->executeHook('mobbexPaymentReturn', false, $status, $quoteId, $this->_order->getId());
 
                 if ($status > 1 && $status < 400) {
                     return $this->redirectFactory->create()->setPath('checkout/onepage/success');
                 } else {
                     //If there are a quote id restore the cart
-                    if(isset($quote_id))
-                        $this->restoreCart($quote_id);
+                    if($quoteId)
+                        $this->restoreCart($quoteId);
                         
                     return $this->redirectFactory->create()->setPath('checkout/');
                 }

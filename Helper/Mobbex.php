@@ -115,8 +115,9 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     public function getCheckout()
     {
         // get order data
-        $orderId     = $this->_checkoutSession->getLastRealOrderId();
-        $orderData   = $this->_order->load($this->_checkoutSession->getLastRealOrder()->getEntityId());
+        $orderIncrementalId = $this->_checkoutSession->getLastRealOrderId();
+        $orderEntityId      = $this->_checkoutSession->getLastRealOrder()->getEntityId();
+        $orderData   = $this->_order->load($orderEntityId);
         $orderAmount = round($this->_orderInterface->getData('base_grand_total'), 2);
 
         // Get customer data
@@ -173,10 +174,10 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         $mobbexCheckout = new \Mobbex\Modules\Checkout(
-            $orderId,
+            $orderEntityId,
             (float) $orderAmount,
-            $this->getEndpointUrl('paymentreturn', ['order_id' => $orderId]),
-            $this->getEndpointUrl('webhook', ['order_id' => $orderId, 'mbbx_token' => $this->config->generateToken()]),
+            $this->getEndpointUrl('paymentreturn', ['order_id' => $orderIncrementalId]),
+            $this->getEndpointUrl('webhook', ['order_id' => $orderIncrementalId, 'mbbx_token' => $this->config->generateToken()]),
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
@@ -184,7 +185,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         );
 
         //Add order id to the response
-        $mobbexCheckout->response['orderId'] = $orderId;
+        $mobbexCheckout->response['orderId'] = $orderIncrementalId;
 
         $this->logger->log('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
 
