@@ -2,8 +2,6 @@
 
 namespace Mobbex\Webpay\Controller\Payment;
 
-use Exception;
-
 /**
  * Class Webhook
  * @package Mobbex\Webpay\Controller\Payment
