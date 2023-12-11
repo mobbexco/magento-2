@@ -106,7 +106,10 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
 
             if ($quoteId && !$orderId) {
                 $quote    = $this->quoteFactory->create()->load($quoteId);
-                $orderId = $quote->getReservedOrderId();
+                $orderId  = $quote->getReservedOrderId();
+            } elseif($orderId && !$quoteId) {
+                $this->_order->loadByIncrementId($orderId);
+                $quote_id = $this->_order->getQuoteId();
             }
 
             // if data looks fine
@@ -124,7 +127,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
                     if($quoteId)
                         $this->restoreCart($quoteId);
                         
-                    return $this->redirectFactory->create()->setPath('checkout/');
+                    return $this->redirectFactory->create()->setPath('checkout/', ['_fragment' => 'payment']);
                 }
 
 
