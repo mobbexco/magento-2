@@ -276,6 +276,11 @@
                         <comment>Muestra un sólo método de pago de Mobbex al finalizar la compra. Si tiene varios activos, el listado se mostrará una vez abierto el modal de pago.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                    <field id="show_method_icons" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Íconos de medios de pago</label>
+                        <comment>Muestra los íconos de métodos de pagos.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                     <field id="online_refund" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Devolución Online (Beta)</label>
                         <comment>Si está activa, los credit memos nuevos generarán devoluciones en Mobbex.</comment>
