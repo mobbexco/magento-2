@@ -155,8 +155,9 @@ class OrderUpdate
         }
 
         //Update totals
-        $order->setGrandTotal($totalPaid);
+        $order->setGrandTotal($orderTotal);
         $order->setTotalPaid($totalPaid);
+        $order->setTotalRefunded($orderTotal - $totalPaid);
 
         $order->save();
     }
