@@ -109,7 +109,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
                 $orderId  = $quote->getReservedOrderId();
             } elseif($orderId && !$quoteId) {
                 $this->_order->loadByIncrementId($orderId);
-                $quote_id = $this->_order->getQuoteId();
+                $quoteId = $this->_order->getQuoteId();
             }
 
             // if data looks fine
