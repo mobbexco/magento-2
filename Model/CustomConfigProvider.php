@@ -89,14 +89,13 @@ class CustomConfigProvider implements ConfigProviderInterface
             foreach ($checkoutData['data']['paymentMethods'] as $method) {
                 $isCard = $method['group'] == 'card' && $method['subgroup'] == 'card_input';
 
-                if(!$this->config->get('show_method_icons') && $isCard || $this->config->get('show_method_icons'))
-                    $data['paymentMethods'][] = [
-                        'id'    => $method['subgroup'],
-                        'value' => $method['group'] . ':' . $method['subgroup'],
-                        'name'  => ($isCard && $this->config->get('checkout_title')) || empty($method['subgroup_title']) ? $this->config->get('checkout_title') : $method['subgroup_title'],
-                        'image' => $method['subgroup_logo'],
-                        'style' => $method['subgroup'] === 'card_input' ? "background-color:{$this->config->get('color')};" : '',
-                    ];
+                $data['paymentMethods'][] = [
+                    'id'    => $method['subgroup'],
+                    'value' => $method['group'] . ':' . $method['subgroup'],
+                    'name'  => ($isCard && $this->config->get('checkout_title')) || empty($method['subgroup_title']) ? $this->config->get('checkout_title') : $method['subgroup_title'],
+                    'image' => $this->config->get('show_method_icons') ? $method['subgroup_logo'] : ($isCard ? $method['subgroup_logo'] : ''),
+                    'style' => $method['subgroup'] === 'card_input' ? "background-color:{$this->config->get('color')};" : '',
+                ];
             }
             if(count($data['paymentMethods']) == 1 && $this->config->get('checkout_title'))
                 $data['paymentMethods'][0]['name'] = $this->config->get('checkout_title');
