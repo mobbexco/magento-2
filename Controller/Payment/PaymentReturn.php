@@ -144,14 +144,14 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
 
     /**
      * Restore the customer selected items in the cart.
-     * @param string $quote_id
+     * @param string $quoteId
      */
-    private function restoreCart($quote_id)
+    private function restoreCart($quoteId)
     {
         //First cancel the order
         $this->orderManagement->cancel($this->_order->getId());
         //Get Quote
-        $quote = $this->quoteFactory->create()->load($quote_id);
+        $quote = $this->quoteFactory->create()->load($quoteId);
         //Debug data
         $this->logger->log('debug', 'PaymentReturn > restoreCart', $quote->debug());
         //Restore cart
