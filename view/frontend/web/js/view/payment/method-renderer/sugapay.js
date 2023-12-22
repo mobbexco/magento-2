@@ -214,7 +214,7 @@ define(
             },
             afterPlaceOrder: function () {
                 $("body").trigger('processStart');
-                returnUrl = urlBuilder.build('sugapay/payment/paymentreturn/') + `?quote_id=${window.checkoutConfig.payment.sugapay.orderId}`;
+                returnUrl = urlBuilder.build('sugapay/payment/paymentreturn/') + `?quote_id=${window.checkoutConfig.payment.sugapay.quoteId}`;
                 createCheckout(urlBuilder.build('sugapay/payment/checkout/'), response => {
                     $("body").trigger('processStop');
                     if(!response || !response.id){

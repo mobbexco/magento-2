@@ -55,6 +55,7 @@ class CustomConfigProvider implements ConfigProviderInterface
         $config = [
             'payment' => [
                 'sugapay' => [
+                    'quoteId'           => $checkoutData['quoteId'],
                     'walletCreditCards' => $checkoutData['wallet'],
                     'paymentMethods'    => $checkoutData['paymentMethods'],
                     'config'            => [
@@ -83,6 +84,7 @@ class CustomConfigProvider implements ConfigProviderInterface
         $data = [
             'paymentMethods' => [],
             'wallet'         => [],
+            'quoteId'        => $checkoutData['quoteId'],
         ];
 
         if(!empty($checkoutData['data']['paymentMethods'])) {
