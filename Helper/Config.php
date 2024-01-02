@@ -20,6 +20,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'widget_style'                       => 'payment/sugapay/appearance/widget_style',
         'button_logo'                        => 'payment/sugapay/appearance/button_logo',
         'button_text'                        => 'payment/sugapay/appearance/button_text',
+        'show_method_icons'                  => 'payment/sugapay/appearance/show_method_icons',
         'embed'                              => 'payment/sugapay/checkout/embed_payment',
         'wallet'                             => 'payment/sugapay/checkout/wallet_active',
         'multicard'                          => 'payment/sugapay/checkout/multicard',

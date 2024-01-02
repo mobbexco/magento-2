@@ -95,7 +95,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'id'    => $method['subgroup'],
                     'value' => $method['group'] . ':' . $method['subgroup'],
                     'name'  => ($isCard && $this->config->get('checkout_title')) || empty($method['subgroup_title']) ? $this->config->get('checkout_title') : $method['subgroup_title'],
-                    'image' => $method['subgroup_logo'],
+                    'image' => $this->config->get('show_method_icons') ? $method['subgroup_logo'] : '',
                     'style' => $method['subgroup'] === 'card_input' ? "background-color:{$this->config->get('color')};" : '',
                 ];
             }
