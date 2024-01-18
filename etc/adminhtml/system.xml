@@ -264,6 +264,12 @@
                         <label>Estilos del botón de financiación</label>
                         <comment>Modifica los estilos del botón de financiación respetando la sintaxis de CSS.</comment>
                     </field>
+                    
+                    <field id="show_method_icons" translate="label comment" sortOrder="38" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Íconos de medios de pago</label>
+                        <comment>Muestra los íconos de métodos de pagos.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Advanced</label>
@@ -274,11 +280,6 @@
                     <field id="unified_mode" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Modo unificado</label>
                         <comment>Muestra un sólo método de pago de Mobbex al finalizar la compra. Si tiene varios activos, el listado se mostrará una vez abierto el modal de pago.</comment>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-                    <field id="show_method_icons" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Íconos de medios de pago</label>
-                        <comment>Muestra los íconos de métodos de pagos.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
                     <field id="online_refund" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
