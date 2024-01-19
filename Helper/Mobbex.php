@@ -181,7 +181,10 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
-            $this->getAddresses($orderData)
+            $this->getAddresses($orderData),
+            'all',
+            'mobbexCheckoutRequest',
+            "Pedido #$orderIncrementalId"
         );
 
         //Add order id to the response
@@ -263,7 +266,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 $customer,
                 $this->getAddresses($quote),
                 'none',
-                'mobbexQuoteCheckoutRequest'
+                'mobbexQuoteCheckoutRequest',
+                "Carrito #" . $quote->getId()
             );
 
             $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
