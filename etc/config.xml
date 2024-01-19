@@ -34,6 +34,7 @@
                     </email_settings>
                 </checkout>
                 <appearance>
+                    <checkout_title>Pagar con Mobbex</checkout_title>
                     <checkout_banner>https://res.mobbex.com/ecommerce/mobbex_1.png</checkout_banner>
                     <theme>light</theme>
                     <background_color>#ECF2F6</background_color>
