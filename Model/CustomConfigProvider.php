@@ -55,7 +55,7 @@ class CustomConfigProvider implements ConfigProviderInterface
         $config = [
             'payment' => [
                 'sugapay' => [
-                    'quoteId'           => $checkoutData['quoteId'],
+                    'quoteId'           => $this->helper->_checkoutSession->getQuote()->getId(),
                     'walletCreditCards' => $checkoutData['wallet'],
                     'paymentMethods'    => $checkoutData['paymentMethods'],
                     'config'            => [
@@ -84,11 +84,10 @@ class CustomConfigProvider implements ConfigProviderInterface
         $data = [
             'paymentMethods' => [],
             'wallet'         => [],
-            'quoteId'        => $checkoutData['quoteId'],
         ];
 
-        if(!empty($checkoutData['data']['paymentMethods'])) {
-            foreach ($checkoutData['data']['paymentMethods'] as $method) {
+        if(!empty($checkoutData['paymentMethods'])) {
+            foreach ($checkoutData['paymentMethods'] as $method) {
                 $isCard = $method['group'] == 'card' && $method['subgroup'] == 'card_input';
 
                 $data['paymentMethods'][] = [
@@ -111,14 +110,14 @@ class CustomConfigProvider implements ConfigProviderInterface
             ];
         }
 
-        if($this->config->get('wallet') && !empty($checkoutData['data']['wallet'])) {
-            foreach ($checkoutData['data']['wallet'] as $key => $card) {
+        if($this->config->get('wallet') && !empty($checkoutData['wallet'])) {
+            foreach ($checkoutData['wallet'] as $key => $card) {
                 if(!empty($card['installments'])){
                     $data['wallet'][] = [
                         'id'           => 'wallet-card-' . $key,
                         'value'        => 'card-' . $key,
                         'name'         => $card['name'],
-                        'img'          => $card['source']['card']['product']['logo'],
+                        'img'          => $this->config->get('show_method_icons') ? $card['source']['card']['product']['logo'] : null,
                         'maxlength'    => $card['source']['card']['product']['code']['length'],
                         'placeholder'  => $card['source']['card']['product']['code']['name'],
                         'hiddenValue'  => $card['card']['card_number'],
