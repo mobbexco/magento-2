@@ -272,7 +272,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
             $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
             
-            return ['data' => $mobbexCheckout->response, 'quoteId' => $quote->getId()];
+            return $mobbexCheckout->response;
 
         } catch (\Exception $e) {
             $this->logger->log('error', 'Helper Mobbex > getCheckoutFromQuote | '.$e->getMessage(), isset($e->data) ? $e->data : []);
