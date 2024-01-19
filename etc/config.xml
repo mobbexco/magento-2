@@ -57,6 +57,7 @@
     background-color: #6f00ff;
 }
                     </widget_style>
+                    <show_method_icons>1</show_method_icons>
                     <button_logo>https://res.mobbex.com/images/sources/mobbex.png</button_logo>
                 </appearance>
                 <advanced>
