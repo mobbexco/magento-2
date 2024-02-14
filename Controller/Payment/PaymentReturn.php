@@ -113,7 +113,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
             }
 
             // if data looks fine
-            if ($orderId) {
+            if ($orderId && intval($orderId) != 0) {
                 // Get Order
                 $this->_order->loadByIncrementId($orderId);
 
@@ -138,7 +138,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
             }
 
         } catch (Exception $e) {
-            return $this->logger->createJsonResponse('error', 'PaymentReturn Controller > Error: ' . $e->getMessage());
+            return $this->logger->createJsonResponse('error', 'PaymentReturn Controller > Error: ' . $e->getMessage(), ['order_id' => $order_id]);
         }
     }
 
