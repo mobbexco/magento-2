@@ -50,7 +50,13 @@ class OrderUpdate
 
     /** @var \Magento\Sales\Api\OrderManagementInterface */
     public $orderManagement;
-    
+
+    /** @var \Magento\CatalogInventory\Api\StockManagementInterface */
+    protected $stockManagement;
+
+    /** @var \Magento\CatalogInventory\Model\Indexer\Stock\Processor */
+    protected $stockIndexerProcessor;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
@@ -66,23 +72,27 @@ class OrderUpdate
         \Magento\Sales\Model\Order\CreditmemoFactory $creditmemoFactory,
         \Magento\Sales\Model\Service\CreditmemoService $creditmemoService,
         \Magento\Framework\ObjectManagerInterface $_objectManager,
-        \Magento\Sales\Api\OrderManagementInterface $orderManagement
+        \Magento\Sales\Api\OrderManagementInterface $orderManagement,
+        \Magento\CatalogInventory\Api\StockManagementInterface $stockManagement,
+        \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
     ) {
-        $this->config = $config;
-        $this->logger = $logger;
-        $this->_order = $order;
-        $this->orderSender        = $orderSender;
-        $this->invoiceSender      = $invoiceSender;
-        $this->orderCommentSender = $orderCommentSender;
-        $this->transactionBuilder = $transactionBuilder;
-        $this->resourceConnection = $resourceConnection;
-        $this->moduleManager      = $moduleManager;
-        $this->_objectManager     = $_objectManager;
-        $this->customField       = $customFieldFactory->create();
-        $this->invoice            = $invoice;
-        $this->creditmemoFactory  = $creditmemoFactory;
-        $this->creditmemoService  = $creditmemoService;
-        $this->orderManagement    = $orderManagement;
+        $this->config                = $config;
+        $this->logger                = $logger;
+        $this->_order                = $order;
+        $this->orderSender           = $orderSender;
+        $this->invoiceSender         = $invoiceSender;
+        $this->orderCommentSender    = $orderCommentSender;
+        $this->transactionBuilder    = $transactionBuilder;
+        $this->resourceConnection    = $resourceConnection;
+        $this->moduleManager         = $moduleManager;
+        $this->_objectManager        = $_objectManager;
+        $this->customField           = $customFieldFactory->create();
+        $this->invoice               = $invoice;
+        $this->creditmemoFactory     = $creditmemoFactory;
+        $this->creditmemoService     = $creditmemoService;
+        $this->orderManagement       = $orderManagement;
+        $this->stockManagement       = $stockManagement;
+        $this->stockIndexerProcessor = $stockIndexerProcessor;
     }
 
     /**
@@ -98,6 +108,10 @@ class OrderUpdate
 
         if ($orderStatus == $order->getStatus())
             return;
+
+        // Uncancel the order first if it was cancelled  
+        if ($order->isCanceled() && $orderStatus !== 'canceled')
+            $this->uncancell($order);
 
         if ($orderStatus == 'canceled')
             $this->cancelOrder($order);
@@ -383,5 +397,65 @@ class OrderUpdate
 
         // Try to refund and return credit memo
         return $this->creditmemoService->refund($creditmemo);
+    }
+
+    /**
+     * Uncancel an order.
+     * 
+     * @param \Magento\Sales\Model\Order $order
+     */
+    public function uncancell($order)
+    {
+
+        $productStockQty = $productIds = [];
+
+        /** Uncancel items */
+
+        foreach ($order->getAllVisibleItems() as $item) {
+            $productStockQty[$item->getProductId()] = $item->getQtyCanceled();
+            foreach ($item->getChildrenItems() as $child) {
+                $productStockQty[$child->getProductId()] = $item->getQtyCanceled();
+                $child->setQtyCanceled(0);
+                $child->setTaxCanceled(0);
+                $child->setDiscountTaxCompensationCanceled(0);
+            }
+            $item->setQtyCanceled(0);
+            $item->setTaxCanceled(0);
+            $item->setDiscountTaxCompensationCanceled(0);
+        }
+
+        /** Uncancel order data */
+        $order->setSubtotalCanceled(0);
+        $order->setBaseSubtotalCanceled(0);
+        $order->setTaxCanceled(0);
+        $order->setBaseTaxCanceled(0);
+        $order->setShippingCanceled(0);
+        $order->setBaseShippingCanceled(0);
+        $order->setDiscountCanceled(0);
+        $order->setBaseDiscountCanceled(0);
+        $order->setTotalCanceled(0);
+        $order->setBaseTotalCanceled(0);
+
+        /** Set status as pending */
+        $order->setState('pending')->setStatus('pending');
+
+        /* Reverting inventory */
+        $itemsForReindex = $this->stockManagement->registerProductsSale(
+            $productStockQty,
+            $order->getStore()->getWebsiteId()
+        );
+
+        foreach ($itemsForReindex as $item) {
+            $item->save();
+            $productIds[] = $item->getProductId();
+        }
+
+        if (!empty($productIds)) {
+            $this->stockIndexerProcessor->reindexList($productIds);
+        }
+
+        $order->setInventoryProcessed(true);
+
+        $order->save();
     }
 }
