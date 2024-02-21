@@ -104,7 +104,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
             $quoteId = $this->_request->getParam('quote_id');
             $orderId = $this->_request->getParam('order_id');
 
-            if ($quoteId && !$orderId) {
+            if ($quoteId && (!$orderId || intval($orderId) == 0)) {
                 $quote    = $this->quoteFactory->create()->load($quoteId);
                 $orderId  = $quote->getReservedOrderId();
             } elseif($orderId && !$quoteId) {
