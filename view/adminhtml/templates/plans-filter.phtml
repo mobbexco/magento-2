@@ -10,6 +10,7 @@
                     <div class="mbbx-plan">
                         <input type="checkbox" name="<?= $field['id'] ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $field['id'] ?>" data-form-part="<?= $form ?>">
                         <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
+                        <p class="description"><?= $field['description'] ?></p>
                     </div>
                 <?php endforeach; ?>
             </td>
@@ -23,6 +24,7 @@
                         <div class="mbbx-plan-advanced">
                             <input type="checkbox" name="<?= $field['id'] ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $field['id'] ?>" data-form-part="<?= $form ?>">
                             <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
+                            <p class="description"><?= $field['description'] ?></p>
                         </div>
                     <?php endforeach; ?>
                 <?php endforeach; ?>
@@ -49,6 +51,10 @@
 
     .mbbx-plans-cont label {
         font-weight: 400 !important;
+    }
+    .mbbx-plans-cont .description {
+        color: grey;
+        font-size: 1.2rem;
     }
 
     .mbbx-plan-advanced {
