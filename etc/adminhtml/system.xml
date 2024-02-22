@@ -115,6 +115,12 @@
                         <comment>Permite establecer la dureación del checkout en minutos.</comment>
                     </field>
 
+                    <field id="return_timeout" translate="label comment" sortOrder="32" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Tiempo de de espera para la redirección en checkout</label>
+                        <comment>Permite establecer el tiempo de espera para redirección en el checkout en segundos.</comment>
+                    </field>
+
                     <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>
