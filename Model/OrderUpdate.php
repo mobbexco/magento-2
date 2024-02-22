@@ -348,6 +348,9 @@ class OrderUpdate
      */
     public function cancelOrder($order)
     {
+        // Hook for cancel suborders first
+        $this->helper->executeHook('mobbexCancelSubOrder', false, $order->getId());
+
         // First, try to cancel
         if ($order->canCancel())
             return $this->orderManagement->cancel($order->getId());

@@ -104,7 +104,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
             $quoteId = $this->_request->getParam('quote_id');
             $orderId = $this->_request->getParam('order_id');
 
-            if ($quoteId && !$orderId) {
+            if ($quoteId && (!$orderId || intval($orderId) == 0)) {
                 $quote    = $this->quoteFactory->create()->load($quoteId);
                 $orderId  = $quote->getReservedOrderId();
             } elseif($orderId && !$quoteId) {
@@ -118,7 +118,6 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
                 $this->_order->loadByIncrementId($orderId);
 
                 $this->logger->log('debug', 'PaymentReturn > execute', $this->_order->debug());
-                $this->helper->executeHook('mobbexPaymentReturn', false, $status, $quoteId, $this->_order->getId());
 
                 if ($status > 1 && $status < 400) {
                     return $this->redirectFactory->create()->setPath('checkout/onepage/success');
@@ -138,7 +137,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
             }
 
         } catch (Exception $e) {
-            return $this->logger->createJsonResponse('error', 'PaymentReturn Controller > Error: ' . $e->getMessage(), ['order_id' => $order_id]);
+            return $this->logger->createJsonResponse('error', 'PaymentReturn Controller > Error: ' . $e->getMessage(), ['order_id' => $orderId]);
         }
     }
 
@@ -148,12 +147,18 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
      */
     private function restoreCart($quoteId)
     {
+        //Hook to cancel sub orders before
+        $this->helper->executeHook('mobbexCancelSubOrder', false, $this->_order->getId());
+
         //First cancel the order
         $this->orderManagement->cancel($this->_order->getId());
+
         //Get Quote
         $quote = $this->quoteFactory->create()->load($quoteId);
+
         //Debug data
         $this->logger->log('debug', 'PaymentReturn > restoreCart', $quote->debug());
+
         //Restore cart
         $quote->setReservedOrderId(null);
         $quote->setIsActive(true);
