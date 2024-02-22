@@ -150,7 +150,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             if($subscription['enable'] === 'yes') {
                 $items[] = [
                     'type'      => 'subscription',
-                    'reference' => $subscription['uid']
+                    'reference' => $subscription['uid'],
+                    'total'     => round($item->getPrice(), 2)
                 ];
             } else {
                 $items[] = [
