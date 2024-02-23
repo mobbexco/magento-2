@@ -12,6 +12,9 @@ class OrderUpdate
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
+    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    public $helper;
+
     /** @var \Magento\Sales\Model\Order */
     public $_order;
 
@@ -59,6 +62,7 @@ class OrderUpdate
 
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Mobbex $helper,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Magento\Sales\Model\Order $order,
@@ -77,6 +81,7 @@ class OrderUpdate
         \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
     ) {
         $this->config                = $config;
+        $this->helper                = $helper;
         $this->logger                = $logger;
         $this->_order                = $order;
         $this->orderSender           = $orderSender;
