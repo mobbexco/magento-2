@@ -99,17 +99,18 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 
             // Save transaction to db
             $trx = $this->mobbexTransaction->saveTransaction($data);
+            
+            //load the order
+            $order = $this->_order->loadByIncrementId($orderId);
+
+            // Execute own hook to extend functionalities
+            $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
 
             if(in_array($data['status_code'], ['601', '602', '603', '604', '605', '610']))
                 return $this->processRefund($data);
 
             if (!$data['parent'])
                 return;
-
-            $order = $this->_order->loadByIncrementId($orderId);
-
-            // Execute own hook to extend functionalities
-            $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
 
             // Exit if it is a expired operation and the order has already been paid
             if ($data['status_code'] == 401 && $order->getTotalPaid() > 0)
