@@ -8,12 +8,28 @@
             <td class="mbbx-plans">
                 <?php foreach ($commonFields as $field) : ?>
                     <div class="mbbx-plan">
-                        <input type="checkbox" name="<?= $field['id'] ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $field['id'] ?>" data-form-part="<?= $form ?>">
-                        <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
+
+                            <div class="source-popover">
+                                <h3>Medios Disponibles</h3>
+                                <?php foreach ($sourceGroups[$field['label']] as $sourceRef) : ?>
+                                    <div class="mbbx-plan-group">
+                                        <img src="https://res.mobbex.com/images/sources/original/<?= $sourceRef; ?>.png">
+                                        <p><?= isset($sourceNames[$sourceRef]) ? $sourceNames[$sourceRef] : $sourceRef ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                        <div class="mbbx-plan-cont">
+                            <input type="checkbox" name="<?= $field['id'] ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $field['id'] ?>" data-form-part="<?= $form ?>">
+                            <label for="<?= $field['id'] ?>"><?= $field['label'] ?></label>
+                        </div>
+
                         <p class="description"><?= $field['description'] ?></p>
+
                     </div>
                 <?php endforeach; ?>
             </td>
+
             <td class="mbbx-plans">
                 <?php foreach ($advancedFields as $sourceRef => $fields) : ?>
                     <div class="mbbx-plan-source">
@@ -34,6 +50,11 @@
 </table>
 
 <style>
+    .mbbx-plan {
+        position: relative;
+    }
+
+
     .mbbx-plans-cont {
         border: 1px gainsboro solid;
         width: 500px;
@@ -52,6 +73,7 @@
     .mbbx-plans-cont label {
         font-weight: 400 !important;
     }
+
     .mbbx-plans-cont .description {
         color: grey;
         font-size: 1.2rem;
@@ -68,5 +90,51 @@
     .mbbx-plan-source img {
         width: 30px;
         border-radius: 100%;
+    }
+
+    .mbbx-plan-cont {
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .mbbx-plan-group {
+        display: flex;
+        justify-content: left;
+        align-items: center;
+        padding: 5px;
+        background-color: #eaeffb;
+        margin-bottom: 15px;
+    }
+
+    .mbbx-plan-group img {
+        width: 2.5em;
+        margin: 0 5px;
+    }
+
+    .source-popover {
+        display: none;
+        position: absolute;
+        top: 2em;
+        left: 30px;
+        min-width: 15em;
+        justify-content: center;
+        flex-direction: column;
+        border-radius: 5px;
+        background-color: #eaeffb;
+        padding: 1rem;
+        z-index: 100;
+    }
+
+    .source-popover h3 {
+        text-align: center;
+    }
+
+    .mbbx-plan:hover .source-popover {
+        display: flex;
+    }
+
+    .mbbx-plan-group p {
+        margin: 0;
     }
 </style>

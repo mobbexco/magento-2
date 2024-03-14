@@ -12,7 +12,7 @@ foreach ($this->config->catalogSettings as $value)
 try {
     extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
 } catch (\Exception $e) {
-    $commonFields = $advancedFields = $sourceNames = [];
+    $commonFields = $advancedFields = $sourceNames = $sourceGroups = [];
     $this->logger->log('error', "Template > getContent | {$e->getMessage()}");
 }
 
