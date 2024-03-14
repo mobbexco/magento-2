@@ -418,7 +418,6 @@ class OrderUpdate
         $productStockQty = $productIds = [];
 
         /** Uncancel items */
-
         foreach ($order->getAllVisibleItems() as $item) {
             $productStockQty[$item->getProductId()] = $item->getQtyCanceled();
             foreach ($item->getChildrenItems() as $child) {
@@ -447,19 +446,24 @@ class OrderUpdate
         /** Set status as pending */
         $order->setState('pending')->setStatus('pending');
 
-        /* Reverting inventory */
-        $itemsForReindex = $this->stockManagement->registerProductsSale(
-            $productStockQty,
-            $order->getStore()->getWebsiteId()
-        );
 
-        foreach ($itemsForReindex as $item) {
-            $item->save();
-            $productIds[] = $item->getProductId();
-        }
+        /* try revert inventory */
+        try {
+            $itemsForReindex = $this->stockManagement->registerProductsSale(
+                $productStockQty,
+                $order->getStore()->getWebsiteId()
+            );
 
-        if (!empty($productIds)) {
-            $this->stockIndexerProcessor->reindexList($productIds);
+            foreach ($itemsForReindex as $item) {
+                $item->save();
+                $productIds[] = $item->getProductId();
+            }
+
+            if (!empty($productIds)) {
+                $this->stockIndexerProcessor->reindexList($productIds);
+            }
+        } catch (\Exception $e) {
+            $this->logger->log('error', 'failed to reindex items :' . $e->getMessage());
         }
 
         $order->setInventoryProcessed(true);
