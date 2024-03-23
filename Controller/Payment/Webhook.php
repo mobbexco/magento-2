@@ -104,11 +104,12 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             if (!$data['parent'])
                 return;
 
-            // Execute own hook to extend functionalities
-            $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
+            // Get the order status
+            $statusName  = $this->orderUpdate->getStatusConfigName($data['status_code']);
+            $orderStatus = $this->config->get($statusName);
 
-            if(in_array($data['status_code'], ['601', '602', '603', '604', '605', '610']))
-                return $this->processRefund($data);
+            if (in_array($orderStatus, $this->orderUpdate->cancelStatuses))
+                return $this->processRefund($data, $orderStatus);
 
             // Exit if it is a expired operation and the order has already been paid
             if ($data['status_code'] == 401 && $order->getTotalPaid() > 0)
@@ -121,6 +122,9 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             $this->orderUpdate->updateTotals($order, $data);
             $this->orderUpdate->updateStatus($order, $data);
 
+            // Execute own hook to extend functionalities
+            $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
+
             // Redirect to sucess page
             $response['result'] = true;
             
@@ -131,7 +135,7 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
         return $this->logger->createJsonResponse('debug', 'WebHook Received OK: ', $response);
     }
 
-    public function processRefund($data)
+    public function processRefund($data, $orderStatus)
     {
         //Load Order
         $this->_order->loadByIncrementId($data['order_id']);
@@ -142,12 +146,15 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 
         //Save total refunded
         $this->customField->saveCustomField($data['order_id'], 'order', 'total_refunded', $totalRefunded);
-
+        
         if ($data['parent'] || $totalPaid <= 0){
-            $this->orderUpdate->cancelOrder($this->_order);
+            $this->orderUpdate->cancelOrder($this->_order, $orderStatus !== 'mobbex_failed');
             $this->orderUpdate->updateStatus($this->_order, $data);
         }
 
+        // Execute own hook to extend functionalities
+        $this->helper->executeHook('mobbexWebhookReceived', false, json_decode($data['data'], true), $this->_order);
+        
         return $this->logger->createJsonResponse('debug', 'Webhook > processRefund | WebHook Received OK: ', $data);
     }
 }
