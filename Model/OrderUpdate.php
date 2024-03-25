@@ -6,6 +6,18 @@ use Magento\Sales\Model\Order\Payment\Transaction;
 
 class OrderUpdate
 {
+    /** 
+     * @var array 
+     * List of statuses that cancel the order
+     */
+    public $cancelStatuses = [
+        'cancelled',
+        'mobbex_failed',
+        'mobbex_rejected',
+        'mobbex_refunded',
+        'complete'
+    ];
+
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
@@ -114,8 +126,8 @@ class OrderUpdate
         if ($orderStatus == $order->getStatus())
             return;
 
-        // Uncancel the order first if it was cancelled  
-        if ($order->isCanceled() && $orderStatus !== 'canceled')
+        // Uncancel the order first if it was cancelled & new status isnt a cancel status 
+        if (in_array($order->getStatus(), $this->cancelStatuses) && !in_array($orderStatus, $this->cancelStatuses))
             $this->uncancell($order);
 
         if ($orderStatus == 'canceled')
@@ -348,10 +360,11 @@ class OrderUpdate
      * Try to cancel or refund an order.
      * 
      * @param \Magento\Sales\Model\Order $order
+     * @param bool $memo for avoid create a credit memo
      * 
      * @return \Magento\Sales\Model\Order|\Magento\Sales\Model\Order\Creditmemo|null
      */
-    public function cancelOrder($order)
+    public function cancelOrder($order, $memo = true)
     {
         // Hook for cancel suborders first
         $this->helper->executeHook('mobbexCancelSubOrder', false, $order->getId());
@@ -361,7 +374,7 @@ class OrderUpdate
             return $this->orderManagement->cancel($order->getId());
 
         // Exit if it is not refundable
-        if (!$order->canCreditmemo())
+        if (!$order->canCreditmemo() || !$memo )
             return;
 
         return $this->createCreditMemo($order);
@@ -414,7 +427,6 @@ class OrderUpdate
      */
     public function uncancell($order)
     {
-
         $productStockQty = $productIds = [];
 
         /** Uncancel items */
