@@ -7,6 +7,7 @@ import SourceConfig from './index.jsx';
  * after the body is opened.
  *
  * @param {Array} srcList Merged common and advanced plans data.
+ * @param {string} form magento form type.
  *
  * @todo Maybe convert srcList to object using this format:
  * {
@@ -23,9 +24,9 @@ import SourceConfig from './index.jsx';
  *    }
  * }
  */
-export default function initSourceConfig(srcList) {
+export default function initSourceConfig(srcList, form) {
   createRoot(document.getElementById('installments-sorter')).render(
-    <SourceConfig srcList={srcList} />
+    <SourceConfig srcList={srcList} form={form} />
   );
 }
 

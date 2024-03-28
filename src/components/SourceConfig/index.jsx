@@ -3,8 +3,9 @@ import Installments from './Installments';
 import Sources from './Sources';
 import './assets/styles.css';
 import './assets/toggle.css';
+import Installment from './Installment';
 
-export default function SourceConfig({ srcList }) {
+export default function SourceConfig({ srcList, form }) {
   const [state, setState] = useState({
     srcList,
     selected: 0,
@@ -32,6 +33,7 @@ export default function SourceConfig({ srcList }) {
 
   return (
     <div className="mbbx-sort-container">
+      <input type="hidden" name="mbbx_sources" value={JSON.stringify(sources)} data-form-part={form}></input>
       <Sources
         list={sources}
         setList={setSrcList}
