@@ -7,10 +7,13 @@ $id   = isset($this->params['id']) ? $this->params['id'] : 0;
 $form = 'product_form';
 
 foreach ($this->config->catalogSettings as $value)
-   ${$value} = $this->config->getCatalogSetting($id, $value);
+    ${$value} = $this->config->getCatalogSetting($id, $value);
 
 try {
-    extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
+    // extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
+
+    // TODO: Merge with advanced, add checked plans data (now, "active") and "advanced" if its an advanced plan
+    $sources = \Mobbex\Repository::getSources();
 } catch (\Exception $e) {
     $commonFields = $advancedFields = $sourceNames = [];
     $this->logger->log('error', "Template > getContent | {$e->getMessage()}");

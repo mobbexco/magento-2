@@ -4,3 +4,5 @@ mobbex*.zip
 /.vscode
 /.idea
 vendor
+node_modules
+package-lock.json
