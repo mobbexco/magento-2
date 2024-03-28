@@ -2,6 +2,7 @@ import Toggle from 'react-toggle';
 
 export default function Installment({
   uid,
+  reference,
   name,
   description,
   advanced = true,
@@ -12,9 +13,16 @@ export default function Installment({
 }) {
   function setActive(event) {
     const newList = list;
-    newList[index].active = event.target.checked;
-    setList(newList);
-  }
+    const plan    = event.target
+    
+    newList[index].active = plan.checked;
+
+    const status = plan.dataset.advanced !== 'false'
+      ? null 
+      : {'reference': plan.name, 'active': plan.checked};
+
+    setList(newList, status);
+  } 
 
   return (
     <div className="installment">
@@ -24,8 +32,8 @@ export default function Installment({
           {advanced && <p className="advanced-text">Regla avanzada</p>}
         </div>
         <p className="small">{description}</p>
-      </div>
-      <Toggle defaultChecked={active} icons={false} onChange={setActive} />
+      </div> 
+      <Toggle data-advanced={advanced} defaultChecked={active} icons={false} onChange={setActive} name={!advanced ? reference : uid} />
     </div>
   );
 }

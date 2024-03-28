@@ -9,19 +9,20 @@ export default function Sources({ list, setList, selected, setSelected }) {
       list={list}
       setList={setList}
       animation={150}
-      handle="img"
+      handle="div"
     >
+      
       {list.map((source, index) => (
         <div
-          key={source.source.reference + index}
+          key={source.reference + index}
           className={selected === index && 'selected'}
           onClick={() => setSelected(index)}
         >
           <img
-            src={`https://res.mobbex.com/images/sources/original/${source.source.reference}.png`}
+            src={`https://res.mobbex.com/images/sources/original/${source.reference}.png`}
           />
-          <h4>{source.source.name}</h4>
-          <input type="hidden" name={source.source.reference}></input>
+          <h4>{source.name}</h4>
+          <input type="hidden" name={source.reference}></input>
         </div>
       ))}
     </ReactSortable>

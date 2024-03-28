@@ -12,14 +12,24 @@ export default function SourceConfig({ srcList, form }) {
   });
   const selected = state.selected;
   const sources = state.srcList;
-  const installments =
-    state.srcList[selected] && state.srcList[selected].installments.enabled
-      ? state.srcList[selected].installments.list
-      : [];
+  const installments = state.srcList[selected] ? state.srcList[selected].installments 
+  : [];
 
-  function setInstallments(newList) {
+  function setInstallments(newList, status) {
+    // Update sources list
     let newSources = { ...state };
-    newSources.srcList[selected].installments.list = newList;
+    newSources.srcList[selected].installments = newList;
+
+    // Update all common plans that have the same reference 
+    if(status.reference) {
+      newSources.srcList.map((source, srcIndex) => {
+        source.installments.map((installment, instIndex) => {
+          if(!installment.advanced && installment.reference === status.reference)
+            newSources.srcList[srcIndex].installments[instIndex].active = status.active;
+        })
+      })
+    }
+
     setState(newSources);
   }
 
