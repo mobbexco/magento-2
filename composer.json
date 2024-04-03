@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "mobbexco/php-plugins-sdk": "1.8.0"
+        "mobbexco/php-plugins-sdk": "dev-add-support-to-plans-sorting-ECO-908"
     },
     "conflict": {
         "mobbexco/magento-2-marketplace": "<1.2.1"
