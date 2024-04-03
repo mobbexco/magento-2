@@ -38,29 +38,22 @@ class CategorySaveObserver implements ObserverInterface
         if (empty($this->params['mbbx_options_loaded']))
             return;
 
-        // Get plans selected
-        $commonPlans = $advancedPlans = [];
-        foreach ($this->params as $key => $value) {
-            if (strpos($key, 'common_plan_') !== false && $value === '0') {
-                // Add UID to common plans
-                $commonPlans[] = explode('common_plan_', $key)[1];
-            } else if (strpos($key, 'advanced_plan_') !== false && $value === '1'){
-                // Add UID to advanced plans
-                $advancedPlans[] = explode('advanced_plan_', $key)[1];
-            }
-        }
-
         //Get mobbex configs
         $categoryConfigs = [
-            'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
-            'common_plans'     => serialize($commonPlans),
-            'advanced_plans'   => serialize($advancedPlans),
+            'entity'              => isset($this->params['entity']) ? $this->params['entity'] : '',
+            'plans_configuration' => isset($this->params['mbbx_sources']) ? $this->params['mbbx_sources'] : "[]",
         ];
 
         //Save mobbex custom fields
         foreach ($categoryConfigs as $key => $value) {
             $customField = $this->customFieldFactory->create();
             $customField->saveCustomField($observer->getCategory()->getId(), 'category', $key, $value);
+        }
+
+        //Save plans sort order
+        if (isset($this->params['mbbx_sources'])) {
+            $plans_order = \Mobbex\Repository::getPlansSortOrder(json_decode($this->params['mbbx_sources'], true));
+            $this->customFieldFactory->create()->saveCustomField(1, 'mobbex_plans', 'plans_order', json_encode($plans_order));
         }
 
         $this->helper->executeHook('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);

@@ -18,9 +18,9 @@
                     <p class="mobbexPaymentMethod">
                         <img src="https://res.mobbex.com/images/sources/jpg/<?= $source['source']['reference'] ?>.jpg"><?= $source['source']['name'] ?>
                     </p>
-                    <?php if (!empty($source['installments']['list'])) : ?>
+                    <?php if (!empty($source['installments'])) : ?>
                         <table>
-                            <?php foreach($source['installments']['list'] as $installment) : ?>
+                            <?php foreach($source['installments'] as $installment) : ?>
                                 <tr>
                                     <td>
                                         <?= $installment['name'] ?>
