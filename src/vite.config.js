@@ -1,19 +1,18 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   build: {
-    // generate .vite/manifest.json in outDir
+    outDir: path.resolve(__dirname, '../view/adminhtml/web'),
     manifest: false,
     rollupOptions: {
-      // overwrite default .html entry
       input: '/components/SourceConfig/initSourceConfig.jsx',
       output: {
         entryFileNames: '[name].js',
-        assetFileNames: "[name].[ext]",
+        assetFileNames: '[name].[ext]'
       }
-    },
-  },
-})
+    }
+  }
+});
