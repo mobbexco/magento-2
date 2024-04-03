@@ -21,7 +21,7 @@ export default function SourceConfig({ srcList, form }) {
     newSources.srcList[selected].installments = newList;
 
     // Update all common plans that have the same reference 
-    if(status.reference) {
+    if(status && status.reference) {
       newSources.srcList.map((source, srcIndex) => {
         source.installments.map((installment, instIndex) => {
           if(!installment.advanced && installment.reference === status.reference)
