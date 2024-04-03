@@ -53,7 +53,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     ];
 
     /** Mobbex Catalog Settings */
-    public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'is_subscription', 'subscription_uid'];
+    public $catalogSettings = ['plans_configuration', 'entity', 'is_subscription', 'subscription_uid'];
     
     /** @var \Mobbex\Webpay\Model\CustomField */
     public $customField;
@@ -130,8 +130,8 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCatalogSetting($id, $object, $catalogType = 'product')
     {
-        if (strpos($object, '_plans'))
-            return unserialize($this->customField->getCustomField($id, $catalogType, $object)) ?: [];
+        if ($object === 'plans_configuration' || $object === 'plans_sort')
+            return json_decode($this->customField->getCustomField($id, $catalogType, $object), true) ?: [];
 
         return $this->customField->getCustomField($id, $catalogType, $object) ?: '';
     }
@@ -146,21 +146,32 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getProductPlans($product)
     {
-        $common_plans = $advanced_plans = [];
+        $common_plans = $advanced_plans = array();
 
-        foreach (['common_plans', 'advanced_plans'] as $value) {
-            //Get product active plans
-            ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
-            //Get product category active plans
-            foreach ($product->getCategoryIds() as $categoryId)
-                ${$value} = array_merge(${$value}, $this->getCatalogSetting($categoryId, $value, 'category'));
+        //Obtain plans configured for the product
+        $product_plans = $this->getCatalogSetting($product->getId(), 'plans_configuration');
+
+        //Obtain plans configured for his categories
+        foreach ($product->getCategoryIds() as $categoryId)
+            $product_plans = array_merge($product_plans, $this->getCatalogSetting($categoryId, 'plans_configuration', 'category'));
+
+        // Filter plans uids
+        foreach ($product_plans as $source) {
+            foreach ($source['installments'] as $installment) {
+                // It gets references from disabled common plans & uids from enabled advanced plans
+                if ($installment['advanced'] && $installment['active'])
+                    $advanced_plans[] = $installment['uid'];
+                else if (!$installment['advanced'] && !$installment['active'])
+                    $common_plans[]   = $installment['reference'];
+            }
+
         }
 
         // Avoid duplicated plans
         $common_plans   = array_unique($common_plans);
         $advanced_plans = array_unique($advanced_plans);
 
-       return compact('common_plans', 'advanced_plans');
+        return compact('common_plans', 'advanced_plans');
     }
 
     /**

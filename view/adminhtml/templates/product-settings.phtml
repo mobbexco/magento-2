@@ -10,10 +10,12 @@ foreach ($this->config->catalogSettings as $value)
     ${$value} = $this->config->getCatalogSetting($id, $value);
 
 try {
-    // extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
+    //Get plans sort order
+    $sort = json_decode($this->config->customField->getCustomField(1, 'mobbex_plans', 'plans_order'), true);
 
-    // TODO: Merge with advanced, add checked plans data (now, "active") and "advanced" if its an advanced plan
-    $sources = \Mobbex\Repository::getSources();
+    // Get mobbex sources
+    $sources = \Mobbex\Repository::getFormatedSources($plans_configuration, $sort); 
+
 } catch (\Exception $e) {
     $commonFields = $advancedFields = $sourceNames = [];
     $this->logger->log('error', "Template > getContent | {$e->getMessage()}");

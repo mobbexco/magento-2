@@ -70,8 +70,18 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         }
         
         $this->total = $action == 'catalog_product_view' ? $product->getPriceInfo()->getPrice('final_price')->getValue() : $quote->getGrandTotal();
+        
+        // get common & advanced plans from product/s
         extract($this->config->getAllProductsPlans($this->products));
-        $this->sources = \Mobbex\Repository::getSources($this->total, \Mobbex\Repository::getInstallments($this->products, $common_plans, $advanced_plans));
+
+        // Get sources sort order
+        $sort = json_decode($this->config->customField->getCustomField(1, 'mobbex_plans', 'plans_order'), true);
+
+        // Get sources from sources API
+        $this->sources = \Mobbex\Repository::sortSources(
+            \Mobbex\Repository::getSources($this->total, \Mobbex\Repository::getInstallments($this->products, $common_plans, $advanced_plans)),
+            $sort
+        );
     }
 
 
