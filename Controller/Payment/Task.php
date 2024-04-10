@@ -75,7 +75,7 @@ class Task extends \Magento\Framework\App\Action\Action
         $newOrders = $this->orderRepository->getNewOrders();
 
         foreach ($newOrders as $order) {
-            $operation = \Mobbex\Repository::getLastOperationFromReference(
+            $operation = \Mobbex\Repository::getOperationFromReference(
                 \Mobbex\Modules\Checkout::generateReference($order->getEntityId())
             );
 
