@@ -63,7 +63,7 @@ class OrderRepository
         return array_filter(
             $this->getOrders(['status', 'pending']),
             function(...$args) {
-                return !$this->hasTransaction(...$args);
+                return !$this->hasTransaction(...$args) && $this->isOld(...$args);
             }
         );
     }
@@ -93,5 +93,17 @@ class OrderRepository
             'parent'   => 1,
             'order_id' => $order->getIncrementId()
         ]);
+    }
+
+    public function isOld($order)
+    {
+        //Get timestamps
+        $orderTimestamp   = strtotime($order->getCreatedAt());
+        $currentTimestamp = time();
+
+        // Calculating the difference in seconds
+        $timeResult = ($currentTimestamp - $orderTimestamp) / (60 * 60);
+
+        return $timeResult > 1 ? true : false;
     }
 }
