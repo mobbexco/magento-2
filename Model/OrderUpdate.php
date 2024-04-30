@@ -11,6 +11,7 @@ class OrderUpdate
      * List of statuses that cancel the order
      */
     public $cancelStatuses = [
+        'canceled',
         'cancelled',
         'mobbex_failed',
         'mobbex_rejected',
