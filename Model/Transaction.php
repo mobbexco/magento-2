@@ -51,7 +51,7 @@ class Transaction extends AbstractModel
         //Save data in mobbex transaction table
         foreach ($data as $column => $value)
             $this->setData($column, $value);
-            
+
         return $this->save();
     }
 
@@ -118,6 +118,7 @@ class Transaction extends AbstractModel
             'entity_uid'         => isset($webhookData['entity']['uid']) ? $webhookData['entity']['uid'] : '',
             'customer'           => isset($webhookData['customer']) ? json_encode($webhookData['customer']) : '',
             'checkout_uid'       => isset($webhookData['checkout']['uid']) ? $webhookData['checkout']['uid'] : '',
+            'checkout_total'     => isset($webhookData['checkout']['total']) ? $webhookData['checkout']['total'] : '',
             'total'              => isset($webhookData['payment']['total']) ? $webhookData['payment']['total'] : '',
             'currency'           => isset($webhookData['checkout']['currency']) ? $webhookData['checkout']['currency'] : '',
             'risk_analysis'      => isset($webhookData['payment']['riskAnalysis']['level']) ? $webhookData['payment']['riskAnalysis']['level'] : '',

@@ -127,31 +127,24 @@ class OrderUpdate
      */
     public function updateTotals($order, $data)
     {
-        //Reset fee & discount
-        $order->setFee(0);
-        $order->setDiscountAmount(0);
+        $this->logger->log('debug', "Order Update > updateTotals", [
+            'old_fee'        => $order->getFee(),
+            'old_discount'   => $order->getDiscountAmount(),
+            'order_total'    => $order->getGrandTotal(),
+            'payment_total'  => $data['total'],
+            'checkout_total' => $data['checkout_total'],
+        ]);
 
-        //Get order total
-        $orderTotal  = $order->getGrandTotal();
+        if (empty($data['total']) || empty($data['checkout_total']))
+            return $this->logger->log(
+                'error',
+                'Order Update > updateTotals. Trying to update order without totals data'
+            );
 
-        //Calculate total paid
-        $totalPaid   = isset($data['total']) ? $data['total'] : $orderTotal;
-
-        //Calculate diference between totals
-        $paidDiff    = $totalPaid - $orderTotal;
-        $paidDiffDes = isset($data['installment_name']) ? $data['installment_name'] : '';
-
-        //Add discount/fee
-        if ($paidDiff > 0) {
-            $order->setFee($paidDiff);
-        } elseif ($paidDiff < 0) {
-            $order->setDiscountAmount($order->getDiscountAmount() + $paidDiff);
-            $order->setDiscountDescription($paidDiffDes);
-        }
-
-        //Update totals
-        $order->setGrandTotal($totalPaid);
-        $order->setTotalPaid($totalPaid);
+        // Update each order total
+        $order->setFee($data['total'] - $data['checkout_total']);
+        $order->setGrandTotal($data['total']);
+        $order->setTotalPaid($data['total']);
 
         $order->save();
     }

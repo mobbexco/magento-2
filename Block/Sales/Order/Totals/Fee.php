@@ -17,32 +17,46 @@ class Fee extends \Magento\Framework\View\Element\Template
      */
     protected $_source;
 
-    /**
-     * Get totals source model
-     *
-     * @return \Magento\Framework\DataObject
-     */
-    public function getSource()
-    {
-        return $this->getParentBlock()->getSource();
+    /** @var \Mobbex\Webpay\Model\Transaction */
+    public $mobbexTransaction;
+
+    public function __construct(
+        \Magento\Backend\Block\Template\Context $context,
+        \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory,
+        $data = []
+    ) {
+        parent::__construct($context, $data);
+        $this->mobbexTransaction = $mobbexTransactionFactory->create();
     }
 
     public function initTotals()
     {
-        if(!$this->getSource()->getFee() || $this->getSource()->getFee() == 0)
+        // Get order (or invoice/credit memo) and fee
+        $order = $this->getParentBlock()->getSource();
+        $fee = $order->getFee();
+
+        if ($fee == 0)
             return $this;
 
-        $fee = new \Magento\Framework\DataObject(
-            [
-                'code' => 'fee',
-                'strong' => false,
-                'value' => $this->getSource()->getFee(),
-                'label' => __('Finnancial Charge'),
-            ]
-        );
+        $fee = new \Magento\Framework\DataObject([
+            'code'   => 'fee',
+            'strong' => false,
+            'value'  => $fee,
+            'label'  => sprintf(
+                '%s financiero (%s)',
+                $fee > 0 ? 'Costo' : 'Descuento',
+                $this->getPlanDescription($order)
+            ),
+        ]);
 
         $this->getParentBlock()->addTotalBefore($fee, 'grand_total');
 
         return $this;
+    }
+
+    public function getPlanDescription($order)
+    {
+        $transaction = $this->mobbexTransaction->getTransactions(['order_id' => $order->getIncrementId(), 'parent' => 1]);
+        return $transaction && isset($transaction['installment_name']) ? $transaction['installment_name'] : '';
     }
 }
