@@ -422,6 +422,7 @@ class OrderUpdate
     public function uncancell($order)
     {
         $productStockQty = $productIds = [];
+        $invoiced        = $order->hasInvoices();
 
         /** Uncancel items */
         foreach ($order->getAllVisibleItems() as $item) {
@@ -431,10 +432,15 @@ class OrderUpdate
                 $child->setQtyCanceled(0);
                 $child->setTaxCanceled(0);
                 $child->setDiscountTaxCompensationCanceled(0);
+
+                if($invoiced)
+                    $child->setQtyInvoiced($child->getQtyOrdered());
             }
             $item->setQtyCanceled(0);
             $item->setTaxCanceled(0);
             $item->setDiscountTaxCompensationCanceled(0);
+            if ($invoiced)
+                $item->setQtyInvoiced($item->getQtyOrdered());
         }
 
         /** Uncancel order data */
