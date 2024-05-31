@@ -276,6 +276,10 @@
                         <comment>Muestra los íconos de métodos de pagos.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                <field id="sources_priority" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Orden de los medios de pago</label>
+                    <comment>(Feature preview) Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago.</comment>
+                </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Advanced</label>
@@ -291,6 +295,11 @@
                     <field id="online_refund" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Devolución Online (Beta)</label>
                         <comment>Si está activa, los credit memos nuevos generarán devoluciones en Mobbex.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="advanced_plans_exclusivity" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Exclusividad de planes avanzados</label>
+                        <comment>Activa por defecto. Valida que todos planes con reglas avanzadas de tipo "Agente externo" estén configurados individualmente en cada uno de los productos antes de mostrarlos en el checkout.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
                 </group>
