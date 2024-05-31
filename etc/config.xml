@@ -63,6 +63,7 @@
                     <button_logo>https://res.mobbex.com/images/sources/mobbex.png</button_logo>
                 </appearance>
                 <advanced>
+                    <advanced_plans_exclusivity>1</advanced_plans_exclusivity>
                     <online_refund>1</online_refund>
                 </advanced>
                 <notifications>
