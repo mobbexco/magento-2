@@ -297,6 +297,11 @@
                         <comment>Si está activa, los credit memos nuevos generarán devoluciones en Mobbex.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                    <field id="advanced_plans_exclusivity" translate="label comment" sortOrder="25" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Exclusividad de planes avanzados</label>
+                        <comment>Activa por defecto. Valida que todos planes con reglas avanzadas de tipo "Agente externo" estén configurados individualmente en cada uno de los productos antes de mostrarlos en el checkout.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                 </group>
                 <group id="notifications" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Notificaciones</label>
