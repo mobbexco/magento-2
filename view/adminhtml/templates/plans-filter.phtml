@@ -10,11 +10,11 @@
                     <div class="mbbx-plan">
 
                             <div class="source-popover">
-                                <h3>Medios Disponibles</h3>
+                                <h4>Medios Disponibles</h4>
                                 <?php foreach ($sourceGroups[$field['label']] as $sourceRef) : ?>
                                     <div class="mbbx-plan-group">
                                         <img src="https://res.mobbex.com/images/sources/original/<?= $sourceRef; ?>.png">
-                                        <p><?= isset($sourceNames[$sourceRef]) ? $sourceNames[$sourceRef] : $sourceRef ?></p>
+                                        <small><?= isset($sourceNames[$sourceRef]) ? $sourceNames[$sourceRef] : $sourceRef ?></small>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -104,26 +104,27 @@
         align-items: center;
         padding: 5px;
         background-color: #eaeffb;
-        margin-bottom: 15px;
     }
 
     .mbbx-plan-group img {
-        width: 2.5em;
+        width: 1.5em;
         margin: 0 5px;
     }
 
     .source-popover {
-        display: none;
+        opacity: 0;
         position: absolute;
         top: 2em;
-        left: 30px;
-        min-width: 15em;
+        left: -15em;
+        max-width: 15em;
+        width: 100%;
         justify-content: center;
         flex-direction: column;
         border-radius: 5px;
         background-color: #eaeffb;
         padding: 1rem;
         z-index: 100;
+        transition: opacity .8s linear(-0.03 52.95%, 1 72.28%);
     }
 
     .source-popover h3 {
@@ -131,7 +132,7 @@
     }
 
     .mbbx-plan:hover .source-popover {
-        display: flex;
+        opacity: 1;
     }
 
     .mbbx-plan-group p {
