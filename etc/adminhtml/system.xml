@@ -276,6 +276,10 @@
                         <comment>Muestra los íconos de métodos de pagos.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                <field id="sources_priority" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Orden de los medios de pago</label>
+                    <comment>(Feature preview) Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago.</comment>
+                </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Advanced</label>
