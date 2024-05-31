@@ -26,7 +26,12 @@
                                         <?= $installment['name'] ?>
                                         <?php if ($installment['totals']['installment']['count'] != 1) : ?>
                                             <small>
-                                                <?= $installment['totals']['installment']['count'] ?> cuotas de <?= $block->priceHelper->currency($installment['totals']['installment']['amount'], true, false) ?>
+                                                <b><?= $installment['totals']['installment']['count'] ?> cuotas de <?= $block->priceHelper->currency($installment['totals']['installment']['amount'], true, false) ?></b><br/>
+                                                <?php if(isset($installment['tags'])) : ?>
+                                                    <?php foreach($installment['tags'] as $tag) :?>
+                                                        <?= "{$tag['label']}: "?><b><?="{$tag['value']}% " ;?></b>
+                                                    <?php endforeach; ?>
+                                                <?php endif ?>
                                             </small>
                                         <?php endif; ?>
                                     </td>
