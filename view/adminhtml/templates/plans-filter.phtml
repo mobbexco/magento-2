@@ -112,18 +112,15 @@
     }
 
     .source-popover {
-        opacity: 0;
+        display: none;
         position: absolute;
         left: 12em;
         max-width: 15em;
         width: 100%;
-        justify-content: center;
-        flex-direction: column;
         border-radius: 5px;
         background-color: #eaeffb;
         padding: 1rem;
         z-index: 100;
-        transition: opacity .8s linear(-0.03 52.95%, 1 72.28%);
     }
 
     .source-popover h3 {
@@ -131,7 +128,7 @@
     }
 
     .mbbx-plan:hover .source-popover {
-        opacity: 1;
+        display: block;
     }
 
     .mbbx-plan-group p {
