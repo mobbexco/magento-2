@@ -230,32 +230,32 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             }
         }
 
-            //Get products active plans
-            $products = [];
-            foreach ($quote->getItemsCollection() as $item)
-            $products[] = $item->getProduct();
-            extract($this->config->getAllProductsPlans($products));
+        //Get products active plans
+        $products = [];
+        foreach ($quote->getItemsCollection() as $item)
+        $products[] = $item->getProduct();
+        extract($this->config->getAllProductsPlans($products));
             
-            // Add shipping item if possible
-            if ($shippingAmount)
-            $items[] = [
-                'description' => 'Shipping',
-                'total'       => $shippingAmount,
-            ];
+        // Add shipping item if possible
+        if ($shippingAmount)
+        $items[] = [
+            'description' => 'Shipping',
+            'total'       => $shippingAmount,
+        ];
 
-            // Get the name checking the position
-            $firstName = isset($shippingAddress['firstname']) ? $shippingAddress['firstname'] : '';
-            $lastName  = isset($shippingAddress['lastname'])  ? $shippingAddress['lastname']  : '';
+        // Get the name checking the position
+        $firstName = isset($shippingAddress['firstname']) ? $shippingAddress['firstname'] : '';
+        $lastName  = isset($shippingAddress['lastname'])  ? $shippingAddress['lastname']  : '';
 
-            $customer = [
-                'email'          => $quote->getCustomerEmail(),
-                'name'           => "$firstName $lastName",
-                'identification' => '',
-                'uid'            => $quote->getCustomerId(),
-                'phone'          => isset($shippingAddress['telephone']) ? $shippingAddress['telephone'] : '',
-            ];
+        $customer = [
+            'email'          => $quote->getCustomerEmail(),
+            'name'           => "$firstName $lastName",
+            'identification' => '',
+            'uid'            => $quote->getCustomerId(),
+            'phone'          => isset($shippingAddress['telephone']) ? $shippingAddress['telephone'] : '',
+        ];
             
-            try {
+        try {
 
             $mobbexCheckout = new \Mobbex\Modules\Checkout(
                 $quote->getId(),
