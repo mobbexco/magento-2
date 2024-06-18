@@ -185,7 +185,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $this->getAddresses($orderData),
             'all',
             'mobbexCheckoutRequest',
-            "Pedido #$orderIncrementalId"
+            "Pedido #$orderIncrementalId",
+            $orderData->getOrderCurrencyCode()
         );
 
         //Add order id to the response
@@ -268,7 +269,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 $this->getAddresses($quote),
                 'none',
                 'mobbexQuoteCheckoutRequest',
-                "Carrito #" . $quote->getId()
+                "Carrito #" . $quote->getId(),
+                $quote->getStore()->getCurrentCurrencyCode()
             );
 
             $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 

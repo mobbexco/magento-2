@@ -33,6 +33,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'unified_mode'                       => 'payment/sugapay/advanced/unified_mode',
         'online_refund'                      => 'payment/sugapay/advanced/online_refund',
         'advanced_plans_exclusivity'         => 'payment/sugapay/advanced/advanced_plans_exclusivity',
+        'convert_currency'                   => 'payment/sugapay/advanced/convert_currency',
         'own_dni_field'                      => 'payment/sugapay/checkout/own_dni_field',
         'dni_column'                         => 'payment/sugapay/checkout/dni_column',
         'create_order_email'                 => 'payment/sugapay/checkout/email_settings/create_order_email',
