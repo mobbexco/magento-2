@@ -106,7 +106,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                 'id'    => 'sugapay',
                 'value' => '',
                 'name'  => $this->config->get('checkout_title'),
-                'image' => ''
+                'image' => $this->config->get('show_method_icons') ? 'https://res.mobbex.com/images/sources/mobbex.png' : ''
             ];
         }
 
