@@ -78,9 +78,9 @@ class RefundObserverBeforeSave implements ObserverInterface
 
             if ($amount <= 0 || !isset($data['checkout']['total']) || $amount > $data['checkout']['total'])
                 throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
-            else (!empty($trx['childs']) && isset($creditmemo))
-                    ? $this->processCreditmemoItemsRefunds($creditmemo, json_decode($trx['childs'], true), $order->getIncrementId())
-                    : $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
+            else (!empty($trx['childs']) && $creditmemo)
+                ? $this->processItemRefunds($creditmemo, json_decode($trx['childs'], true), $order->getIncrementId())
+                : $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
 
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage(__($e->getMessage()));
@@ -110,35 +110,35 @@ class RefundObserverBeforeSave implements ObserverInterface
      * @param array $childsData
      * @param int $orderId
      */
-    public function processCreditmemoItemsRefunds($creditmemo, $childsData, $orderId)
+    public function processItemRefunds($creditmemo, $childsData, $orderId)
     {
         $childToRefund = [];
         $childs = $this->transaction->getMobbexChilds($childsData, $orderId);
 
         // Index childs by entity_uid for a faster lookup
         $childEntities = array_column($childs, null, 'entity_uid');
-
+        
         foreach ($creditmemo->getAllItems() as $item) {
             $entity = $this->helper->getEntity($item->getOrderItem());
-            $total  = $item->getRowTotal();
-            // Set data based on item entity
+
             if (isset($childEntities[$entity])) {
                 $child = $childEntities[$entity];
-                $childToRefund[$entity]['payment_id'] = $child['payment_id'];
-                $childToRefund[$entity]['total']      = ($childToRefund[$entity]['total'] ?? 0) + $total;
+                $childToRefund[$child['payment_id']] = isset($childToRefund[$child['payment_id']])
+                    ? $childToRefund[$child['payment_id']] + $item->getRowTotal()
+                    : $item->getRowTotal();
             }
         }
         // Process each refund
-        foreach ($childToRefund as $entity => $child) {
+        foreach ($childToRefund as $paymentId => $amount) {
             try {
-                $this->processRefund($child['total'], $child['payment_id']);
+                $this->processRefund($amount, $paymentId);
             } catch (\Exception $e) {
                 $this->logger->log(
                     'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
                     [
+                        'entity'         => $entity,
                         'refund_amount'  => $child['total'], 
                         'child_id'       => $child['payment_id'],
-                        'entity'         => $entity,
                         'exception_data' => isset($e->data) ? $e->data : []
                     ]
                 );
