@@ -75,13 +75,13 @@ class RefundObserverBeforeSave implements ObserverInterface
         $data = json_decode($trx['data'], true);
 
         try {
-
             if ($amount <= 0 || !isset($data['checkout']['total']) || $amount > $data['checkout']['total'])
                 throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
-            else (!empty($trx['childs']) && $creditmemo)
-                ? $this->processItemRefunds($creditmemo, json_decode($trx['childs'], true), $order->getIncrementId())
-                : $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
-
+            elseif (!empty($trx['childs']) && $creditmemo)
+                $this->processItemRefunds($creditmemo, json_decode($trx['childs'], true), $order->getIncrementId());
+            else
+                $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
+            
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage(__($e->getMessage()));
             $this->logger->log(
@@ -134,7 +134,7 @@ class RefundObserverBeforeSave implements ObserverInterface
                 $this->processRefund($amount, $paymentId);
             } catch (\Exception $e) {
                 $this->logger->log(
-                    'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
+                    'RefundObserverBeforeSave > processItemRefunds ' . $e->getMessage(), 
                     [
                         'entity'         => $entity,
                         'refund_amount'  => $child['total'], 
