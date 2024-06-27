@@ -120,13 +120,12 @@ class RefundObserverBeforeSave implements ObserverInterface
         
         foreach ($creditmemo->getAllItems() as $item) {
             $entity = $this->helper->getEntity($item->getOrderItem());
+            $child = $childEntities[$entity];
 
-            if (isset($childEntities[$entity])) {
-                $child = $childEntities[$entity];
-                $childToRefund[$child['payment_id']] = isset($childToRefund[$child['payment_id']])
-                    ? $childToRefund[$child['payment_id']] + $item->getRowTotal()
-                    : $item->getRowTotal();
-            }
+            if (isset($childToRefund[$child['payment_id']]))
+                $childToRefund[$child['payment_id']] += $item->getRowTotal();
+            else
+                $childToRefund[$child['payment_id']] = $item->getRowTotal();
         }
         // Process each refund
         foreach ($childToRefund as $paymentId => $amount) {
