@@ -113,20 +113,19 @@ class RefundObserverBeforeSave implements ObserverInterface
     public function processItemRefunds($creditmemo, $childsData, $orderId)
     {
         $childToRefund = [];
+        // Gets childs from db and index it/them by entity_uid for a faster lookup
         $childs = $this->transaction->getMobbexChilds($childsData, $orderId);
-
-        // Index childs by entity_uid for a faster lookup
         $childEntities = array_column($childs, null, 'entity_uid');
         
         foreach ($creditmemo->getAllItems() as $item) {
-            // Get item entity. If item has no entity, skip it
+            // Gets item entity and try to matchs it with a child entity
             $entity = $this->helper->getEntity($item->getOrderItem());
-
-            if (empty($entity))
+            // Skips if item has no entity or entity does not exists in db
+            if(empty($entity) || empty($childEntities[$entity]))
                 continue;
-            
-            // Matchs item entity with a child entity to get the correct payment id
+            // Uses entity to get the corresponding payment id
             $child = $childEntities[$entity];
+            // Calculates child total
             if (isset($childToRefund[$child['payment_id']]))
                 $childToRefund[$child['payment_id']] += $item->getRowTotal();
             else
