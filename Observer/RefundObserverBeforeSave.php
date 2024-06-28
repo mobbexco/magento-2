@@ -119,10 +119,14 @@ class RefundObserverBeforeSave implements ObserverInterface
         $childEntities = array_column($childs, null, 'entity_uid');
         
         foreach ($creditmemo->getAllItems() as $item) {
-            // Matchs the item entity with a child entity to get the correct payment id
+            // Get item entity. If item has no entity, skip it
             $entity = $this->helper->getEntity($item->getOrderItem());
+
+            if (empty($entity))
+                continue;
+            
+            // Matchs item entity with a child entity to get the correct payment id
             $child = $childEntities[$entity];
-            // Then uses it as position in array to store refund amount
             if (isset($childToRefund[$child['payment_id']]))
                 $childToRefund[$child['payment_id']] += $item->getRowTotal();
             else
