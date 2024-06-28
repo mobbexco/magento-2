@@ -1,14 +1,14 @@
 #!/bin/sh
-ver="3.12.0"
+ver="3.13.0"
 
 # Remove installed packages
-rm -r vendor composer.lock
+rm -rf vendor composer.lock
 
 # Now, exit on errors
 set -e
 
 # Backup files
-mkdir tmp
+mkdir -p tmp
 cp composer.json registration.php tmp
 
 # Require autoload on registration.php
