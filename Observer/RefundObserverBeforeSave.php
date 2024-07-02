@@ -71,14 +71,14 @@ class RefundObserverBeforeSave implements ObserverInterface
 
         if (!$trx || !isset($trx['data']) || !$this->config->get('online_refund'))
             return $this->logger->log('error', 'RefundObserverBeforeSave > execute | This is not a refundable transaction.', ['transaction' => isset($trx['data']) ? $trx['data'] : [], 'online_refund' => $this->config->get('online_refund')]);
-
+  
         $data = json_decode($trx['data'], true);
 
         try {
             if ($amount <= 0 || !isset($data['checkout']['total']) || $amount > $data['checkout']['total'])
                 throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
-            elseif (!empty($trx['childs']) && $creditmemo)
-                $this->processItemRefunds($creditmemo, json_decode($trx['childs'], true), $order->getIncrementId());
+            elseif ($this->checkChildRefundMemo($data, $creditmemo))
+                $this->processItemRefund($creditmemo, json_decode($trx['childs'], true), $order->getIncrementId());
             else
                 $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
             
@@ -94,58 +94,74 @@ class RefundObserverBeforeSave implements ObserverInterface
 
     public function processRefund($amount, $paymentId)
     {
-            $result = \Mobbex\Api::request([
-                'method' => 'POST',
-                'uri'    => 'operations/' . $paymentId . '/refund',
-                'body'   => ['total' => floatval($amount), 'emitEvent' => false]
-            ]) ?: [];
+            // $result = \Mobbex\Api::request([
+            //     'method' => 'POST',
+            //     'uri'    => 'operations/' . $paymentId . '/refund',
+            //     'body'   => ['total' => floatval($amount), 'emitEvent' => false]
+            // ]) ?: [];
 
-            return !empty($result);
+            // return !empty($result);
     }
 
     /**
-     * Process refunds for credit memo items
+     * Process refunds for credit memo item
      *
      * @param \Magento\Sales\Model\Order\Creditmemo $creditmemo
      * @param array $childsData
      * @param int $orderId
      */
-    public function processItemRefunds($creditmemo, $childsData, $orderId)
+    public function processItemRefund($creditmemo, $childsData, $orderId)
     {
         $childToRefund = [];
         // Gets childs from db and index it/them by entity_uid for a faster lookup
         $childs = $this->transaction->getMobbexChilds($childsData, $orderId);
         $childEntities = array_column($childs, null, 'entity_uid');
         
-        foreach ($creditmemo->getAllItems() as $item) {
-            // Gets item entity and try to matchs it with a child entity
-            $entity = $this->helper->getEntity($item->getOrderItem());
-            // Skips if item has no entity or entity does not exists in db
-            if(empty($entity) || empty($childEntities[$entity]))
-                continue;
-            // Uses entity to get the corresponding payment id
-            $child = $childEntities[$entity];
-            // Calculates child total
-            if (isset($childToRefund[$child['payment_id']]))
-                $childToRefund[$child['payment_id']] += $item->getRowTotal();
-            else
-                $childToRefund[$child['payment_id']] = $item->getRowTotal();
-        }
-        // Process each refund
-        foreach ($childToRefund as $paymentId => $amount) {
-            try {
-                $this->processRefund($amount, $paymentId);
-            } catch (\Exception $e) {
-                $this->logger->log(
-                    'RefundObserverBeforeSave > processItemRefunds ' . $e->getMessage(), 
-                    [
-                        'entity'         => $entity,
-                        'refund_amount'  => $child['total'], 
-                        'child_id'       => $child['payment_id'],
-                        'exception_data' => isset($e->data) ? $e->data : []
-                    ]
-                );
+        try{
+            foreach ($creditmemo->getAllItems() as $item) {
+                // Gets item entity and try to matchs it with a child entity
+                $entity = $entities[] = $this->helper->getEntity($item->getOrderItem());
+                // Avoid multiple vendor items
+                if (count($entities) > 1)
+                    throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again returning once for each seller ');
+                // Skips if item has no entity or entity does not exists in db
+                if(empty($entity) || empty($childEntities[$entity]))
+                    continue;
+                // Uses entity to get the corresponding payment id
+                $child = $childEntities[$entity];
+                // Calculates child total
+                if (isset($childToRefund[$child['payment_id']]))
+                    $childToRefund[$child['payment_id']] += $item->getRowTotal();
+                else
+                    $childToRefund[$child['payment_id']] = $item->getRowTotal();
             }
+            foreach ($childToRefund as $paymentId => $amount)
+                $this->processRefund($amount, $paymentId);
         }
+        catch (\Exception $e) {
+            throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
+        }
+    }
+
+    /**
+     * Checks if creditmemo is a child refund
+     * 
+     * @param array $transactionData
+     * @param \Magento\Sales\Model\Order\Creditmemo $creditmemo
+     * 
+     * @return bool
+     */
+    public function checkChildRefundMemo($transactionData, $creditmemo){
+        if (empty($creditmemo->getAllItems()) && !$transactionData['childs'])
+            return false;
+
+        if (
+            $creditmemo->getGrandTotal() == $transactionData['checkout']['total']     ||
+            $creditmemo->getGrandTotal() == $transactionData['checkout']['total'] + 1 ||
+            $creditmemo->getGrandTotal() == $transactionData['checkout']['total'] - 1
+        ) 
+            return false;
+
+        return true;
     }
 }
