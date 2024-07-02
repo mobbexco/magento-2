@@ -156,9 +156,9 @@ class RefundObserverBeforeSave implements ObserverInterface
             return false;
 
         if (
-            $creditmemo->getGrandTotal() == $transactionData['checkout']['total']     ||
-            $creditmemo->getGrandTotal() == $transactionData['checkout']['total'] + 1 ||
-            $creditmemo->getGrandTotal() == $transactionData['checkout']['total'] - 1
+            $creditmemo->getGrandTotal() == $transactionData['checkout']['total']    ||
+            $creditmemo->getGrandTotal() - $transactionData['checkout']['total'] < 1 ||
+            $creditmemo->getGrandTotal() - $transactionData['checkout']['total'] > -1
         ) 
             return false;
 
