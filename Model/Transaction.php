@@ -63,13 +63,12 @@ class Transaction extends AbstractModel
      * 
      * @return array
      */
-    public function getMobbexChilds($childs, $orderId)
+    public function getMobbexChilds($parent)
     {
-        $childsData = [];
-        foreach ($childs as $child)
-            $childsData[] = $this->formatWebhookData($child, $orderId);
-
-        return $childsData;
+        return array_map(
+            [$this, 'formatWebhookData'],
+            !empty($parent['childs']) ? json_decode($parent['childs'], true) : []
+        );
     }
 
     /**
@@ -92,7 +91,7 @@ class Transaction extends AbstractModel
      * 
      * @return array
      */
-    public function formatWebhookData($webhookData, $orderId)
+    public function formatWebhookData($webhookData, $orderId = null)
     {
         $data = [
             'order_id'           => $orderId,
