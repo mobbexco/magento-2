@@ -83,24 +83,24 @@ class RefundObserverBeforeSave implements ObserverInterface
                 $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
             
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage(__($e->getMessage()));
             $this->logger->log(
                 'error', 
                 'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
                 ['refund_amount' => $amount, 'checkout_total' => isset($data['checkout']['total']) ? $data['checkout']['total'] : '', 'exception_data' => isset($e->data) ? $e->data : []]
             );
+            throw $e;
         }
     }
 
     public function processRefund($amount, $paymentId)
     {
-            // $result = \Mobbex\Api::request([
-            //     'method' => 'POST',
-            //     'uri'    => 'operations/' . $paymentId . '/refund',
-            //     'body'   => ['total' => floatval($amount), 'emitEvent' => false]
-            // ]) ?: [];
+        $result = \Mobbex\Api::request([
+            'method' => 'POST',
+            'uri'    => 'operations/' . $paymentId . '/refund',
+            'body'   => ['total' => floatval($amount), 'emitEvent' => false]
+        ]) ?: [];
 
-            // return !empty($result);
+        return !empty($result);
     }
 
     /**
@@ -116,31 +116,29 @@ class RefundObserverBeforeSave implements ObserverInterface
         // Gets childs from db and index it/them by entity_uid for a faster lookup
         $childs = $this->transaction->getMobbexChilds($childsData, $orderId);
         $childEntities = array_column($childs, null, 'entity_uid');
-        
-        try{
-            foreach ($creditmemo->getAllItems() as $item) {
-                // Gets item entity and try to matchs it with a child entity
-                $entity = $entities[] = $this->helper->getEntity($item->getOrderItem());
-                // Avoid multiple vendor items
-                if (count($entities) > 1)
-                    throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again returning once for each seller ');
-                // Skips if item has no entity or entity does not exists in db
-                if(empty($entity) || empty($childEntities[$entity]))
-                    continue;
-                // Uses entity to get the corresponding payment id
-                $child = $childEntities[$entity];
-                // Calculates child total
-                if (isset($childToRefund[$child['payment_id']]))
-                    $childToRefund[$child['payment_id']] += $item->getRowTotal();
-                else
-                    $childToRefund[$child['payment_id']] = $item->getRowTotal();
-            }
-            foreach ($childToRefund as $paymentId => $amount)
-                $this->processRefund($amount, $paymentId);
+
+        foreach ($creditmemo->getAllItems() as $item) {
+            // Gets item entity and try to matchs it with a child entity
+            $entity = $entities[] = $this->helper->getEntity($item->getOrderItem());
+
+            // Avoid multiple vendor items
+            if (count($entities) > 1)
+                throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again returning once for each seller ');
+
+            // Skips if item has no entity or entity does not exists in db
+            if (empty($entity) || empty($childEntities[$entity]))
+                continue;
+
+            // Uses entity to get the corresponding payment id and calculates child total
+            $child = $childEntities[$entity];
+
+            if (isset($childToRefund[$child['payment_id']]))
+                $childToRefund[$child['payment_id']] += $item->getRowTotal();
+            else
+                $childToRefund[$child['payment_id']] = $item->getRowTotal();
         }
-        catch (\Exception $e) {
-            throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
-        }
+        foreach ($childToRefund as $paymentId => $amount)
+            $this->processRefund($amount, $paymentId);
     }
 
     /**
@@ -152,16 +150,11 @@ class RefundObserverBeforeSave implements ObserverInterface
      * @return bool
      */
     public function checkChildRefundMemo($transactionData, $creditmemo){
-        if (empty($creditmemo->getAllItems()) && !$transactionData['childs'])
-            return false;
+        $diff = $creditmemo->getGrandTotal() - $transactionData['checkout']['total'];
 
-        if (
-            $creditmemo->getGrandTotal() == $transactionData['checkout']['total']    ||
-            $creditmemo->getGrandTotal() - $transactionData['checkout']['total'] < 1 ||
-            $creditmemo->getGrandTotal() - $transactionData['checkout']['total'] > -1
-        ) 
-            return false;
-
-        return true;
+        return !(
+            empty($creditmemo->getAllItems()) && !$transactionData['childs'] ||
+            ($diff < 1 && $diff > -1)
+        );
     }
 }
