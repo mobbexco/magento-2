@@ -44,7 +44,7 @@ class Info extends \Magento\Payment\Block\Info
         $transport = parent::_prepareSpecificInformation($transport);
 
         $mobbexData = $this->mobbexTransaction->getTransactions(['order_id' => $this->getInfo()->getOrder()->getIncrementId(), 'parent' => 1]);
-        $childs     = !empty($mobbexData['childs']) ? $this->mobbexTransaction->getMobbexChilds(json_decode($mobbexData['childs'], true), $mobbexData['order_id']) : false;
+        $childs     = $this->mobbexTransaction->getMobbexChilds($mobbexData);
 
         $data = [
             (string) __('Transaction ID') => isset($mobbexData['payment_id']) ? $mobbexData['payment_id'] : '',
