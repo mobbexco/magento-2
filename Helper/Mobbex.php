@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '3.13.0';
+    const VERSION = '3.14.0';
 
     /** @var ScopeConfigInterface */
     public $scopeConfig;
