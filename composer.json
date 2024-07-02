@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "mobbexco/php-plugins-sdk": "1.9.0"
+        "mobbexco/php-plugins-sdk": "1.10.0"
     },
     "conflict": {
         "mobbexco/magento-2-marketplace": "<1.2.1"
