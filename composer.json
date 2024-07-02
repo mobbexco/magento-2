@@ -2,7 +2,7 @@
     "name": "mobbexco/magento-2",
     "description": "Mobbex Payment Module",
     "type": "magento2-module",
-    "version": "3.13.0",
+    "version": "3.14.0",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "mobbexco/php-plugins-sdk": "1.9.0"
+        "mobbexco/php-plugins-sdk": "1.10.0"
     },
     "conflict": {
         "mobbexco/magento-2-marketplace": "<1.2.1"

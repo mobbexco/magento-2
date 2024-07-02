@@ -60,16 +60,16 @@ class RefundObserverBeforeSave implements ObserverInterface
         $order      = $creditMemo->getOrder();
         $amount     = $creditMemo->getGrandTotal();
 
-        if ($order->getPayment()->getMethodInstance()->getCode() != 'sugapay')
+        if ($order->getPayment()->getMethodInstance()->getCode() != 'sugapay' || !$this->config->get('online_refund'))
             return;
 
         $parent = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);
         $childs = $this->transaction->getMobbexChilds($parent);
 
-        if (!$parent || !$this->config->get('online_refund'))
-            return $this->logger->log('error', 'RefundObserverBeforeSave > execute | This is not a refundable transaction.', ['transaction' => isset($parent['data']) ? $parent['data'] : [], 'online_refund' => $this->config->get('online_refund')]);
-
         try {
+            if (!$parent)
+                throw new \Exception("Refund Error: No parent transactions found for this order. Try again later or disable online refunds");
+
             if ($amount <= 0 || $amount > $order->getGrandTotal())
                 throw new \Exception("Refund Error: Invalid amount provided for refund ($amount)");
 
@@ -87,7 +87,6 @@ class RefundObserverBeforeSave implements ObserverInterface
                     break;
             }
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage($e->getMessage());
             $this->logger->log(
                 'error', 
                 'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
