@@ -56,105 +56,139 @@ class RefundObserverBeforeSave implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $creditmemo = $observer->getData('creditmemo');
-        $amount     = $creditmemo->getGrandTotal();
+        $creditMemo = $observer->getData('creditmemo');
+        $order      = $creditMemo->getOrder();
+        $amount     = $creditMemo->getGrandTotal();
 
-        $order      = $creditmemo->getOrder();
-        $payment    = $order->getPayment();
-
-        $paymentMethod = $payment->getMethodInstance()->getCode();
-
-        if ($paymentMethod != 'sugapay')
+        if ($order->getPayment()->getMethodInstance()->getCode() != 'sugapay')
             return;
 
-        $trx = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);
+        $parent = $this->transaction->getTransactions(['parent' => 1, 'order_id' => $order->getIncrementId()]);
+        $childs = $this->transaction->getMobbexChilds($parent);
 
-        if (!$trx || !isset($trx['data']) || !$this->config->get('online_refund'))
-            return $this->logger->log('error', 'RefundObserverBeforeSave > execute | This is not a refundable transaction.', ['transaction' => isset($trx['data']) ? $trx['data'] : [], 'online_refund' => $this->config->get('online_refund')]);
-  
-        $data = json_decode($trx['data'], true);
+        if (!$parent || !$this->config->get('online_refund'))
+            return $this->logger->log('error', 'RefundObserverBeforeSave > execute | This is not a refundable transaction.', ['transaction' => isset($parent['data']) ? $parent['data'] : [], 'online_refund' => $this->config->get('online_refund')]);
 
         try {
-            if ($amount <= 0 || !isset($data['checkout']['total']) || $amount > $data['checkout']['total'])
-                throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again in the Mobbex console');
-            elseif ($this->checkChildRefundMemo($data, $creditmemo))
-                $this->processItemRefund($creditmemo, json_decode($trx['childs'], true), $order->getIncrementId());
-            else
-                $this->processRefund($amount == $data['checkout']['total'] ? $trx['total'] : $amount, $trx['payment_id']);
-            
+            if ($amount <= 0 || $amount > $order->getGrandTotal())
+                throw new \Exception("Refund Error: Invalid amount provided for refund ($amount)");
+
+            switch ($parent['operation_type']) {
+                case 'payment.multiple-vendor':
+                    $this->processMultivendorRefund($creditMemo, $parent, $childs);
+                    break;
+
+                case 'payment.multiple-sources':
+                    $this->requestRefund($amount, (count($childs) == 1 ? reset($childs) : $parent)['payment_id']);
+                    break;
+
+                default:
+                    $this->requestRefund($amount, $parent['payment_id']);
+                    break;
+            }
         } catch (\Exception $e) {
+            $this->messageManager->addErrorMessage($e->getMessage());
             $this->logger->log(
                 'error', 
                 'RefundObserverBeforeSave > execute | ' . $e->getMessage(), 
-                ['refund_amount' => $amount, 'checkout_total' => isset($data['checkout']['total']) ? $data['checkout']['total'] : '', 'exception_data' => isset($e->data) ? $e->data : []]
+                [
+                    'refund_amount'  => $amount,
+                    'order_total'    => $order->getGrandTotal(),
+                    'exception_data' => isset($e->data) ? $e->data : []
+                ]
             );
+
+            // Throw exception again to prevent creditmemo save
             throw $e;
         }
     }
 
-    public function processRefund($amount, $paymentId)
-    {
-        $result = \Mobbex\Api::request([
-            'method' => 'POST',
-            'uri'    => 'operations/' . $paymentId . '/refund',
-            'body'   => ['total' => floatval($amount), 'emitEvent' => false]
-        ]) ?: [];
-
-        return !empty($result);
-    }
-
     /**
-     * Process refunds for credit memo item
+     * Process a refund for a multivendor order.
      *
-     * @param \Magento\Sales\Model\Order\Creditmemo $creditmemo
-     * @param array $childsData
-     * @param int $orderId
+     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
+     * @param mixed $parent 
+     * @param mixed $childs
+     * 
+     * @return bool
+     * 
+     * @throws \Exception
      */
-    public function processItemRefund($creditmemo, $childsData, $orderId)
+    public function processMultivendorRefund($creditMemo, $parent, $childs)
     {
-        $childToRefund = [];
-        // Gets childs from db and index it/them by entity_uid for a faster lookup
-        $childs = $this->transaction->getMobbexChilds($childsData, $orderId);
-        $childEntities = array_column($childs, null, 'entity_uid');
+        // If the parent only has one child, use it
+        if (count($childs) == 1) 
+            return $this->requestRefund($creditMemo->getGrandTotal(), reset($childs)['payment_id']);
 
-        foreach ($creditmemo->getAllItems() as $item) {
-            // Gets item entity and try to matchs it with a child entity
-            $entity = $entities[] = $this->helper->getEntity($item->getOrderItem());
+        // If is a total refund, use parent
+        if ($this->isTotalRefund($creditMemo))
+            return $this->requestRefund($creditMemo->getOrder()->getGrandTotal(), $parent['payment_id']);
 
-            // Avoid multiple vendor items
-            if (count($entities) > 1)
-                throw new \Exception('Refund Error: Sorry! This is not a refundable transaction. Try again returning once for each seller ');
+        // Get entities and remove duplicated (to check really how many entities are)
+        $entities = array_unique($this->getCreditMemoEntities($creditMemo));
+        $entity = reset($entities);
 
-            // Skips if item has no entity or entity does not exists in db
-            if (empty($entity) || empty($childEntities[$entity]))
-                continue;
+        if (!$entity)
+            throw new \Exception("Refund Error: No entities found for the creditmemo items");
 
-            // Uses entity to get the corresponding payment id and calculates child total
-            $child = $childEntities[$entity];
+        if (count($entities) > 1) 
+            throw new \Exception("Refund Error: Trying to make a partial refund on items of different entities");
 
-            if (isset($childToRefund[$child['payment_id']]))
-                $childToRefund[$child['payment_id']] += $item->getRowTotal();
-            else
-                $childToRefund[$child['payment_id']] = $item->getRowTotal();
-        }
-        foreach ($childToRefund as $paymentId => $amount)
-            $this->processRefund($amount, $paymentId);
+        // Search entity on childs array
+        $childPos = array_search($entity, array_column($childs, 'entity_uid'));
+
+        if ($childPos === false)
+            throw new \Exception("Refund Error: Not found child operation for the entity provided ($entity)");
+
+        // Only refunds one child at a time (there is only one amount)
+        return $this->requestRefund($creditMemo->getGrandTotal(), $childs[$childPos]['payment_id']);
     }
 
     /**
-     * Checks if creditmemo is a child refund
-     * 
-     * @param array $transactionData
-     * @param \Magento\Sales\Model\Order\Creditmemo $creditmemo
+     * Get creditmemo entities.
+     *
+     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
+     *
+     * @return array
+     */
+    public function getCreditMemoEntities($creditMemo)
+    {
+        return array_map(function($item) {
+            $entity = $this->helper->getEntity($item->getOrderItem());
+
+            if (!$entity)
+                throw new \Exception("Refund Error: No entity found for a creditmemo item.");
+
+            return $entity;
+        }, $creditMemo->getAllItems());
+    }
+
+    /**
+     * Check if the creditmemo is a total refund.
+     *
+     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
      * 
      * @return bool
      */
-    public function checkChildRefundMemo($transactionData, $creditmemo){
-        $diff = $creditmemo->getGrandTotal() - $transactionData['checkout']['total'];
+    public function isTotalRefund($creditMemo)
+    {
+        return abs($creditMemo->getGrandTotal() - $creditMemo->getOrder()->getGrandTotal()) < 1;
+    }
 
-        return !(
-            empty($creditmemo->getAllItems()) && !$transactionData['childs'] ||
-            ($diff < 1 && $diff > -1)
-        );
+    /**
+     * Make a refund request to mobbex api.
+     * 
+     * @param float $amount
+     * @param string $operationId
+     * 
+     * @return bool 
+     */
+    public function requestRefund($amount, $operationId)
+    {
+        return (bool) \Mobbex\Api::request([
+            'method' => 'POST',
+            'uri'    => "operations/$operationId/refund",
+            'body'   => ['total' => floatval($amount), 'emitEvent' => false]
+        ]);
     }
 }
