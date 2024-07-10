@@ -18,7 +18,7 @@
                     <payment_mode>payment.v2</payment_mode>
                     <timeout>5</timeout>
                     <return_timeout>5</return_timeout>
-                    <show_interest_labels>1</show_interest_labels>
+                    <show_no_interest_labels>1</show_no_interest_labels>
                     <order_status_settings>
                         <order_status_approved>processing</order_status_approved>
                         <order_status_in_process>pending</order_status_in_process>
