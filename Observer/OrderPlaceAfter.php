@@ -27,6 +27,10 @@ class OrderPlaceAfter implements ObserverInterface
     {
         $order = $observer->getEvent()->getOrder();
 
+        // Return if order wasn't placed with mobbex
+        if($order->getPayment()->getMethod() != 'sugapay')
+            return;
+        
         // Get status configured to order created
         $orderStatus = $this->config->get('order_status_in_process');
         
