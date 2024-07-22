@@ -13,18 +13,23 @@ class CategorySaveObserver implements ObserverInterface
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
     public $customFieldFactory;
 
+    /** @var \Magento\Framework\Serialize\Serializer\Serialize */
+    public $serializer;
+
     /** @var array */
     public $params;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Helper\Mobbex $helper,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Framework\Serialize\Serializer\Serialize $serializer
     )
     {
         $this->helper             = $helper;
         $this->customFieldFactory = $customFieldFactory;
         $this->params             = $context->getRequest()->getParams();
+        $this->serializer         = $serializer;
     }
 
     /**
@@ -53,8 +58,8 @@ class CategorySaveObserver implements ObserverInterface
         //Get mobbex configs
         $categoryConfigs = [
             'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
-            'common_plans'     => serialize($commonPlans),
-            'advanced_plans'   => serialize($advancedPlans),
+            'common_plans'     => $this->serializer->serialize($commonPlans),
+            'advanced_plans'   => $this->serializer->serialize($advancedPlans),
         ];
 
         //Save mobbex custom fields
