@@ -10,7 +10,7 @@
                 <block name="mobbex_product_settings"
                        class="Mobbex\Webpay\Block\Template"
                        cacheable="false"
-                       template="Mobbex_Webpay::product-settings.phtml"/>
+                       template="Mobbex_Webpay::catalog-settings.phtml"/>
             </htmlContent>
         </container>
     </fieldset>
