@@ -32,7 +32,10 @@ class Cache extends AbstractModel
         $conection     = $objectManager->get('\Magento\Framework\App\ResourceConnection')->getConnection();
         
         //Delete expired cache
-        $conection->query("DELETE FROM " .$this->_getResource()->getMainTable()." WHERE `date` < DATE_SUB(NOW(), INTERVAL 5 MINUTE);");
+        $connection->delete(
+            $this->_getResource()->getMainTable(),
+            ['date < ?' => new \Zend_Db_Expr('DATE_SUB(NOW(), INTERVAL 5 MINUTE)')]
+        );
 
         $collection = $this->getCollection()
             ->addFieldToFilter('cache_key', $key)
