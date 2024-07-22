@@ -15,7 +15,7 @@ class Log extends AbstractModel
      */
     protected function _construct()
     {
-        $this->_init(\Mobbex\Webpay\Model\Resource\Log::class);
+        $this->_init(\Mobbex\Webpay\Model\Source\Log::class);
     }
 
     /**
