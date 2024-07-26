@@ -416,6 +416,12 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         return $addresses;
     }
 
+    /**
+     * Obtains the custom reference seted in configs.
+     * @param int $id Order id.
+     * 
+     * @return string
+     */
     public function getCustomReference($id)
     {
         $string = $this->config->get('custom_reference');
