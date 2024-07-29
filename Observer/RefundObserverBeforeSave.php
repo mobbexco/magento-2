@@ -25,14 +25,10 @@ class RefundObserverBeforeSave implements ObserverInterface
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /** @var class */
-    public $messageManager;
-
     /** @var \Mobbex\Webpay\Model\Transaction */
     public $transaction;
 
     public function __construct(
-        Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
@@ -44,8 +40,10 @@ class RefundObserverBeforeSave implements ObserverInterface
         $this->config         = $config;
         $this->logger         = $logger;
         $this->helper         = $helper;
-        $this->messageManager = $context->getMessageManager();
         $this->transaction    = $mobbexTransactionFactory->create();
+
+        // Many times, the db logger do not work in this file (because the db rollback)
+        $this->logger->useFileLogger = true;
 
         //Init mobbex php plugins sdk
         $this->sdk->init();
