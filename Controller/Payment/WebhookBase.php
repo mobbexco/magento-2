@@ -10,7 +10,6 @@ use Magento\Framework\App\RequestInterface;
 if (interface_exists('\Magento\Framework\App\CsrfAwareActionInterface')) {
     abstract class WebhookBase extends Action implements CsrfAwareActionInterface
     {
-
         /**
          * @param RequestInterface $request
          * @return InvalidRequestException|null
@@ -28,9 +27,5 @@ if (interface_exists('\Magento\Framework\App\CsrfAwareActionInterface')) {
         {
             return true;
         }
-    }
-} else {
-    abstract class WebhookBase extends Action
-    {
     }
 }

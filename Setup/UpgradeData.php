@@ -25,14 +25,19 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
     /** @var \Magento\Eav\Setup\EavSetup */
     public $eavSetup;
 
+    /** @var \Magento\Framework\Serialize\Serializer\Serialize */
+    public $serializer;
+
     public function __construct(
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
+        \Magento\Framework\Serialize\Serializer\Serialize $serializer
     ) {
         $this->eavSetupFactory          = $eavSetupFactory;
         $this->customFieldFactory       = $customFieldFactory;
         $this->productCollectionFactory = $productCollectionFactory;
+        $this->serializer               = $serializer;
     }
 
     /**
@@ -86,11 +91,13 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
             if ($this->eavSetup->getAttribute($productEntity, $planRef, 'attribute_id')) {
                 // Get all uses
                 foreach ($this->getProductAttributeUses($planRef) as $productId => $product) {
-                    $commonPlans = unserialize($this->customFieldFactory->create()->getCustomField($productId, 'product', 'common_plans')) ?: [];
+                    $commonPlans = $this->customFieldFactory->create()->getCustomField($productId, 'product', 'common_plans') 
+                        ? $this->serializer->unserialize($this->customFieldFactory->create()->getCustomField($productId, 'product', 'common_plans')) 
+                        : [];
 
                     // Move value to common_plans array and save
                     $commonPlans[] = $planRef;
-                    $this->customFieldFactory->create()->saveCustomField($productId, 'product', 'common_plans', serialize($commonPlans));
+                    $this->customFieldFactory->create()->saveCustomField($productId, 'product', 'common_plans', $this->serializer->serialize($commonPlans));
                 }
 
                 // Remove attribute

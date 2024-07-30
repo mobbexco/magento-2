@@ -15,7 +15,7 @@ class CustomField extends AbstractModel
      */
     protected function _construct()
     {
-        $this->_init(\Mobbex\Webpay\Model\Resource\CustomField::class);
+        $this->_init(\Mobbex\Webpay\Model\Source\CustomField::class);
     }
 
     /**

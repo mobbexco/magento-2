@@ -15,7 +15,7 @@ class Transaction extends AbstractModel
      */
     protected function _construct()
     {
-        $this->_init(\Mobbex\Webpay\Model\Resource\Transaction::class);
+        $this->_init(\Mobbex\Webpay\Model\Source\Transaction::class);
     }
 
     /**

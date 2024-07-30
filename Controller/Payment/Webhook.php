@@ -2,11 +2,19 @@
 
 namespace Mobbex\Webpay\Controller\Payment;
 
+// Set parent class
+class_alias(
+    interface_exists('\Magento\Framework\App\CsrfAwareActionInterface')
+        ? 'Mobbex\Webpay\Controller\Payment\WebhookBase'
+        : 'Magento\Framework\App\Action\Action', 
+    'WebhookBase'
+);
+
 /**
  * Class Webhook
  * @package Mobbex\Webpay\Controller\Payment
  */
-class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
+class Webhook extends WebhookBase
 {
     /** @var \Magento\Framework\App\Action\Context */
     public $context;
@@ -72,7 +80,10 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
 
         try {
             // Get request data
-            $postData = isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == 'application/json' ? json_decode(file_get_contents('php://input'), true) : $this->_request->getPostValue();
+            $postData = $this->_request->getHeader('Content-Type') == 'application/json' 
+                ? json_decode(file_get_contents('php://input'), true) 
+                : $this->_request->getPostValue();
+
             $orderId  = $this->_request->getParam('order_id');
             $quoteId  = $this->_request->getParam('quote_id');
             $token    = $this->_request->getParam('mbbx_token');

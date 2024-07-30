@@ -303,12 +303,16 @@ class OrderUpdate
         if (!$this->isInventoryEnabled())
             return;
 
+        // Get DB connection
         $connection = $this->resourceConnection->getConnection();
+
+        // Get stock id
         $stockId    = $this->_objectManager->get('\Magento\InventoryCatalog\Model\GetStockIdForCurrentWebsite');
 
+        // Update items stock
         foreach ($order->getAllVisibleItems() as $item) {
-            $product = $item->getProduct();
-            
+            // Get item data
+            $product  = $item->getProduct();
             $quantity = $restoreStock ? $item->getQtyOrdered() : '-'.$item->getQtyOrdered();
             $metadata = [
                 'event_type'          => $restoreStock ? "back_item_qty" : "order_placed",
@@ -317,11 +321,13 @@ class OrderUpdate
                 "object_increment_id" => $order->getIncrementId()
             ];
 
-            $query = "INSERT INTO inventory_reservation (stock_id, sku, quantity, metadata)
-                VALUES (".$stockId->execute().", '".$product->getSku()."', ".$quantity.", '".json_encode($metadata)."');"; 
-
-            //Insert data in db
-            $connection->query($query);
+            // Insert inventory reservation in DB
+            $connection->insert('inventory_reservation', [
+                'stock_id' => $stockId->execute(),
+                'sku'      => $product->getSku(),
+                'quantity' => $quantity,
+                'metadata' => $metadata
+            ]);
         }
 
         return $this->customField->saveCustomField($order->getIncrementId(), 'order', 'refunded', $restoreStock ? 'yes' : 'no');

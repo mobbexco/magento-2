@@ -1,12 +1,12 @@
 <?php
 
-namespace Mobbex\Webpay\Model\Resource;
+namespace Mobbex\Webpay\Model\Source;
 
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
  * CustomField Resource Model
- * @package Mobbex\Webpay\Model\Resource
+ * @package Mobbex\Webpay\Model\Source
  */
 class CustomField extends AbstractDb
 {

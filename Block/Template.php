@@ -44,5 +44,8 @@ class Template extends MagentoTemplate
         
         // Set params as public prop
         $this->params = $this->_request->getParams();
+
+        $this->type = strpos($this->getNameInLayout(), 'product') !== false ? 'product' : 'category';
+        $this->form = $this->type."_form";
     }
 }

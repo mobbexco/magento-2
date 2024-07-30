@@ -1,11 +1,11 @@
-<div id="mbbxProductModal" class="<?= $this->config->get('theme') ?>"> 
+<div id="mbbxProductModal" class="<?= $this->escapeHtml($this->config->get('theme')) ?>"> 
     <div id="mbbxProductModalContent">
         <div id="mbbxProductModalHeader">
             <select name="mbbx-method-select" id="mbbx-method-select">
                 <option id="0" value="0">Seleccione un método de pago</option>
                 <?php foreach($block->sources as $source) : ?>
                     <?php if (!empty($source['source']['name'])) : ?>
-                        <option id="<?= $source['source']['reference'] ?>" value="<?= $source['source']['reference'] ?>"><?= $source['source']['name'] ?></option>
+                        <option id="<?= $this->escapeHtml($source['source']['reference']) ?>" value="<?= $this->escapeHtml($source['source']['reference']) ?>"><?= $this->escapeHtml($source['source']['name']) ?></option>
                     <?php endif; ?>
                 <?php endforeach; ?>
             </select>
@@ -14,34 +14,34 @@
         <div id="mbbxProductModalBody">
         <?php foreach($block->sources as $source) : ?>
             <?php if (!empty($source['source']['name'])) : ?>
-                <div id="<?= $source['source']['reference'] ?>" class="mobbexSource">
+                <div id="<?= $this->escapeHtml($source['source']['reference']) ?>" class="mobbexSource">
                     <p class="mobbexPaymentMethod">
-                        <img src="https://res.mobbex.com/images/sources/jpg/<?= $source['source']['reference'] ?>.jpg"><?= $source['source']['name'] ?>
+                        <img src="https://res.mobbex.com/images/sources/jpg/<?= $this->escapeHtml($source['source']['reference']) ?>.jpg"><?= $this->escapeHtml($source['source']['name']) ?>
                     </p>
                     <?php if (!empty($source['installments']['list'])) : ?>
                         <table>
                             <?php foreach($source['installments']['list'] as $installment) : ?>
                                 <tr>
                                     <td>
-                                        <?= $installment['name'] ?>
+                                        <?= $this->escapeHtml($installment['name']) ?>
                                         <?php if ($installment['totals']['installment']['count'] != 1) : ?>
                                             <small>
-                                                <b><?= $installment['totals']['installment']['count'] ?> cuotas de <?= $block->priceHelper->currency($installment['totals']['installment']['amount'], true, false) ?></b><br/>
+                                                <b><?= $this->escapeHtml($installment['totals']['installment']['count']) ?> cuotas de <?= $this->escapeHtml($block->priceHelper->currency($installment['totals']['installment']['amount'], true, false)) ?></b><br/>
                                                 <?php if(isset($installment['tags'])) : ?>
                                                     <?php foreach($installment['tags'] as $tag) :?>
-                                                        <?= "{$tag['label']}: "?><b><?="{$tag['value']}% " ;?></b>
+                                                        <?= $this->escapeHtml("{$tag['label']}: ")?><b><?= $this->escapeHtml("{$tag['value']}% ") ;?></b>
                                                     <?php endforeach; ?>
                                                 <?php endif ?>
                                             </small>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="text-align: right; "><?= isset($installment['totals']['total']) ? $block->priceHelper->currency($installment['totals']['total'], true, false) : '' ?></td>
+                                    <td style="text-align: right; "><?= isset($installment['totals']['total']) ? $this->escapeHtml($block->priceHelper->currency($installment['totals']['total'], true, false)) : '' ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </table>
                     <?php else: ?>
                         <p class="mobbexSourceTotal">
-                            <?= $block->priceHelper->currency($block->total, true, false) ?>
+                            <?= $this->escapeHtml($block->priceHelper->currency($block->total, true, false)) ?>
                         </p>
                     <?php endif; ?>
                 </div>
@@ -53,17 +53,17 @@
 <button type="button" class="action secondary" id="mbbxProductBtn" 
     style="display: flex;align-items: center;">
     <?php if($this->config->get('button_logo')):?>
-    <img src="<?=$this->config->get('button_logo')?>" alt="mobbex logo"
+    <img src="<?= $this->escapeHtml($this->config->get('button_logo')) ?>" alt="mobbex logo"
         width="40" 
         height="40"
         style="margin-right: 10px; border-radius: 40px;">
     <?php endif; ?>
-    <?= $this->config->get('button_text') ?>
+    <?= $this->escapeHtml($this->config->get('button_text')) ?>
 </button>
 
 <style>
     /* Open Button Style */
-    <?= $this->config->get('widget_style') ?>
+    <?= $this->escapeHtml($this->config->get('widget_style')) ?>
     
     /* The Modal (background) */
     #mbbxProductModal {

@@ -1,12 +1,12 @@
 <?php
 
-namespace Mobbex\Webpay\Model\Resource\CustomField;
+namespace Mobbex\Webpay\Model\Source\Cache;
 
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
- * CustomField Resource Model Collection
- * @package Mobbex\Webpay\Model\Resource
+ * Cache Resource Model Collection
+ * @package Mobbex\Webpay\Model\Source
  */
 class Collection extends AbstractCollection
 {
@@ -15,6 +15,6 @@ class Collection extends AbstractCollection
      */
     public function _construct()
     {
-        $this->_init('Mobbex\Webpay\Model\CustomField', 'Mobbex\Webpay\Model\Resource\CustomField');
+        $this->_init('Mobbex\Webpay\Model\Cache', 'Mobbex\Webpay\Model\Source\Cache');
     }
 }
