@@ -72,6 +72,7 @@ class Info extends \Magento\Payment\Block\Info
             foreach ($childs as $key => $entity) {
                 $data[(string) __('Entity') . ' ' . ($key + 1).' Name'] = isset($entity['entity_name']) ? $entity['entity_name'] : '';
                 $data[(string) __('Entity') . ' ' . ($key + 1).' UID']  = isset($entity['entity_uid']) ? $entity['entity_uid'] : '';
+                $data[(string) __('Entity') . ' ' . ($key + 1).' Total']  = isset($entity['total']) ? "$$entity[total]" : '$0';
                 }
         } else {
             $data[(string) __('Entity Name')] = isset($mobbexData['entity_name']) ? $mobbexData['entity_name'] : '';
