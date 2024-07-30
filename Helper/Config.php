@@ -29,6 +29,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'payment_mode'                       => 'payment/sugapay/checkout/payment_mode',
         'timeout'                            => 'payment/sugapay/checkout/timeout',
         'return_timeout'                     => 'payment/sugapay/checkout/return_timeout',
+        'show_no_interest_labels'            => 'payment/sugapay/checkout/show_no_interest_labels',
         'site_id'                            => 'payment/sugapay/advanced/site_id',
         'unified_mode'                       => 'payment/sugapay/advanced/unified_mode',
         'online_refund'                      => 'payment/sugapay/advanced/online_refund',
