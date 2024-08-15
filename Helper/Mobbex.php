@@ -434,9 +434,13 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             // Get table and column name
             $column = $matches[1][$index];
 
-            // Get data from db
-            $sql = "SELECT $column FROM " . $connection->getTableName('sales_order') . " WHERE `entity_id` = $id;";
-            $result = $connection->fetchOne($sql);
+            // Get query
+            $query = $connection->select()
+                ->from($connection->getTableName('sales_order'), [$column])
+                ->where('entity_id = :entity_id');
+
+            // get result
+            $result = $connection->fetchOne($query, ['entity_id' => (int)$id]);
 
             // Update reference
             $string = str_replace($placeholder, $result ?: '', $string);

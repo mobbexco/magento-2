@@ -123,7 +123,7 @@
 
                     <field id="custom_reference" translate="label comment" sortOrder="33" type="text" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Use a custom reference for checkout</label>
+                        <label>Usar reference personalizado</label>
                         <comment>Permite utilizar un reference propio utilizando columnas de la tabla sales_order. Ex. "cutom_reference_{increment_id}_my_store"</comment>
                     </field>
 
