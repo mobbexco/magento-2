@@ -4,10 +4,5 @@
 		<group name="totals">
 			<item name="fee" instance="Mobbex\Webpay\Model\Invoice\Fee" sort_order="160"/>
 		</group>
-		</section>
-	<section name="order_creditmemo">
-		<group name="totals">
-			<item name="fee" instance="Mobbex\Webpay\Model\Creditmemo\Fee" sort_order="160"/>
-		</group>
 	</section>
 </config>
