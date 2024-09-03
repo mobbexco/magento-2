@@ -128,8 +128,8 @@
                     </field>
                     <field id="show_no_interest_labels" translate="label comment" sortOrder="33" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Ocultar cuotas en checkout</label>
-                        <comment>Ocultar las etiquetas de "cuotas sin interes" en la vista del checkout.</comment>
+                        <label>Mostrar etiqueta "Sin interés"</label>
+                        <comment>Mostrar las etiquetas de "Cuotas sin interés" en la vista del checkout.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
