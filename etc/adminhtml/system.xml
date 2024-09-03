@@ -121,6 +121,11 @@
                         <comment>Permite establecer el tiempo de espera para redirección en el checkout en segundos.</comment>
                     </field>
 
+                    <field id="custom_reference" translate="label comment" sortOrder="33" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Usar reference personalizado</label>
+                        <comment>Permite utilizar un reference propio utilizando columnas de la tabla sales_order. Ex. "cutom_reference_{increment_id}_my_store"</comment>
+                    </field>
                     <field id="show_no_interest_labels" translate="label comment" sortOrder="33" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Ocultar cuotas en checkout</label>
