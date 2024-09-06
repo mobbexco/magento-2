@@ -13,18 +13,23 @@ class ProductSaveObserver implements ObserverInterface
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
     public $customFieldFactory;
 
+    /** @var \Magento\Framework\Serialize\Serializer\Serialize */
+    public $serialize;
+
     /** @var array */
     public $params;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Helper\Mobbex $helper,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Framework\Serialize\Serializer\Serialize $serialize
     )
     {
         $this->helper             = $helper;
         $this->customFieldFactory = $customFieldFactory;
         $this->params             = $context->getRequest()->getParams();
+        $this->serialize          = $serialize;
     }
 
     /**
@@ -55,8 +60,8 @@ class ProductSaveObserver implements ObserverInterface
             'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
             'is_subscription'  => isset($this->params['enable_sub']) ? $this->params['enable_sub'] : 'no',
             'subscription_uid' => isset($this->params['sub_uid']) ? $this->params['sub_uid'] : '',
-            'common_plans'     => serialize($commonPlans),
-            'advanced_plans'   => serialize($advancedPlans),
+            'common_plans'     => $this->serializer->serialize($commonPlans),
+            'advanced_plans'   => $this->serializer->serialize($advancedPlans),
         ];
         
         //Save mobbex custom fields

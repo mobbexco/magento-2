@@ -1,12 +1,12 @@
 <?php
 
-namespace Mobbex\Webpay\Model\Resource\Cache;
+namespace Mobbex\Webpay\Model\Source\Logs;
 
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
- * Cache Resource Model Collection
- * @package Mobbex\Webpay\Model\Resource
+ * Mobbex Log Resource Model Collection
+ * @package Mobbex\Webpay\Model\Source
  */
 class Collection extends AbstractCollection
 {
@@ -15,6 +15,6 @@ class Collection extends AbstractCollection
      */
     public function _construct()
     {
-        $this->_init('Mobbex\Webpay\Model\Cache', 'Mobbex\Webpay\Model\Resource\Cache');
+        $this->_init('Mobbex\Webpay\Model\Log', 'Mobbex\Webpay\Model\Source\Log');
     }
 }

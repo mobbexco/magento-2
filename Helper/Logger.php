@@ -52,7 +52,6 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
      * 
      * Mode debug: Log data only if debug mode is active
      * Mode error: Always log data.
-     * Mode critical: Always log data & stop code execution.
      * 
      * @param string $mode 
      * @param string $message
@@ -70,8 +69,5 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
                     'data'          => json_encode($data),
                     'date'          => date('Y-m-d H:i:s'),
                 ]);
-
-        if($mode === 'critical')
-            die($message);
     }
 }

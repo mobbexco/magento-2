@@ -66,15 +66,20 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\App\Config\Storage\WriterInterface */
     public $configWriter;
 
+    /** @var \Magento\Framework\Serialize\Serializer\Serialize */
+    public $serializer;
+
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Framework\Serialize\Serializer\Serialize $serializer
     ) {
         parent::__construct($context);
         
         $this->configWriter = $configWriter;
-        $this->customField = $customFieldFactory->create();
+        $this->customField  = $customFieldFactory->create();
+        $this->serializer   = $serializer;
     }
 
     /** MODULE SETTINGS */
@@ -135,8 +140,8 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCatalogSetting($id, $object, $catalogType = 'product')
     {
-        if (strpos($object, '_plans'))
-            return unserialize($this->customField->getCustomField($id, $catalogType, $object)) ?: [];
+        if (strpos($object, '_plans') !== false)
+            return $this->customField->getCustomField($id, $catalogType, $object) ? $this->serializer->unserialize($this->customField->getCustomField($id, $catalogType, $object)) : [];
 
         return $this->customField->getCustomField($id, $catalogType, $object) ?: '';
     }

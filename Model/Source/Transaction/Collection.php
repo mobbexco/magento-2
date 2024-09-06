@@ -1,12 +1,12 @@
 <?php
 
-namespace Mobbex\Webpay\Model\Resource\Transaction;
+namespace Mobbex\Webpay\Model\Source\Transaction;
 
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
  * Mobbex Transaction Resource Model Collection
- * @package Mobbex\Webpay\Model\Resource
+ * @package Mobbex\Webpay\Model\Source
  */
 class Collection extends AbstractCollection
 {
@@ -15,6 +15,6 @@ class Collection extends AbstractCollection
      */
     public function _construct()
     {
-        $this->_init('Mobbex\Webpay\Model\Transaction', 'Mobbex\Webpay\Model\Resource\Transaction');
+        $this->_init('Mobbex\Webpay\Model\Transaction', 'Mobbex\Webpay\Model\Source\Transaction');
     }
 }
