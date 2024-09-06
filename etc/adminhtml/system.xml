@@ -121,6 +121,18 @@
                         <comment>Permite establecer el tiempo de espera para redirección en el checkout en segundos.</comment>
                     </field>
 
+                    <field id="custom_reference" translate="label comment" sortOrder="33" type="text" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Usar reference personalizado</label>
+                        <comment>Permite utilizar un reference propio utilizando columnas de la tabla sales_order. Ex. "cutom_reference_{increment_id}_my_store"</comment>
+                    </field>
+                    <field id="show_no_interest_labels" translate="label comment" sortOrder="33" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Mostrar etiqueta "Sin interés"</label>
+                        <comment>Mostrar las etiquetas de "Cuotas sin interés" en la vista del checkout.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
                     <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
                         <label>Order Status Settings</label>

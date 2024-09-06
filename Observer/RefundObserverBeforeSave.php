@@ -25,14 +25,10 @@ class RefundObserverBeforeSave implements ObserverInterface
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /** @var class */
-    public $messageManager;
-
     /** @var \Mobbex\Webpay\Model\Transaction */
     public $transaction;
 
     public function __construct(
-        Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
@@ -44,8 +40,10 @@ class RefundObserverBeforeSave implements ObserverInterface
         $this->config         = $config;
         $this->logger         = $logger;
         $this->helper         = $helper;
-        $this->messageManager = $context->getMessageManager();
         $this->transaction    = $mobbexTransactionFactory->create();
+
+        // Many times, the db logger do not work in this file (because the db rollback)
+        $this->logger->useFileLogger = true;
 
         //Init mobbex php plugins sdk
         $this->sdk->init();
@@ -79,11 +77,11 @@ class RefundObserverBeforeSave implements ObserverInterface
                     break;
 
                 case 'payment.multiple-sources':
-                    $this->requestRefund($amount, (count($childs) == 1 ? reset($childs) : $parent)['payment_id']);
+                    $this->requestRefund($creditMemo, (count($childs) == 1 ? reset($childs) : $parent));
                     break;
 
                 default:
-                    $this->requestRefund($amount, $parent['payment_id']);
+                    $this->requestRefund($creditMemo, $parent);
                     break;
             }
         } catch (\Exception $e) {
@@ -117,11 +115,11 @@ class RefundObserverBeforeSave implements ObserverInterface
     {
         // If the parent only has one child, use it
         if (count($childs) == 1) 
-            return $this->requestRefund($creditMemo->getGrandTotal(), reset($childs)['payment_id']);
+            return $this->requestRefund($creditMemo, reset($childs));
 
         // If is a total refund, use parent
         if ($this->isTotalRefund($creditMemo))
-            return $this->requestRefund($creditMemo->getOrder()->getGrandTotal(), $parent['payment_id']);
+            return $this->requestRefund($creditMemo, $parent);
 
         // Get entities and remove duplicated (to check really how many entities are)
         $entities = array_unique($this->getCreditMemoEntities($creditMemo));
@@ -140,7 +138,7 @@ class RefundObserverBeforeSave implements ObserverInterface
             throw new \Exception("Refund Error: Not found child operation for the entity provided ($entity)");
 
         // Only refunds one child at a time (there is only one amount)
-        return $this->requestRefund($creditMemo->getGrandTotal(), $childs[$childPos]['payment_id']);
+        return $this->requestRefund($creditMemo, $childs[$childPos]);
     }
 
     /**
@@ -177,17 +175,31 @@ class RefundObserverBeforeSave implements ObserverInterface
     /**
      * Make a refund request to mobbex api.
      * 
-     * @param float $amount
-     * @param string $operationId
+     * @param \Magento\Sales\Model\Order\Creditmemo $creditMemo
+     * @param array $transaction Transaction formatted data.
      * 
-     * @return bool 
+     * @throws \Mobbex\Exception See \Mobbex\Api::request() 
      */
-    public function requestRefund($amount, $operationId)
+    public function requestRefund($creditMemo, $transaction)
     {
-        return (bool) \Mobbex\Api::request([
+        $response = \Mobbex\Api::request([
             'method' => 'POST',
-            'uri'    => "operations/$operationId/refund",
-            'body'   => ['total' => floatval($amount), 'emitEvent' => false]
+            'uri' => "operations/$transaction[payment_id]/refund",
+            'raw' => true,
+            'body' => [
+                'emitEvent' => false,
+                'total' => $creditMemo->getGrandTotal() >= $transaction['total']
+                    ? null
+                    : $creditMemo->getGrandTotal(),
+            ]
         ]);
+
+        if (!empty($response['total'])) {
+            $diff = $creditMemo->getGrandTotal() - $response['total'];
+            $adjustment = $diff > 0 ? 'AdjustmentNegative' : 'AdjustmentPositive';
+
+            $creditMemo->{"set$adjustment"}($creditMemo->{"get$adjustment"}() + abs($diff));
+            $creditMemo->setGrandTotal($response['total']);
+        }
     }
 }

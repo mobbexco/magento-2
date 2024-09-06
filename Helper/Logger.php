@@ -13,14 +13,23 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Mobbex\Webpay\Model\LogFactory */
     public $logFactory;
 
+    /** @var \Psr\Log\LoggerInterface */
+    public $fileLogger;
+
+    /** @var bool */
+    public $useFileLogger = false;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-        \Mobbex\Webpay\Model\LogFactory $logFactory
+        \Mobbex\Webpay\Model\LogFactory $logFactory,
+        \Psr\Log\LoggerInterface $fileLogger
+        
     ) {
         $this->config            = $config;
         $this->resultJsonFactory = $resultJsonFactory;
         $this->logFactory        = $logFactory;
+        $this->fileLogger        = $fileLogger;
     }
 
     /**
@@ -52,11 +61,13 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     {
         // Save log to db
         if ($mode != 'debug' || $this->config->get('debug_mode'))
-            $this->logFactory->create()->saveLog([
-                'type'          => $mode,
-                'message'       => $message,
-                'data'          => json_encode($data),
-                'date'          => date('Y-m-d H:i:s'),
-            ]);
+            $this->useFileLogger
+                ? $this->fileLogger->$mode($message, $data)
+                : $this->logFactory->create()->saveLog([
+                    'type'          => $mode,
+                    'message'       => $message,
+                    'data'          => json_encode($data),
+                    'date'          => date('Y-m-d H:i:s'),
+                ]);
     }
 }

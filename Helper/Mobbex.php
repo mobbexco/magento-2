@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '3.14.0';
+    const VERSION = '3.15.0';
 
     /** @var ScopeConfigInterface */
     public $scopeConfig;
@@ -67,6 +67,9 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Checkout\Model\Session */
     public $_checkoutSession;
 
+    /** @var \Magento\Framework\App\ResourceConnection */
+    public $connection;
+
     public $_request;
 
     public function __construct(
@@ -87,7 +90,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Framework\Event\ConfigInterface $eventConfig,
         \Magento\Framework\Event\ObserverFactory $observerFactory,
-        \Magento\Directory\Model\RegionFactory $regionFactory
+        \Magento\Directory\Model\RegionFactory $regionFactory,
+        \Magento\Framework\App\ResourceConnection $connection
     ) {
         $this->config             = $config;
         $this->logger             = $logger;
@@ -107,6 +111,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $this->observerFactory    = $observerFactory;
         $this->_orderInterface    = $_orderInterface;
         $this->regionFactory      = $regionFactory;
+        $this->resourceConnection = $connection;
     }
 
     /**
@@ -186,7 +191,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             'all',
             'mobbexCheckoutRequest',
             "Pedido #$orderIncrementalId",
-            $orderData->getOrderCurrencyCode()
+            $orderData->getOrderCurrencyCode(),
+            $this->config->get('custom_reference') ? $this->getCustomReference($orderEntityId) : null
         );
 
         //Add order id to the response
@@ -270,7 +276,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 'none',
                 'mobbexQuoteCheckoutRequest',
                 "Carrito #" . $quote->getId(),
-                $quote->getStore()->getCurrentCurrencyCode()
+                $quote->getStore()->getCurrentCurrencyCode(),
+                \Mobbex\Modules\Checkout::generateReference($quote->getId()) . '_DRAFT_CHECKOUT'
             );
 
             $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
@@ -407,6 +414,39 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         return $addresses;
+    }
+
+    /**
+     * Obtains the custom reference seted in configs.
+     * @param int $id Order id.
+     * 
+     * @return string
+     */
+    public function getCustomReference($id)
+    {
+        $string = $this->config->get('custom_reference');
+        $connection = $this->resourceConnection->getConnection();
+
+        // Get columns
+        preg_match_all('/\{([^}]+)\}/', $string, $matches);
+
+        foreach ($matches[0] as $index => $placeholder) {
+            // Get table and column name
+            $column = $matches[1][$index];
+
+            // Get query
+            $query = $connection->select()
+                ->from($connection->getTableName('sales_order'), [$column])
+                ->where('entity_id = :entity_id');
+
+            // get result
+            $result = $connection->fetchOne($query, ['entity_id' => (int)$id]);
+
+            // Update reference
+            $string = str_replace($placeholder, $result ?: '', $string);
+        }
+
+        return $string;
     }
 
     /**

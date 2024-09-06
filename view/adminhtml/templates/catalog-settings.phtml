@@ -101,7 +101,7 @@ if ($this->type == 'product') {
             <option value="no" <?= $is_subscription === 'no' ? 'selected' : '' ?>>No</option>
             <option value="yes" <?= $is_subscription === 'yes' ? 'selected' : '' ?>>Yes</option>
         </select>
-        <div class="<?= $is_subscription === 'no' ? 'hidden' : '' ?>" id="subscription_uid" style="margin-top: 20px;">
+        <div class="<?= $is_subscription === 'no' || empty($is_subscription) ? 'hidden' : '' ?>" id="subscription_uid" style="margin-top: 20px;">
             <label style="margin-right: 10px;" for="sub_uid"><?= $this->escapeHtml(__('Subscription UID')) ?></label>
             <input type="text" name="sub_uid" id="sub_uid" value="<?= $this->escapeHtml($subscription_uid) ?>" data-form-part="<?= $this->escapeHtml($this->form) ?>">
         </div>
