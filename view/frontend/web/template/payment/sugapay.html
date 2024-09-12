@@ -18,8 +18,8 @@
             data-bind="attr: {'id': item.id, value: item.value}" />
             
             <label data-bind="attr: {'for': item.id}" class="label" style="display: flex; align-items: center;">
-                <!-- ko if: (item.image != '') -->
-                <img data-bind="attr: {'src': item.image, 'style': item.style }" alt="mobbex metodos de pago">
+                <!-- ko if: (item.image != '' && $parent.getConfig().showMethodIcons) -->
+                    <img data-bind="attr: {'src': item.image, 'style': item.style }" alt="mobbex metodos de pago">
                 <!-- /ko -->
                 <span data-bind="text: item.name"></span>
             </label>
@@ -42,7 +42,9 @@
                 data-bind="attr: {'id': card.id, value: card.value}"
                 class="mbbx-payment-method-input mbbx-card">
             <label data-bind="attr: {'for': card.id}" style="display: flex; align-items: center;">
-                <img data-bind="attr: {'src': card.img }">
+                <!-- ko if: (card.img != '' && $parent.getConfig().showMethodIcons) -->
+                    <img data-bind="attr: {'src': card.img }">
+                <!-- /ko -->
                 <span data-bind="text: card.name"></span>
             </label>
         </div>

@@ -59,10 +59,11 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'walletCreditCards' => $checkoutData['wallet'],
                     'paymentMethods'    => $checkoutData['paymentMethods'],
                     'config'            => [
-                        'embed'        => $this->config->get('embed'),
-                        'wallet'       => $this->config->get('wallet'),
-                        'banner'       => $this->config->get('checkout_banner'),
-                        'primaryColor' => $this->config->get('color'),
+                        'embed'           => $this->config->get('embed'),
+                        'wallet'          => $this->config->get('wallet'),
+                        'banner'          => $this->config->get('checkout_banner'),
+                        'primaryColor'    => $this->config->get('color'),
+                        'showMethodIcons' => $this->config->get('show_method_icons'),
                     ],
                 ],
             ],
@@ -86,27 +87,28 @@ class CustomConfigProvider implements ConfigProviderInterface
             'wallet'         => [],
         ];
 
+        // Set some vars to improve code readability
+        $methodIcon = $this->config->get('method_icon');
+        $checkoutTitle = $this->config->get('checkout_title');
+
         if(!empty($checkoutData['paymentMethods'])) {
             foreach ($checkoutData['paymentMethods'] as $method) {
-                $isCard = $method['group'] == 'card' && $method['subgroup'] == 'card_input';
+                $mainMethod = $method['subgroup'] == 'card_input' || count($checkoutData['paymentMethods']) === 1;
 
                 $data['paymentMethods'][] = [
                     'id'    => $method['subgroup'],
-                    'value' => $method['group'] . ':' . $method['subgroup'],
-                    'name'  => ($isCard && $this->config->get('checkout_title')) || empty($method['subgroup_title']) ? $this->config->get('checkout_title') : $method['subgroup_title'],
-                    'image' => $this->config->get('show_method_icons') ? $method['subgroup_logo'] : '',
+                    'value' => "$method[group]:$method[subgroup]",
+                    'name'  => ($mainMethod && $checkoutTitle) || empty($method['subgroup_title']) ? $checkoutTitle : $method['subgroup_title'],
+                    'image' => $mainMethod && $methodIcon ? $methodIcon : $method['subgroup_logo'],
                     'style' => "background-color:{$this->config->get('background')};",
                 ];
             }
-            if(count($data['paymentMethods']) == 1 && $this->config->get('checkout_title'))
-                $data['paymentMethods'][0]['name'] = $this->config->get('checkout_title');
-                
         } else {
             $data['paymentMethods'][] = [
                 'id'    => 'sugapay',
                 'value' => '',
-                'name'  => $this->config->get('checkout_title'),
-                'image' => $this->config->get('show_method_icons') ? 'https://res.mobbex.com/images/sources/mobbex.png' : ''
+                'name'  => $checkoutTitle,
+                'image' => $methodIcon ?: 'https://res.mobbex.com/images/sources/mobbex.png',
             ];
         }
 
@@ -117,7 +119,7 @@ class CustomConfigProvider implements ConfigProviderInterface
                         'id'           => 'wallet-card-' . $key,
                         'value'        => 'card-' . $key,
                         'name'         => $card['name'],
-                        'img'          => $this->config->get('show_method_icons') ? $card['source']['card']['product']['logo'] : null,
+                        'img'          => $card['source']['card']['product']['logo'],
                         'maxlength'    => $card['source']['card']['product']['code']['length'],
                         'placeholder'  => $card['source']['card']['product']['code']['name'],
                         'hiddenValue'  => $card['card']['card_number'],
