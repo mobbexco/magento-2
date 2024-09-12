@@ -232,6 +232,9 @@ define(
             getBanner: function () {
                 return window.checkoutConfig.payment.sugapay.config.banner;
             },
+            getConfig: function () {
+                return window.checkoutConfig.payment.sugapay.config;
+            },
             getPaymentMethods: function () {
                 return window.checkoutConfig.payment.sugapay['paymentMethods'];
             },
