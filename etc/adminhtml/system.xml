@@ -227,7 +227,7 @@
                    
                     <field id="theme" translate="label comment" sortOrder="32" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="0">
-                        <label>Tema de Mobbex</label>
+                        <label>Tema visual</label>
                         <source_model>Mobbex\Webpay\Model\Themes</source_model>
                     </field>
 
@@ -282,16 +282,22 @@
                         <label>Estilos del botón de financiación</label>
                         <comment>Modifica los estilos del botón de financiación respetando la sintaxis de CSS.</comment>
                     </field>
-                    
+
+                    <field id="method_icon" translate="label comment" sortOrder="33" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Icono del medio de pago</label>
+                        <comment>URL de la imagen que se mostrará en el medio de pago principal del checkout. Si hay múltiples medios, el principal es tarjeta de crédito/débito.</comment>
+                    </field>
+
                     <field id="show_method_icons" translate="label comment" sortOrder="38" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Íconos de medios de pago</label>
-                        <comment>Muestra los íconos de métodos de pagos.</comment>
+                        <label>Mostrar iconos de medios de pagos</label>
+                        <comment>Habilita o deshabilita los iconos que se muestran en el listado de medios de pagos previo a abrir el checkout</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                <field id="sources_priority" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Orden de los medios de pago</label>
-                    <comment>(Feature preview) Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago.</comment>
-                </field>
+
+                    <field id="sources_priority" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Orden de los medios de pago</label>
+                        <comment>(Feature preview) Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago.</comment>
+                    </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Advanced</label>
