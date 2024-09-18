@@ -54,13 +54,15 @@ class CustomConfigProvider implements ConfigProviderInterface
         $config = [
             'payment' => [
                 'sugapay' => [
-                    'quoteId'        => $this->helper->_checkoutSession->getQuote()->getId(),
-                    'wallet'         => $checkoutData['wallet'],
-                    'paymentMethods' => $checkoutData['paymentMethods'],
-                    'embed'          => $this->config->get('embed'),
-                    'banner'         => $this->config->get('checkout_banner'),
-                    'color'          => $this->config->get('color'),
-                    'background'     => $this->config->get('background'),
+                    'quoteId'           => $this->helper->_checkoutSession->getQuote()->getId(),
+                    'wallet'            => $checkoutData['wallet'],
+                    'paymentMethods'    => $checkoutData['paymentMethods'],
+                    'embed'             => $this->config->get('embed'),
+                    'banner'            => $this->config->get('checkout_banner'),
+                    'color'             => $this->config->get('color'),
+                    'background'        => $this->config->get('background'),
+                    'show_method_icons' => $this->config->get('show_method_icons'),
+                    'method_icon'       => $this->config->get('show_method_icons'),
                 ],
             ],
         ];
@@ -85,10 +87,9 @@ class CustomConfigProvider implements ConfigProviderInterface
 
         if (empty($checkoutData['paymentMethods'])) {
             $data['paymentMethods'][] = [
-                'id'    => 'sugapay',
-                'value' => '',
-                'name'  => $this->config->get('checkout_title'),
-                'image' => $this->config->get('show_method_icons') ? 'https://res.mobbex.com/images/sources/mobbex.png' : ''
+                'subgroup'        => '',
+                'subgroup_title'  => $this->config->get('checkout_title'),
+                'subgroup_logo'   => 'https://res.mobbex.com/images/sources/mobbex.png',
             ];
         }
 

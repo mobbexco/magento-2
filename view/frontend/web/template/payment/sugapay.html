@@ -9,7 +9,9 @@
             checkedValue: subgroup
             " />
         <label data-bind="attr: {for: 'payment_method_' + subgroup}">
-            <img data-bind="attr: { src: subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.background}" />
+            <!-- ko if: $parent.config.show_mehtod_icons  -->
+            <img data-bind="attr: { src: $index() === 0 && parent.config.mehtod_icon ? parent.config.mehtod_icon : subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.background}" />
+            <!--/ko-->
             <span data-bind="text: subgroup_title"></span>
         </label>
     </div>
@@ -52,7 +54,9 @@
             checkedValue: card.card_number
             " />
         <label data-bind="attr: {for: 'payment_method_' + card.card_number}">
+            <!-- ko if: $parent.config.show_mehtod_icons  -->
             <img data-bind="attr: { src: source.card.issuer.logo, alt: source.name, style: 'max-width: 50px;' }" />
+            <!-- /ko -->
             <span data-bind="text: name"></span>
         </label>
     </div>

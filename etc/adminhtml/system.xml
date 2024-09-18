@@ -9,7 +9,7 @@
 
                 <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
-                    <label>Enable</label>
+                    <label>Estado del módulo</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
@@ -26,40 +26,40 @@
                 <field id="min_amount" translate="label comment" sortOrder="5" type="text" showInDefault="1"
                     showInWebsite="1" showInStore="1">
                     <label>Monto minimo de compra</label>
-                    <comment>Monto de compra a partir del cual se podrá habilitar el módulo de pagos en el checkout
-                    </comment>
+                    <comment>Monto de compra a partir del cual se podrá habilitar el módulo de pagos en el checkout</comment>
                 </field>
 
                 <field id="debug_mode" translate="label comment" sortOrder="6" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
-                    <label>Habilitar debug</label>
+                    <label>Modo depuración</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Solo para pruebas de desarrollo y verificar eventuales errores</comment>
                 </field>
 
                 <field id="test_mode" translate="label comment" sortOrder="7" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
-                    <label>Modo de Pruebas</label>
+                    <label>Modo test</label>
+                    <comment>Permite ejecutar las operaciones en modalidad de pruebas</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="financial_active" translate="label comment" sortOrder="8" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
-                    <label>Mostrar financiación en productos.</label>
-                    <comment>Mostrar el botón de financiación en la página de cada producto.</comment>
+                    <label>Mostrar financiación en productos</label>
+                    <comment>Mostrar el botón de financiación en la página de cada producto</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="finance_widget_on_cart" translate="label comment" sortOrder="9" type="select"
                     showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Mostrar financiación en el carrito.</label>
-                    <comment>Mostrar el botón de financiación en la página del carrito.</comment>
+                    <label>Mostrar financiación en carrito</label>
+                    <comment>Mostrar el botón de financiación en la página del carrito</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="version" translate="label" type="label" sortOrder="20" showInDefault="1" showInWebsite="1"
                     showInStore="1">
-                    <label>Version</label>
+                    <label>Versión</label>
                     <backend_model>Mobbex\Webpay\Model\Config\Version</backend_model>
                 </field>
                 
@@ -67,115 +67,121 @@
                     showInStore="1">
                     <label>Checkout</label>
 
-                    <field id="wallet_active" translate="label comment" sortOrder="11" type="select" showInDefault="1"
+                    <field id="embed_payment" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label> Mobbex Wallet para usuarios logeados</label>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-                    <field id="embed_payment" translate="label comment" sortOrder="12" type="select" showInDefault="1"
-                        showInWebsite="1" showInStore="1">
-                        <label>Pago desde el sitio</label>
+                        <label>Embebido</label>
+                        <comment>Permite realizar los pagos directamente desde el sitio, sin redireccionar a Mobbex</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
-                    <field id="multicard" translate="label comment" sortOrder="13" type="select" showInDefault="1"
+                    <field id="multicard" translate="label comment" sortOrder="5" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Permitir pagos con múltiples tarjetas</label>
+                        <label>Multicard</label>
+                        <comment>Permite realizar los pagos con múltiples tarjetas. No compatible con Multivendor</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
+                    <field id="multivendor" translate="label comment" sortOrder="10" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Multivendor</label>
+                        <comment>Permite establecer distintos vendedores para cada uno de los productos del checkout. No compatible con Multicard</comment>
+                        <source_model>Mobbex\Webpay\Model\Config\Source\MultivendorSelect</source_model>
+                    </field>
+
+                    <field id="payment_mode" translate="label comment" sortOrder="15" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Operatoria en 2 pasos</label>
+                        <source_model>Mobbex\Webpay\Model\Config\Source\PaymentModeSelect</source_model>
+                    </field>
+
+                    <field id="wallet_active" translate="label comment" sortOrder="17" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Wallet</label>
+                        <comment>Permite guardar la información de pago de los usuarios que inician sesión para utilizarla en futuras compras</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
                     <field id="own_dni_field" translate="label comment" sortOrder="18" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Mostrar campo DNI</label>
-                        <comment>No compatible con la opcion "Usar columna DNI existente ".</comment>
+                        <comment>No compatible con la opcion "Usar columna DNI existente"</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
                     <field id="dni_column" translate="label comment" sortOrder="19" type="text" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Usar columna DNI existente</label>
-                        <comment>Nombre de la columna de 'sales_order_address' en la que se aloja el DNI del customer.</comment>
-                    </field>
-
-                    <field id="multivendor" translate="label comment" sortOrder="20" type="select" showInDefault="1"
-                        showInWebsite="1" showInStore="1">
-                        <label>Permitir múltiples vendedores</label>
-                        <source_model>Mobbex\Webpay\Model\Config\Source\MultivendorSelect</source_model>
-                    </field>
-
-                    <field id="payment_mode" translate="label comment" sortOrder="30" type="select" showInDefault="1"
-                        showInWebsite="1" showInStore="1">
-                        <label>Operatoria en 2 pasos</label>
-                        <source_model>Mobbex\Webpay\Model\Config\Source\PaymentModeSelect</source_model>
+                        <comment>Nombre de la columna de 'sales_order_address' en la que se aloja el DNI del cliente</comment>
                     </field>
 
                     <field id="timeout" translate="label comment" sortOrder="31" type="text" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Tiempo de vida del checkout</label>
-                        <comment>Permite establecer la dureación del checkout en minutos.</comment>
+                        <label>Tiempo de expiración</label>
+                        <comment>Permite establecer el tiempo (en minutos) que el checkout espera a que el cliente complete la información del pago antes de expirar</comment>
                     </field>
 
                     <field id="return_timeout" translate="label comment" sortOrder="32" type="text" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Tiempo de de espera para la redirección en checkout</label>
-                        <comment>Permite establecer el tiempo de espera para redirección en el checkout en segundos.</comment>
+                        <label>Tiempo de redirección</label>
+                        <comment>Permite establecer el tiempo (en segundos) que se espera antes de realizar la redirección posterior a un pago</comment>
                     </field>
 
                     <field id="custom_reference" translate="label comment" sortOrder="33" type="text" showInDefault="1"
                         showInWebsite="1" showInStore="1">
-                        <label>Usar reference personalizado</label>
-                        <comment>Permite utilizar un reference propio utilizando columnas de la tabla sales_order. Ex. "cutom_reference_{increment_id}_my_store"</comment>
+                        <label>Referencia personalizada</label>
+                        <comment>Permite establecer un patrón propio para la generación del reference que idenitifica las operaciones en la consola. Puede interar columnas de la tabla "sales_order" siguiendo el siguiente ejemplo: "cutom_reference_{increment_id}_my_store"</comment>
                     </field>
+
                     <field id="show_no_interest_labels" translate="label comment" sortOrder="33" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Mostrar etiqueta "Sin interés"</label>
-                        <comment>Mostrar las etiquetas de "Cuotas sin interés" en la vista del checkout.</comment>
+                        <comment>Mostrar las etiquetas de "Cuotas sin interés" en la vista del checkout</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
 
                     <group id="order_status_settings" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                        showInStore="1">
-                        <label>Order Status Settings</label>
+                        <label>Estados del pedido</label>
 
                         <field id="order_status_approved" translate="label" type="select" sortOrder="19"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido cuando se aprueba el pago</label>
+                            <label>Pago aprobado</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
                         <field id="order_status_in_process" translate="label" type="select" sortOrder="20"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido cuando el pago está en curso</label>
+                            <label>Pago en curso</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
                         <field id="order_status_authorized" translate="label" type="select" sortOrder="21"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido cuando el pago fue autorizado</label>
+                            <label>Pago autorizado</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
                         <field id="order_status_cancelled" translate="label" type="select" sortOrder="21"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido cuando el pago es cancelado</label>
+                            <label>Pago cancelado</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
                         <field id="order_status_refunded" translate="label" type="select" sortOrder="22"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido cuando se reembolsa el pago</label>
+                            <label>Pago rembolsado</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
                         <field id="order_status_revision" translate="label" type="select" sortOrder="23"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido cuando se sospecha de posible fraude</label>
+                            <label>Pago en revisión (posible fraude)</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
                         <field id="order_status_rejected" translate="label" type="select" sortOrder="24"
                             showInDefault="1" showInWebsite="1" showInStore="0">
-                            <label>Estado del pedido cuando se rechaza el pago por posible fraude</label>
+                            <label>Pago rechazado (posible fraude)</label>
                             <source_model>Mobbex\Webpay\Model\Config\OrderStatus</source_model>
                         </field>
 
@@ -193,7 +199,7 @@
 
                     <group id="email_settings" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1"
                         showInStore="1">
-                        <label>Email Settings</label>
+                        <label>E-Mails</label>
 
                         <field id="create_order_email" translate="label comment" sortOrder="25" type="select"
                             showInDefault="1" showInWebsite="1" showInStore="1">
@@ -203,7 +209,7 @@
 
                         <field id="email_before_payment" translate="label comment" sortOrder="28" type="select"
                             showInDefault="1" showInWebsite="1" showInStore="1">
-                            <label>Email Antes del Pago</label>
+                            <label>Email antes del pago</label>
                             <comment>Envia el email al crear orden antes de la realización del pago.</comment>
                             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         </field>
@@ -223,11 +229,11 @@
                 </group>
                 <group id="appearance" translate="label" sortOrder="31" showInDefault="1" showInWebsite="1"
                     showInStore="1">
-                    <label>Appearance</label>
+                    <label>Apariencia</label>
                    
                     <field id="theme" translate="label comment" sortOrder="32" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="0">
-                        <label>Tema de Mobbex</label>
+                        <label>Tema visual</label>
                         <source_model>Mobbex\Webpay\Model\Themes</source_model>
                     </field>
 
@@ -282,19 +288,24 @@
                         <label>Estilos del botón de financiación</label>
                         <comment>Modifica los estilos del botón de financiación respetando la sintaxis de CSS.</comment>
                     </field>
-                    
+
+                    <field id="method_icon" translate="label comment" sortOrder="33" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Icono del medio de pago</label>
+                        <comment>URL de la imagen que se mostrará en el medio de pago principal del checkout. Si hay múltiples medios, el principal es tarjeta de crédito/débito.</comment>
+                    </field>
+
                     <field id="show_method_icons" translate="label comment" sortOrder="38" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Íconos de medios de pago</label>
-                        <comment>Muestra los íconos de métodos de pagos.</comment>
+                        <label>Mostrar iconos de medios de pagos</label>
+                        <comment>Habilita o deshabilita los iconos que se muestran en el listado de medios de pagos previo a abrir el checkout</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                <field id="sources_priority" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Orden de los medios de pago</label>
-                    <comment>(Feature preview) Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago.</comment>
-                </field>
+                    <field id="sources_priority" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Orden de los medios de pago</label>
+                        <comment>Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago</comment>
+                    </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Advanced</label>
+                    <label>Avanzado</label>
                     <field id="site_id" translate="label comment" sortOrder="19" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Añadir identificador del sitio</label>
                         <comment>Si utiliza las mismas credenciales en otro sitio complete este campo con un identificador que permita diferenciar las referencias de sus operaciones.</comment>
