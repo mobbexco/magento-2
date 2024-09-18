@@ -1,98 +1,93 @@
-<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked() && onSelect())}">
+<script src="https://res.mobbex.com/js/sdk/mobbex@1.1.0.js" async></script>
 
-    <div id="redirectForm"></div>
-
-    <input type="radio"
-    style="display: none;" 
-    data-bind="attr: {'id': getCode()}, 
-    value: getCode(), 
-    checked: isChecked, 
-    click: selectPaymentMethod">
-    
-
-    <!--Common Mobbex Methods-->
-    <!-- ko foreach: { data: getPaymentMethods(), as: 'item' } -->
-    <li class="payment-method payment-method-title field choice">
-        <div class="inputs" style="display: flex; align-items: center;">
-            <input type="radio" class="mbbx-payment-method-input radio" name="payment[method]"
-            data-bind="attr: {'id': item.id, value: item.value}" />
-            
-            <label data-bind="attr: {'for': item.id}" class="label" style="display: flex; align-items: center;">
-                <!-- ko if: (item.image != '') -->
-                <img data-bind="attr: {'src': item.image, 'style': item.style }" alt="mobbex metodos de pago">
-                <!-- /ko -->
-                <span data-bind="text: item.name"></span>
-            </label>
-        </div>
-        <!-- ko if: ((item.id == 'card_input' || $parent.getPaymentMethods().length == 1) && $parent.getBanner()) -->
-        <div class="mobbex-content" style="padding: 20px 0" id="mbbx-banner">
-            <img data-bind="attr: {src: $parent.getBanner()}" alt="mobbex metodos de pagos" class="mobbex-banner"
-            style="max-width: 100%;border-radius:0;" />
-        </div>
-        <!-- /ko -->
-
-    </li>
-    <!-- /ko -->
-
-    <!--Mobbex Wallet--> 
-    <!-- ko foreach: { data: getWalletCards(), as: 'card' } -->
-    <li class="payment-method payment-method-title field choice">
-        <div style="display: flex; align-items: center; ">
-            <input name="payment[method]" type="radio"
-                data-bind="attr: {'id': card.id, value: card.value}"
-                class="mbbx-payment-method-input mbbx-card">
-            <label data-bind="attr: {'for': card.id}" style="display: flex; align-items: center;">
-                <img data-bind="attr: {'src': card.img }">
-                <span data-bind="text: card.name"></span>
-            </label>
-        </div>
-        <div class="mobbex-wallet-form" data-bind="attr: {'id': card.value}"
-             style="display: none; margin-left: 25px;">
-            <select name="installment" style="max-width: 100px; padding: 0 9px;">
-                <!-- ko foreach: { data: card.installments, as: 'installment' } -->
-                <div class="mbbx-card-installments">
-                    <option data-bind="text: installment.name, attr: {'value': installment.reference}"></option>
-                </div>
-                <!-- /ko -->
-            </select>
-            <input style="margin: 20px 0; max-width: 100px;" type="password"
-                data-bind="attr: {'maxlenght': card.maxlenght, 'placeholder': card.placeholder}" 
-                name="security-code" 
-                required >
-            <input type="hidden" name="card-number" data-bind="attr: {'value': card.hiddenValue}">
-        </div>
-    </li>
-    <!-- /ko -->
-
-    <div class="payment-method-content" id="mbbx-place-order">
-        <!-- ko foreach: getRegion('messages') -->
+<!-- ko foreach: availableMethods -->
+<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == subgroup}">
+    <div class="payment-method-title field choice">
+        <input type="radio" name="payment[method]" data-bind="
+            attr: {id: 'payment_method_' + subgroup},
+            checked: $parent.selectedOption,
+            checkedValue: subgroup
+            " />
+        <label data-bind="attr: {for: 'payment_method_' + subgroup}">
+            <img data-bind="attr: { src: subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.background}" />
+            <span data-bind="text: subgroup_title"></span>
+        </label>
+    </div>
+    <!-- ko if: $parent.config.banner && $index() === 0  -->
+    <img data-bind="attr: {src: $parent.config.banner}" style="max-width: 100%;" />
+    <!--/ko-->
+    <!-- ko if: $parent.selectedOption() === subgroup -->
+    <div class="payment-method-content">
+        <!-- ko foreach: $parents[1].getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
         <!--/ko-->
         <div class="payment-method-billing-address">
-            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko foreach: $parents[1].getRegion($parent.getBillingAddressFormName()) -->
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
         </div>
         <div class="checkout-agreements-block">
-            <!-- ko foreach: $parent.getRegion('before-place-order') -->
-            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!-- ko foreach: $parents[1].getRegion('before-place-order') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
         </div>
         <div class="actions-toolbar">
             <div class="primary">
-                <button class="action primary checkout"
-                        type="submit"
-                        data-bind="click: placeOrder,
-                        attr: {title: $t('Place Order')},
-                        css: {disabled: !isPlaceOrderActionAllowed()},
-                        enable: (getCode() == isChecked())"
-                        disabled>
+                <button type="submit" class="action primary checkout" data-bind="click: $parent.placeOrder, enable: $parent.isPlaceOrderActionAllowed()">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>
         </div>
     </div>
+    <!-- /ko -->
 </div>
-<div id="mbbx-container"></div>
+<!-- /ko -->
 
-
+<!-- ko foreach: availableCards -->
+<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == card.card_number}">
+    <div class="payment-method-title field choice">
+        <input type="radio" name="payment[method]" data-bind="
+            attr: {id: 'payment_method_' + card.card_number},
+            checked: $parent.selectedOption,
+            checkedValue: card.card_number
+            " />
+        <label data-bind="attr: {for: 'payment_method_' + card.card_number}">
+            <img data-bind="attr: { src: source.card.issuer.logo, alt: source.name, style: 'max-width: 50px;' }" />
+            <span data-bind="text: name"></span>
+        </label>
+    </div>
+    <!-- ko if: $parent.selectedOption() === card.card_number -->
+    <div class="payment-method-content">
+        <div data-bind="attr: {'id': 'card_form_' + card.card_number}">
+            <select name="installment" style="max-width: 200px; padding: 0 10px;">
+                <!-- ko foreach: installments -->
+                <option data-bind="text: name, attr: {'value': reference}"></option>
+                <!-- /ko -->
+            </select>
+            <input name="security-code" type="password" required style="margin: 20px 0; max-width: 100px;"
+                data-bind="attr: {'maxlenght': source.card.product.code.length, 'placeholder': source.card.product.code.name}">
+        </div>
+        <!-- ko foreach: $parents[1].getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parents[1].getRegion($parent.getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parents[1].getRegion('before-place-order') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action primary checkout" data-bind="click: $parent.placeOrder, enable: $parent.isPlaceOrderActionAllowed()">
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+</div>
+<!-- /ko -->

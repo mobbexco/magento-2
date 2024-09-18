@@ -31,8 +31,7 @@ class CustomConfigProvider implements ConfigProviderInterface
         \Mobbex\Webpay\Helper\Mobbex $helper,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Magento\Quote\Model\QuoteFactory $quoteFactory
-    ) 
-    {
+    ) {
         $this->sdk          = $sdk;
         $this->config       = $config;
         $this->helper       = $helper;
@@ -47,7 +46,7 @@ class CustomConfigProvider implements ConfigProviderInterface
      * @return array
      */
     public function getConfig()
-    {   
+    {
         $checkoutData = $this->formatCheckoutData(
             $this->config->get('unified_mode') ?: $this->helper->createCheckoutFromQuote()
         );
@@ -55,15 +54,13 @@ class CustomConfigProvider implements ConfigProviderInterface
         $config = [
             'payment' => [
                 'sugapay' => [
-                    'quoteId'           => $this->helper->_checkoutSession->getQuote()->getId(),
-                    'walletCreditCards' => $checkoutData['wallet'],
-                    'paymentMethods'    => $checkoutData['paymentMethods'],
-                    'config'            => [
-                        'embed'        => $this->config->get('embed'),
-                        'wallet'       => $this->config->get('wallet'),
-                        'banner'       => $this->config->get('checkout_banner'),
-                        'primaryColor' => $this->config->get('color'),
-                    ],
+                    'quoteId'        => $this->helper->_checkoutSession->getQuote()->getId(),
+                    'wallet'         => $checkoutData['wallet'],
+                    'paymentMethods' => $checkoutData['paymentMethods'],
+                    'embed'          => $this->config->get('embed'),
+                    'banner'         => $this->config->get('checkout_banner'),
+                    'color'          => $this->config->get('color'),
+                    'background'     => $this->config->get('background'),
                 ],
             ],
         ];
@@ -78,53 +75,21 @@ class CustomConfigProvider implements ConfigProviderInterface
      * Get the checkout data and returns it formated
      * @param array $checkoutData
      * @return array
-    */
+     */
     public function formatCheckoutData($checkoutData)
     {
         $data = [
-            'paymentMethods' => [],
-            'wallet'         => [],
+            'paymentMethods' => $checkoutData['paymentMethods'],
+            'wallet'         => $checkoutData['wallet'],
         ];
 
-        if(!empty($checkoutData['paymentMethods'])) {
-            foreach ($checkoutData['paymentMethods'] as $method) {
-                $isCard = $method['group'] == 'card' && $method['subgroup'] == 'card_input';
-
-                $data['paymentMethods'][] = [
-                    'id'    => $method['subgroup'],
-                    'value' => $method['group'] . ':' . $method['subgroup'],
-                    'name'  => ($isCard && $this->config->get('checkout_title')) || empty($method['subgroup_title']) ? $this->config->get('checkout_title') : $method['subgroup_title'],
-                    'image' => $this->config->get('show_method_icons') ? $method['subgroup_logo'] : '',
-                    'style' => "background-color:{$this->config->get('background')};",
-                ];
-            }
-            if(count($data['paymentMethods']) == 1 && $this->config->get('checkout_title'))
-                $data['paymentMethods'][0]['name'] = $this->config->get('checkout_title');
-                
-        } else {
+        if (empty($checkoutData['paymentMethods'])) {
             $data['paymentMethods'][] = [
                 'id'    => 'sugapay',
                 'value' => '',
                 'name'  => $this->config->get('checkout_title'),
                 'image' => $this->config->get('show_method_icons') ? 'https://res.mobbex.com/images/sources/mobbex.png' : ''
             ];
-        }
-
-        if($this->config->get('wallet') && !empty($checkoutData['wallet'])) {
-            foreach ($checkoutData['wallet'] as $key => $card) {
-                if(!empty($card['installments'])){
-                    $data['wallet'][] = [
-                        'id'           => 'wallet-card-' . $key,
-                        'value'        => 'card-' . $key,
-                        'name'         => $card['name'],
-                        'img'          => $this->config->get('show_method_icons') ? $card['source']['card']['product']['logo'] : null,
-                        'maxlength'    => $card['source']['card']['product']['code']['length'],
-                        'placeholder'  => $card['source']['card']['product']['code']['name'],
-                        'hiddenValue'  => $card['card']['card_number'],
-                        'installments' => $card['installments']
-                    ];
-                }
-            }
         }
 
         return $data;
