@@ -4,9 +4,10 @@ ul#wallet-cards li {
     border-radius: 5px;
 }
 
-img[src*='res.mobbex'],
-img[src*='res.sugaway'] {
+.payment-method-title img[src*='res.mobbex'],
+.payment-method-title img[src*='res.sugaway'] {
     max-height: 3em;
     border-radius: 100%;
     margin-right: .5em;
+    transform: translateY(10px);
 }
