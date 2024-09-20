@@ -22,6 +22,7 @@ define([
   return Component.extend({
     defaults: {
       template: 'Mobbex_Webpay/payment/sugapay',
+      redirectAfterPlaceOrder: false,
     },
     config: window.checkoutConfig.payment.sugapay,
     availableMethods: ko.observableArray([]),
@@ -32,6 +33,8 @@ define([
     initialize: function () {
       this._super();
       this.loadPaymentOptions();
+      this.loadScript('https://res.mobbex.com/js/sdk/mobbex@1.1.0.js');
+      this.loadScript('https://res.mobbex.com/js/embed/mobbex.embed@1.0.23.js');
 
       // Subscribe to method select changes
       this.selectedOption.subscribe(this.selectPaymentMethod.bind(this));
@@ -54,6 +57,14 @@ define([
       self.config?.wallet?.forEach(function (card) {
         self.availableCards.push(card);
       });
+    },
+
+    loadScript: function (src, async = true) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = async;
+
+      document.body.appendChild(script);
     },
 
     selectPaymentMethod: function () {
@@ -86,13 +97,13 @@ define([
     afterPlaceOrder: function () {
       $('body').trigger('processStart');
 
-      returnUrl = urlBuilder.build(
+      const returnUrl = urlBuilder.build(
         `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}`
       );
 
-      createCheckout(
+      this.createCheckout(
         urlBuilder.build('sugapay/payment/checkout/'),
-        function (res) {
+        (res) => {
           $('body').trigger('processStop');
 
           if (!res?.id)
@@ -102,22 +113,25 @@ define([
               returnUrl + '&status=500'
             );
 
-          if (this.selectedOptionData.installments) {
+          if (this.selectedOptionData?.installments) {
             this.executeWallet(res);
           } else if (this.config.embed) {
             this.embedPayment(res);
           } else {
+            var paymentMethod =
+              this.selectedOptionData?.group +
+              ':' +
+              this.selectedOptionData?.subgroup;
+
             window.top.location.href =
               res.url +
-              (this.selectedOption()
-                ? '?paymentMethod=' + this.selectedOption()
-                : '');
+              (paymentMethod != ':' && `?paymentMethod=${paymentMethod}`);
           }
         }
       );
     },
 
-    createCheckout: async function (url, callback) {
+    createCheckout: function (url, callback) {
       $.ajax({
         dataType: 'json',
         method: 'GET',
@@ -170,8 +184,11 @@ define([
         },
       };
 
-      if (this.selectedOption())
-        options.paymentMethod = this.selectedOption();
+      if (this.selectedOption() && this.selectedOptionData?.subgroup)
+        options.paymentMethod =
+          this.selectedOptionData?.group +
+          ':' +
+          this.selectedOptionData?.subgroup;
 
       var mbbxButton = window.MobbexEmbed.init(options);
       mbbxButton.open();
