@@ -54,7 +54,7 @@
             checkedValue: card.card_number
             " />
         <label data-bind="attr: {for: 'payment_method_' + card.card_number}">
-            <!-- ko if: $parent.config.show_method_icons -->
+            <!-- ko if: $parent.config.show_method_icons == 1 -->
             <img data-bind="attr: { src: source.card.issuer.logo, alt: source.name, style: 'max-width: 50px;' }" />
             <!-- /ko -->
             <span data-bind="text: name"></span>
