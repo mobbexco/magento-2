@@ -201,8 +201,8 @@ define([
       window.MobbexJS.operation
         .process({
           intentToken: updatedCard.it,
-          installment: $(`#card_form_${this.selectedOption()} select`).val(),
-          securityCode: $(`#card_form_${this.selectedOption()} input`).val(),
+          installment: $('#card_form select').val(),
+          securityCode: $('#card_form input').val(),
         })
         .then((data) => {
           window.top.location =

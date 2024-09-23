@@ -62,7 +62,7 @@
     </div>
     <!-- ko if: $parent.selectedOption() === card.card_number -->
     <div class="payment-method-content">
-        <div data-bind="attr: {'id': 'card_form_' + card.card_number}">
+        <div id="card_form">
             <select name="installment" style="max-width: 200px; padding: 0 10px;">
                 <!-- ko foreach: installments -->
                 <option data-bind="text: name, attr: {'value': reference}"></option>
