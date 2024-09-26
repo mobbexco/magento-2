@@ -14,7 +14,7 @@ class ProductSaveObserver implements ObserverInterface
     public $customFieldFactory;
 
     /** @var \Magento\Framework\Serialize\Serializer\Serialize */
-    public $serialize;
+    public $serializer;
 
     /** @var array */
     public $params;
@@ -29,7 +29,7 @@ class ProductSaveObserver implements ObserverInterface
         $this->helper             = $helper;
         $this->customFieldFactory = $customFieldFactory;
         $this->params             = $context->getRequest()->getParams();
-        $this->serialize          = $serialize;
+        $this->serializer         = $serialize;
     }
 
     /**
