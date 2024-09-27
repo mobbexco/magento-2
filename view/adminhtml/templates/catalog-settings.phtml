@@ -9,7 +9,7 @@ foreach ($this->config->catalogSettings as $value) {
     if ($this->type == 'category' && strpos('subscription', $value) !== false)
         continue;
 
-    ${$value} = $this->config->getCatalogSetting($id, $value);
+    ${$value} = $this->config->getCatalogSetting($id, $value, $this->type);
 }
 
 try {
