@@ -58,7 +58,6 @@ class ProductSaveObserver implements ObserverInterface
         //Get mobbex configs
         $productConfigs = [
             'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
-            'is_subscription'  => isset($this->params['enable_sub']) ? $this->params['enable_sub'] : 'no',
             'subscription_uid' => isset($this->params['sub_uid']) ? $this->params['sub_uid'] : '',
             'common_plans'     => $this->serializer->serialize($commonPlans),
             'advanced_plans'   => $this->serializer->serialize($advancedPlans),
