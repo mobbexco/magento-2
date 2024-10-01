@@ -10,7 +10,7 @@
             " />
         <label data-bind="attr: {for: 'payment_method_' + subgroup}">
             <!-- ko if: $parent.config.show_method_icons == 1  -->
-            <img data-bind="attr: { src: $index() === 0 && $parent.config.method_icon ? $parent.config.method_icon : subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.background}" />
+            <img data-bind="attr: { src: $index() === 0 && $parent.config.method_icon ? $parent.config.method_icon : subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.color}" />
             <!--/ko-->
             <span data-bind="text: subgroup_title"></span>
         </label>
