@@ -104,6 +104,10 @@ class Webhook extends \Mobbex\Webpay\Controller\Payment\WebhookBase
             if (!$data['parent'])
                 return;
 
+            // Avoid 3xx status codes
+            if (in_array($data['status_code'], [300, 301, 302, 303]))
+                return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
+
             // Get the order status
             $statusName  = $this->orderUpdate->getStatusConfigName($data['status_code']);
             $orderStatus = $this->config->get($statusName);
