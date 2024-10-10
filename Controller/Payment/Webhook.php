@@ -112,6 +112,16 @@ class Webhook extends WebhookBase
             $trx = $this->mobbexTransaction->saveTransaction($data);
             $order = $this->_order->loadByIncrementId($orderId);
 
+            if ($data['status_code'] > 599 && $data['status_code'] < 700) {
+                $ignoreWebhook = $this->customField->getCustomField($data['payment_id'], 'payment', 'ignore_refund_webhook');
+
+                // Remove flag and return
+                if ($ignoreWebhook) {
+                    $this->customField->deleteCustomField($data['payment_id'], 'payment', 'ignore_refund_webhook');
+                    return $this->logger->createJsonResponse('debug', 'Ignored refund webhook', $data['order_id']);
+                }
+            }
+
             if (!$data['parent'])
                 return;
 
