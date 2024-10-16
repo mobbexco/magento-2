@@ -101,18 +101,17 @@ class Webhook extends WebhookBase
             if (!$this->config->validateToken($token))
                 throw new \Exception("Invalid Token: $token", 1);
 
-            //Avoid duplicated child webhooks
-            if (!$data['parent'] && $data['payment_id'] && $this->mobbexTransaction->getTransactions(['payment_id' => $data['payment_id']]))
-                return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
-
             if (empty($orderId) || empty($data['status_code']))
                 throw new \Exception('Empty Order ID or payment status', 1);
+
+            if (strpos($data['payment_id'], 'GRP-') !== 0)
+                return $this->logger->createJsonResponse('debug', 'Ignored GRP webhook', $data['order_id']);
 
             // Save transaction to db and load order
             $trx = $this->mobbexTransaction->saveTransaction($data);
             $order = $this->_order->loadByIncrementId($orderId);
 
-            if ($data['status_code'] > 599 && $data['status_code'] < 700) {
+            if ($data['status_code'] > 599 && $data['status_code'] < 700 && $data['status_code'] != 604) {
                 $ignoreWebhook = $this->customField->getCustomField($data['payment_id'], 'payment', 'ignore_refund_webhook');
 
                 // Remove flag and return
@@ -122,8 +121,9 @@ class Webhook extends WebhookBase
                 }
             }
 
+            // Execute hook on child webhooks and return
             if (!$data['parent'])
-                return;
+                return $this->helper->executeHook('mobbexChildWebhookReceived', false, $postData['data'], $order);
 
             // Get the order status
             $statusName  = $this->orderUpdate->getStatusConfigName($data['status_code']);
