@@ -4,6 +4,8 @@ namespace Mobbex\Webpay\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Message\ManagerInterface;
 
 /**
  * Class RefundObserverBeforeSave
@@ -26,16 +28,12 @@ class RefundObserverBeforeSave implements ObserverInterface
     /** @var \Mobbex\Webpay\Model\Transaction */
     public $transaction;
 
-    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
-    public $customField;
-
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Mobbex\Webpay\Helper\Mobbex $helper,
-        \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory,
-        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
     )
     {
         $this->sdk            = $sdk;
@@ -43,7 +41,6 @@ class RefundObserverBeforeSave implements ObserverInterface
         $this->logger         = $logger;
         $this->helper         = $helper;
         $this->transaction    = $mobbexTransactionFactory->create();
-        $this->customField    = $customFieldFactory;
 
         // Many times, the db logger do not work in this file (because the db rollback)
         $this->logger->useFileLogger = true;
@@ -195,15 +192,6 @@ class RefundObserverBeforeSave implements ObserverInterface
                     : $creditMemo->getGrandTotal(),
             ]
         ]);
-
-        // If the refund was successful, ignore the next refund webhook
-        if (!empty($response['result']))
-            $this->customField->create()->saveCustomField(
-                $transaction['payment_id'],
-                'payment',
-                'ignore_refund_webhook',
-                true
-            );
 
         if (!empty($response['total'])) {
             $diff = $creditMemo->getGrandTotal() - $response['total'];
