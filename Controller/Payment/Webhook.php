@@ -101,23 +101,34 @@ class Webhook extends WebhookBase
             if (!$this->config->validateToken($token))
                 throw new \Exception("Invalid Token: $token", 1);
 
-            //Avoid duplicated child webhooks
-            if (!$data['parent'] && $data['payment_id'] && $this->mobbexTransaction->getTransactions(['payment_id' => $data['payment_id']]))
-                return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
-
             if (empty($orderId) || empty($data['status_code']))
                 throw new \Exception('Empty Order ID or payment status', 1);
+
+            if (strpos($data['payment_id'], 'GRP-') !== false)
+                return $this->logger->createJsonResponse('debug', 'Ignored GRP webhook', $data['order_id']);
 
             // Save transaction to db and load order
             $trx = $this->mobbexTransaction->saveTransaction($data);
             $order = $this->_order->loadByIncrementId($orderId);
 
-            if (!$data['parent'])
-                return;
-
             // Get the order status
             $statusName  = $this->orderUpdate->getStatusConfigName($data['status_code']);
             $orderStatus = $this->config->get($statusName);
+
+            // Ignore refund webhook if online refunds is active
+            if ($statusName == 'order_status_refunded' && $this->config->get('online_refund'))
+                return $this->logger->createJsonResponse('debug', 'Ignored Refund Webhook (online refunds)');
+
+            // Ignore 3xx status codes
+            if ($data['status_code'] > 299 && $data['status_code'] < 400)
+                return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
+
+            // Execute hook on child webhooks and return
+            if (!$data['parent']) {
+                $this->helper->executeHook('mobbexChildWebhookReceived', false, $postData['data'], $order);
+
+                return $this->logger->createJsonResponse('debug', 'Child Webhook Received');
+            }
 
             if (in_array($orderStatus, $this->orderUpdate->cancelStatuses))
                 return $this->processRefund($data, $orderStatus);
