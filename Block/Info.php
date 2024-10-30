@@ -86,17 +86,9 @@ class Info extends \Magento\Payment\Block\Info
             foreach ($childs as $k => $chd) {
                 $id = $k + 1;
 
-                // $table["Transaction (S$id)"] = $chd['payment_id'];
-                // $table["Total (S$id)"]       = "$ $chd[total]";
-                // $table["Source (S$id)"]             = "$chd[source_name], $chd[source_number]";
-                // $table["Source Installment (S$id)"] = "$chd[installment_count] cuota/s de $ $chd[installment_amount] (plan $chd[installment_name])";
-                // $table["Entity Name (S$id)"]        = "$chd[entity_name] (UID $chd[entity_uid])";
-                // $table["Seller Entity Coupon ($id)"]      = "https://mobbex.com/console/$chd[entity_uid]/operations/?oid=$chd[payment_id]";
-
                 $table["Seller Entity Name ($id)"]        = "$chd[entity_name] (UID $chd[entity_uid])";
                 $table["Seller Entity Transaction ($id)"] = $chd['payment_id'];
                 $table["Seller Entity Total ($id)"]       = "$ $chd[total]";
-                // $table["Seller Entity Coupon ($id)"]      = "https://mobbex.com/console/$chd[entity_uid]/operations/?oid=$chd[payment_id]";
                 $table["Seller Source ($id)"]             = "$chd[source_name], $chd[source_number]";
                 $table["Seller Source Installment ($id)"] = "$chd[installment_count] cuota/s de $ $chd[installment_amount] (plan $chd[installment_name])";
             }
