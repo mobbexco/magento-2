@@ -373,6 +373,9 @@ class OrderUpdate
         if ($order->canCancel())
             return $this->orderManagement->cancel($order->getId());
 
+        if (!$this->config->get('creditmemo_on_refund'))
+            return;
+
         // Exit if it is not refundable
         if (!$order->canCreditmemo() || !$memo )
             return;
