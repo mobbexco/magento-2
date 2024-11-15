@@ -137,6 +137,10 @@ class OrderUpdate
         //Set order status
         $order->setState($orderStatus)->setStatus($orderStatus);
 
+        // Only process refunds child webhooks
+        if (in_array($data['status_code'], [600, 601, 602, 603, 610]))
+            $order->addCommentToStatusHistory("Refunded amount $ $data[payment][total] for parent operation");
+
         //Update stock reservations
         $refunded = $this->customField->getCustomField($order->getIncrementId(), 'order', 'refunded') === 'yes' ? true : false;
 
