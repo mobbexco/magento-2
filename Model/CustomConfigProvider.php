@@ -82,7 +82,7 @@ class CustomConfigProvider implements ConfigProviderInterface
     {
         $data = [
             'paymentMethods' => $checkoutData['paymentMethods'],
-            'wallet'         => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
+            'wallet'         => $checkoutData['wallet'],
         ];
 
         if (empty($checkoutData['paymentMethods'])) {
