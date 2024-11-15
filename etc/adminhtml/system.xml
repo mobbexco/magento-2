@@ -314,6 +314,11 @@
                         <comment>Convierte los valores de los precios enviados al checkout de la moneda configurada en Magento a ARS.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                    <field id="creditmemo_on_refund" translate="label comment" sortOrder="27" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Creditmemos al rembolsar</label>
+                        <comment>Permite la creación de notas de crédito al generar un rembolso.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                 </group>
                 <group id="notifications" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Notificaciones</label>
