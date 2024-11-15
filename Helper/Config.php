@@ -37,6 +37,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'online_refund'                      => 'payment/sugapay/advanced/online_refund',
         'advanced_plans_exclusivity'         => 'payment/sugapay/advanced/advanced_plans_exclusivity',
         'convert_currency'                   => 'payment/sugapay/advanced/convert_currency',
+        'creditmemo_on_refund'               => 'payment/sugapay/advanced/creditmemo_on_refund',
         'own_dni_field'                      => 'payment/sugapay/checkout/own_dni_field',
         'dni_column'                         => 'payment/sugapay/checkout/dni_column',
         'create_order_email'                 => 'payment/sugapay/checkout/email_settings/create_order_email',
@@ -59,7 +60,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     ];
 
     /** Mobbex Catalog Settings */
-    public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'is_subscription', 'subscription_uid'];
+    public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'subscription_uid'];
     
     /** @var \Mobbex\Webpay\Model\CustomField */
     public $customField;
@@ -133,18 +134,20 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      * Retrieve the given product/category option.
      * 
      * @param int|string $id
-     * @param string $object
+     * @param string $field
      * @param string $catalogType
      * 
      * @return array|string
      * 
      */
-    public function getCatalogSetting($id, $object, $catalogType = 'product')
+    public function getCatalogSetting($id, $field, $catalogType = 'product')
     {
-        if (strpos($object, '_plans') !== false)
-            return $this->customField->getCustomField($id, $catalogType, $object) ? $this->serializer->unserialize($this->customField->getCustomField($id, $catalogType, $object)) : [];
+        $value = $this->customField->getCustomField($id, $catalogType, $field);
 
-        return $this->customField->getCustomField($id, $catalogType, $object) ?: '';
+        if (strpos($field, '_plans') !== false)
+            return $value ? $this->serializer->unserialize($value) : [];
+
+        return $value ?: '';
     }
 
     /**

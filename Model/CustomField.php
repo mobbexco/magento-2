@@ -67,4 +67,15 @@ class CustomField extends AbstractModel
 
         return $this->save();
     }
+
+    public function deleteCustomField($row_id, $object, $field_name)
+    {
+        $previousId = $this->getCustomField($row_id, $object, $field_name, 'customfield_id');
+
+        if (!$previousId)
+            return false;
+
+        $this->load($previousId);
+        $this->delete();
+    }
 }

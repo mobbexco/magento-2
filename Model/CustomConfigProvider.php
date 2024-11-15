@@ -47,22 +47,25 @@ class CustomConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-        $checkoutData = $this->formatCheckoutData(
-            $this->config->get('unified_mode') ?: $this->helper->createCheckoutFromQuote()
-        );
+        $checkoutData = $this->config->get('unified_mode') ?: $this->helper->createCheckoutFromQuote();
+        $defaultMethod = [
+            'subgroup'        => '',
+            'subgroup_title'  => $this->config->get('checkout_title'),
+            'subgroup_logo'   => 'https://res.mobbex.com/images/sources/mobbex.png',
+        ];
 
         $config = [
             'payment' => [
                 'sugapay' => [
                     'quoteId'           => $this->helper->_checkoutSession->getQuote()->getId(),
-                    'wallet'            => $checkoutData['wallet'],
-                    'paymentMethods'    => $checkoutData['paymentMethods'],
+                    'wallet'            => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
+                    'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [$defaultMethod],
                     'embed'             => $this->config->get('embed'),
                     'banner'            => $this->config->get('checkout_banner'),
                     'color'             => $this->config->get('color'),
                     'background'        => $this->config->get('background'),
                     'show_method_icons' => $this->config->get('show_method_icons'),
-                    'method_icon'       => $this->config->get('show_method_icons'),
+                    'method_icon'       => $this->config->get('method_icon'),
                 ],
             ],
         ];
@@ -71,28 +74,5 @@ class CustomConfigProvider implements ConfigProviderInterface
         $this->logger->log('debug', 'CustomConfigProvider > getConfig', $config);
 
         return $config;
-    }
-
-    /**
-     * Get the checkout data and returns it formated
-     * @param array $checkoutData
-     * @return array
-     */
-    public function formatCheckoutData($checkoutData)
-    {
-        $data = [
-            'paymentMethods' => $checkoutData['paymentMethods'],
-            'wallet'         => $checkoutData['wallet'],
-        ];
-
-        if (empty($checkoutData['paymentMethods'])) {
-            $data['paymentMethods'][] = [
-                'subgroup'        => '',
-                'subgroup_title'  => $this->config->get('checkout_title'),
-                'subgroup_logo'   => 'https://res.mobbex.com/images/sources/mobbex.png',
-            ];
-        }
-
-        return $data;
     }
 }

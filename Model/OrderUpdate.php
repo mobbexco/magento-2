@@ -277,7 +277,7 @@ class OrderUpdate
             $name = 'order_status_authorized';
         } else if ($statusCode == 100) {
             $name = 'order_status_revision';
-        } else if ($statusCode == 602 || $statusCode == 605) {
+        } else if ($statusCode == 601 || $statusCode == 602 || $statusCode == 605) {
             $name = 'order_status_refunded';
         } else if ($statusCode == 604) {
             $name = 'order_status_rejected';
@@ -372,6 +372,9 @@ class OrderUpdate
         // First, try to cancel
         if ($order->canCancel())
             return $this->orderManagement->cancel($order->getId());
+
+        if (!$this->config->get('creditmemo_on_refund'))
+            return;
 
         // Exit if it is not refundable
         if (!$order->canCreditmemo() || !$memo )

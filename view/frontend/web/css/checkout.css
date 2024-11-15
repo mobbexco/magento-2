@@ -6,7 +6,7 @@ ul#wallet-cards li {
 
 .payment-method-title img[src*='res.mobbex'],
 .payment-method-title img[src*='res.sugaway'] {
-    max-height: 3em;
+    max-height: 2.5em;
     border-radius: 100%;
     margin-right: .5em;
     transform: translateY(10px);

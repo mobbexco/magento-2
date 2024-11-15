@@ -8,7 +8,7 @@
         <container name="mbbx_product_tab" sortOrder="1">
             <htmlContent name="html_content">
                 <block name="mobbex_product_settings"
-                       class="Mobbex\Webpay\Block\Template"
+                       class="Mobbex\Webpay\Block\Product"
                        cacheable="false"
                        template="Mobbex_Webpay::catalog-settings.phtml"/>
             </htmlContent>

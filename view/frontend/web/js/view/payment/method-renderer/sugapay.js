@@ -22,16 +22,20 @@ define([
   return Component.extend({
     defaults: {
       template: 'Mobbex_Webpay/payment/sugapay',
+      redirectAfterPlaceOrder: false,
     },
     config: window.checkoutConfig.payment.sugapay,
     availableMethods: ko.observableArray([]),
     availableCards: ko.observableArray([]),
     selectedOption: ko.observable(null),
     selectedOptionData: null,
+    returnUrl: '',
 
     initialize: function () {
       this._super();
       this.loadPaymentOptions();
+      this.loadScript('https://res.mobbex.com/js/sdk/mobbex@1.1.0.js');
+      this.loadScript('https://res.mobbex.com/js/embed/mobbex.embed@1.0.23.js');
 
       // Subscribe to method select changes
       this.selectedOption.subscribe(this.selectPaymentMethod.bind(this));
@@ -42,6 +46,11 @@ define([
         this.availableMethods().length > 0
       )
         this.selectedOption(this.availableMethods()[0]?.subgroup);
+
+      // Set returnUrl to use later
+      this.returnUrl = urlBuilder.build(
+        `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}`
+      );
     },
 
     loadPaymentOptions: function () {
@@ -56,13 +65,17 @@ define([
       });
     },
 
-    selectPaymentMethod: function () {
-      var paymentData = {
-        method: this.getCode(),
-      };
+    loadScript: function (src, async = true) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = async;
 
-      selectPaymentMethodAction(paymentData);
-      quote.paymentMethod(paymentData);
+      document.body.appendChild(script);
+    },
+
+    selectPaymentMethod: function () {
+      selectPaymentMethodAction({ method: this.getCode() });
+      quote.paymentMethod({ method: this.getCode() });
 
       this.selectedOptionData =
         this.availableMethods().find(
@@ -86,38 +99,37 @@ define([
     afterPlaceOrder: function () {
       $('body').trigger('processStart');
 
-      returnUrl = urlBuilder.build(
-        `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}`
-      );
-
-      createCheckout(
+      this.createCheckout(
         urlBuilder.build('sugapay/payment/checkout/'),
-        function (res) {
+        (res) => {
           $('body').trigger('processStop');
 
           if (!res?.id)
             this.displayAlert(
               'Error',
               'Error al obtener la información del pedido.',
-              returnUrl + '&status=500'
+              this.returnUrl + '&status=500'
             );
 
-          if (this.selectedOptionData.installments) {
+          if (this.selectedOptionData?.installments) {
             this.executeWallet(res);
-          } else if (this.config.embed) {
+          } else if (this.config.embed == 1) {
             this.embedPayment(res);
           } else {
+            var paymentMethod =
+              this.selectedOptionData?.group +
+              ':' +
+              this.selectedOptionData?.subgroup;
+
             window.top.location.href =
               res.url +
-              (this.selectedOption()
-                ? '?paymentMethod=' + this.selectedOption()
-                : '');
+              (paymentMethod != ':' && `?paymentMethod=${paymentMethod}`);
           }
         }
       );
     },
 
-    createCheckout: async function (url, callback) {
+    createCheckout: function (url, callback) {
       $.ajax({
         dataType: 'json',
         method: 'GET',
@@ -129,20 +141,21 @@ define([
           this.displayAlert(
             'Error',
             'No se ha podido obtener la información del pago.',
-            returnUrl + '&status=500'
+            this.returnUrl + '&status=500'
           );
         },
       });
     },
 
     embedPayment: function (response) {
+      var payment = {};
       var options = {
         id: response.id,
         type: 'checkout',
 
         onResult: (data) => {
           location.href =
-            returnUrl +
+            this.returnUrl +
             '&order_id=' +
             response.orderId +
             '&status=' +
@@ -150,28 +163,31 @@ define([
         },
 
         onPayment: (data) => {
-          mbbxPaymentData = data.data;
+          payment = data.data;
         },
 
         onClose: (cancelled) => {
           jQuery('body').trigger('processStop');
           location.href =
-            returnUrl +
+            this.returnUrl +
             '&order_id=' +
             response.orderId +
             '&status=' +
-            (mbbxPaymentData ? mbbxPaymentData.status.code : '500');
+            (payment ? payment.status.code : '500');
         },
 
         onError: (error) => {
           jQuery('body').trigger('processStop');
           location.href =
-            returnUrl + '&order_id=' + response.orderId + '&status=500';
+            this.returnUrl + '&order_id=' + response.orderId + '&status=500';
         },
       };
 
-      if (this.selectedOption())
-        options.paymentMethod = this.selectedOption();
+      if (this.selectedOption() && this.selectedOptionData?.subgroup)
+        options.paymentMethod =
+          this.selectedOptionData?.group +
+          ':' +
+          this.selectedOptionData?.subgroup;
 
       var mbbxButton = window.MobbexEmbed.init(options);
       mbbxButton.open();
@@ -185,12 +201,12 @@ define([
       window.MobbexJS.operation
         .process({
           intentToken: updatedCard.it,
-          installment: $(`#card_form_${this.selectedOption()} select`).val(),
-          securityCode: $(`#card_form_${this.selectedOption()} input`).val(),
+          installment: $('#card_form select').val(),
+          securityCode: $('#card_form input').val(),
         })
         .then((data) => {
           window.top.location =
-            returnUrl +
+            this.returnUrl +
             `&order_id=${response.orderId}&status=${data.data.status.code}`;
         })
         .catch((e) => {
@@ -199,7 +215,7 @@ define([
           this.displayAlert(
             'Error',
             'No se pudo completar el pago.',
-            returnUrl + '&order_id=' + response.orderId + '&status=500'
+            this.returnUrl + '&order_id=' + response.orderId + '&status=500'
           );
         });
     },

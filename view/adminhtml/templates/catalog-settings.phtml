@@ -9,7 +9,7 @@ foreach ($this->config->catalogSettings as $value) {
     if ($this->type == 'category' && strpos('subscription', $value) !== false)
         continue;
 
-    ${$value} = $this->config->getCatalogSetting($id, $value);
+    ${$value} = $this->config->getCatalogSetting($id, $value, $this->type);
 }
 
 try {
@@ -79,10 +79,9 @@ try {
 
 ?>
 <div style="margin-top: 20px;">
-    <h3><?= $this->escapeHtml(__('Entity')) ?></h3>
-    <p><?= $this->escapeHtml(__('Fill the product entity UID')) ?></p>
-
-    <label for="entity"><?= $this->escapeHtml(__('Entity')) ?></label>
+    <h3><?= $this->escapeHtml(__('Split y Multivendor')) ?></h3>
+    <p><?= $this->escapeHtml(__('Asocie otra entidad de Mobbex a este producto/categoría')) ?></p>
+    <label for="entity"><?= $this->escapeHtml(__('UID de la entidad')) ?></label>
     <input id="entity" name="entity" type="text" value="<?= $this->escapeHtml($entity) ?>" data-form-part="<?= $this->escapeHtml($this->form) ?>">
 </div>
 
@@ -93,16 +92,10 @@ try {
 if ($this->type == 'product') {
 ?>
     <div class="mbbx-subscription">
-        <h3><?= $this->escapeHtml(__('Subscription')) ?></h3>
-        <p><?= $this->escapeHtml(__('Turn this product a Mobbex Subscription')) ?></p>
-
-        <label for="enable_sub" style="margin-right: 20px;"><?= $this->escapeHtml(__('Is Subscription')) ?></label>
-        <select id="enable_sub" name="enable_sub" data-form-part="<?= $this->escapeHtml($this->form) ?>" onchange="document.querySelector('#subscription_uid').classList.toggle('hidden')">
-            <option value="no" <?= $is_subscription === 'no' ? 'selected' : '' ?>>No</option>
-            <option value="yes" <?= $is_subscription === 'yes' ? 'selected' : '' ?>>Yes</option>
-        </select>
-        <div class="<?= $is_subscription === 'no' || empty($is_subscription) ? 'hidden' : '' ?>" id="subscription_uid" style="margin-top: 20px;">
-            <label style="margin-right: 10px;" for="sub_uid"><?= $this->escapeHtml(__('Subscription UID')) ?></label>
+        <h3><?= $this->escapeHtml(__('Suscripciones')) ?></h3>
+        <p><?= $this->escapeHtml(__('Asocie una suscripción existente a este producto')) ?></p>
+        <div id="subscription_uid" style="margin-top: 20px;">
+            <label style="margin-right: 10px;" for="sub_uid"><?= $this->escapeHtml(__('UID de la suscripción')) ?></label>
             <input type="text" name="sub_uid" id="sub_uid" value="<?= $this->escapeHtml($subscription_uid) ?>" data-form-part="<?= $this->escapeHtml($this->form) ?>">
         </div>
     </div>

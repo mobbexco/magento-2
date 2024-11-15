@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '3.15.0';
+    const VERSION = '4.0.0';
 
     /** @var ScopeConfigInterface */
     public $scopeConfig;
@@ -149,13 +149,13 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $product      = $item->getProduct();
             $products[]   = $product;
             $price        = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
-            $subscription = $this->getProductSubscription($product->getId());
+            $subscription = $this->config->getCatalogSetting($product->getId(), 'subscription_uid');
             $entity       = $this->getEntity($item);
-            
-            if($subscription['enable'] === 'yes') {
+
+            if ($subscription) {
                 $items[] = [
                     'type'      => 'subscription',
-                    'reference' => $subscription['uid'],
+                    'reference' => $subscription,
                     'total'     => round($item->getPrice(), 2)
                 ];
             } else {
@@ -220,12 +220,12 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $shippingAmount  = $quote->getShippingAddress()->getShippingAmount();
         
         foreach ($quote->getItemsCollection() as $item) {
-            $subscriptionConfig = $this->getProductSubscription($item->getProductId());
-            
-            if ($subscriptionConfig['enable'] === 'yes') {
+            $subscription = $this->config->getCatalogSetting($item->getProductId(), 'subscription_uid');
+
+            if ($subscription) {
                 $items[] = [
                     'type'      => 'subscription',
-                    'reference' => $subscriptionConfig['uid']
+                    'reference' => $subscription
                 ];
             } else {
                 $items[] = [
@@ -335,23 +335,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             if($this->config->getCatalogSetting($category, 'entity', 'category'))
                 return $this->config->getCatalogSetting($category, 'entity', 'category'); 
         }
-
 	}
-
-    /**
-     * Retrieve product subscription data.
-     * 
-     * @param int|string $id
-     * 
-     * @return array
-     */
-    public function getProductSubscription($id)
-    {
-        foreach (['is_subscription', 'subscription_uid'] as $value)
-            ${$value} = $this->config->getCatalogSetting($id, $value);
-
-        return ['enable' => $is_subscription, 'uid' => $subscription_uid];
-    }
 
     /**
      * Get DNI configured by quote or current user if logged in.

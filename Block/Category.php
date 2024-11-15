@@ -2,12 +2,7 @@
 
 namespace Mobbex\Webpay\Block;
 
-use Magento\Backend\Block\Template as MagentoTemplate;
-
-/**
- * Use this block to access the mobbex helper methods and props.
- */
-class Template extends MagentoTemplate
+class Category extends \Magento\Backend\Block\Template
 {
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
@@ -24,6 +19,12 @@ class Template extends MagentoTemplate
     /** @var array */
     public $params;
 
+    /** @var string */
+    public $type = 'category';
+
+    /** @var string */
+    public $form = 'category_form';
+
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,
@@ -38,14 +39,8 @@ class Template extends MagentoTemplate
         $this->config = $config;
         $this->helper = $helper;
         $this->logger = $logger;
-
-        //Init mobbex php plugins sdk
-        $this->sdk->init();
-        
-        // Set params as public prop
         $this->params = $this->_request->getParams();
 
-        $this->type = strpos($this->getNameInLayout(), 'product') !== false ? 'product' : 'category';
-        $this->form = $this->type."_form";
+        $this->sdk->init();
     }
 }

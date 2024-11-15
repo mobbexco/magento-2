@@ -187,7 +187,6 @@ class RefundObserverBeforeSave implements ObserverInterface
             'uri' => "operations/$transaction[payment_id]/refund",
             'raw' => true,
             'body' => [
-                'emitEvent' => false,
                 'total' => $creditMemo->getGrandTotal() >= $transaction['total']
                     ? null
                     : $creditMemo->getGrandTotal(),

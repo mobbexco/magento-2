@@ -1,4 +1,3 @@
-<script src="https://res.mobbex.com/js/sdk/mobbex@1.1.0.js" async></script>
 <div id="mbbx-container"></div>
 
 <!-- ko foreach: availableMethods -->
@@ -10,8 +9,8 @@
             checkedValue: subgroup
             " />
         <label data-bind="attr: {for: 'payment_method_' + subgroup}">
-            <!-- ko if: $parent.config.show_mehtod_icons  -->
-            <img data-bind="attr: { src: $index() === 0 && parent.config.mehtod_icon ? parent.config.mehtod_icon : subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.background}" />
+            <!-- ko if: $parent.config.show_method_icons == 1  -->
+            <img data-bind="attr: { src: $index() === 0 && $parent.config.method_icon ? $parent.config.method_icon : subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.color}" />
             <!--/ko-->
             <span data-bind="text: subgroup_title"></span>
         </label>
@@ -36,7 +35,7 @@
         </div>
         <div class="actions-toolbar">
             <div class="primary">
-                <button type="submit" class="action primary checkout" data-bind="click: $parent.placeOrder, enable: $parent.isPlaceOrderActionAllowed()">
+                <button type="submit" class="action primary checkout" data-bind="click: $parent.placeOrder.bind($parent), enable: $parent.isPlaceOrderActionAllowed()">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>
@@ -55,7 +54,7 @@
             checkedValue: card.card_number
             " />
         <label data-bind="attr: {for: 'payment_method_' + card.card_number}">
-            <!-- ko if: $parent.config.show_mehtod_icons  -->
+            <!-- ko if: $parent.config.show_method_icons == 1 -->
             <img data-bind="attr: { src: source.card.issuer.logo, alt: source.name, style: 'max-width: 50px;' }" />
             <!-- /ko -->
             <span data-bind="text: name"></span>
@@ -63,7 +62,7 @@
     </div>
     <!-- ko if: $parent.selectedOption() === card.card_number -->
     <div class="payment-method-content">
-        <div data-bind="attr: {'id': 'card_form_' + card.card_number}">
+        <div id="card_form">
             <select name="installment" style="max-width: 200px; padding: 0 10px;">
                 <!-- ko foreach: installments -->
                 <option data-bind="text: name, attr: {'value': reference}"></option>
@@ -87,7 +86,7 @@
         </div>
         <div class="actions-toolbar">
             <div class="primary">
-                <button type="submit" class="action primary checkout" data-bind="click: $parent.placeOrder, enable: $parent.isPlaceOrderActionAllowed()">
+                <button type="submit" class="action primary checkout" data-bind="click: $parent.placeOrder.bind($parent), enable: $parent.isPlaceOrderActionAllowed()">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>
