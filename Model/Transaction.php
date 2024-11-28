@@ -34,7 +34,7 @@ class Transaction extends AbstractModel
         //Sort the transactions in descendent order
         $collection->setOrder('id', 'DESC');
         //Get model data
-        $data = isset($filter['parent']) && isset($collection->getData()[0]) && $filter['parent'] ? $collection->getData()[0] : $collection->getData();
+        $data = isset($filter['parent']) && $filter['parent'] === 1 && isset($collection->getData()[0]) ? $collection->getData()[0] : $collection->getData();
 
         return !empty($data) ? $data : false;
     }
@@ -140,11 +140,13 @@ class Transaction extends AbstractModel
     {
         $childs = $this->getTransactions([
             'order_id'    => $incrementalOrderId,
-            'parent'      => 0,
+            'parent'      => ['in' => [
+                0, null
+            ]],
             'status_code' => ['in' => [
                 600, 601, 602, 603, 610
-            ]
-        ]]) ?: [];
+            ]]
+        ]) ?: [];
 
         // Remove ID to use array_unique
         $filteredChilds = array_map(function ($item) {
