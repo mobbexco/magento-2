@@ -34,7 +34,7 @@ class Transaction extends AbstractModel
         //Sort the transactions in descendent order
         $collection->setOrder('id', 'DESC');
         //Get model data
-        $data = isset($filter['parent']) && isset($collection->getData()[0]) && $filter['parent'] ? $collection->getData()[0] : $collection->getData();
+        $data = isset($filter['parent']) && $filter['parent'] === 1 && isset($collection->getData()[0]) ? $collection->getData()[0] : $collection->getData();
 
         return !empty($data) ? $data : false;
     }
@@ -123,9 +123,37 @@ class Transaction extends AbstractModel
             'risk_analysis'      => isset($webhookData['payment']['riskAnalysis']['level']) ? $webhookData['payment']['riskAnalysis']['level'] : '',
             'data'               => isset($webhookData) ? json_encode($webhookData) : '',
             'created'            => isset($webhookData['payment']['created']) ? $webhookData['payment']['created'] : '',
-            'updated'            => isset($webhookData['payment']['updated']) ? $webhookData['payment']['created'] : '',
+            'updated'            => isset($webhookData['payment']['updated']) ? $webhookData['payment']['updated'] : '',
         ];
 
         return $data;
+    }
+
+    /**
+     * Get refunded childs from db.
+     *
+     * @param string $incrementalOrderId Incremental order id.
+     *
+     * @return array
+     */
+    public function getRefundedChilds($incrementalOrderId)
+    {
+        $childs = $this->getTransactions([
+            'order_id'    => $incrementalOrderId,
+            'parent'      => ['in' => [
+                0, null
+            ]],
+            'status_code' => ['in' => [
+                600, 601, 602, 603, 610
+            ]]
+        ]) ?: [];
+
+        // Remove ID to use array_unique
+        $filteredChilds = array_map(function ($item) {
+            unset($item['id']);
+            return $item;
+        }, $childs);
+
+        return array_unique($filteredChilds, SORT_REGULAR);
     }
 }
