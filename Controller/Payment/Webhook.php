@@ -162,21 +162,12 @@ class Webhook extends WebhookBase
         //Load Order
         $this->_order->loadByIncrementId($data['order_id']);
 
-        //Get previous refunds
-        $totalRefunded = (float) $this->customField->getCustomField($data['order_id'], 'order', 'total_refunded') + $data['total'];
-        $totalPaid     = $this->_order->getGrandTotal() - $totalRefunded;
-
-        //Save total refunded
-        $this->customField->saveCustomField($data['order_id'], 'order', 'total_refunded', $totalRefunded);
-        
-        if ($data['parent'] || $totalPaid <= 0){
-            $this->orderUpdate->cancelOrder($this->_order, $orderStatus !== 'mobbex_failed');
-            $this->orderUpdate->updateStatus($this->_order, $data);
-        }
+        $this->orderUpdate->cancelOrder($this->_order, $orderStatus !== 'mobbex_failed');
+        $this->orderUpdate->updateStatus($this->_order, $data);
 
         // Execute own hook to extend functionalities
         $this->helper->executeHook('mobbexWebhookReceived', false, json_decode($data['data'], true), $this->_order);
-        
-        return $this->logger->createJsonResponse('debug', 'Webhook > processRefund | WebHook Received OK: ', $data);
+
+        return $this->logger->createJsonResponse('debug', 'Webhook > processRefund | WebHook Received OK');
     }
 }
