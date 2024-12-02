@@ -4,4 +4,7 @@
     <type name="Magento\Backend\Block\Widget\Button\Toolbar">
         <plugin name="mobbex_add_capture_button" type="Mobbex\Webpay\Plugin\Adminhtml\CaptureButton" />
     </type>
+    <type name="Magento\User\Block\User\Edit\Tabs">
+        <plugin name="mobbex_add_user_tab" type="Mobbex\Webpay\Plugin\Adminhtml\UserTab" />
+    </type>
 </config>
