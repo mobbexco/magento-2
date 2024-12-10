@@ -130,6 +130,8 @@ define([
     },
 
     createCheckout: function (url, callback) {
+      var self = this;
+
       $.ajax({
         dataType: 'json',
         method: 'GET',
@@ -138,7 +140,7 @@ define([
           callback(response.data);
         },
         error: function (e) {
-          this.displayAlert(
+          self.displayAlert(
             'Error',
             'No se ha podido obtener la información del pago.',
             this.returnUrl + '&status=500'

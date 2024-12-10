@@ -44,7 +44,13 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     public function createJsonResponse($mode, $message, $data = [])
     {
         $this->log($mode, $message, $data);
-        return $this->resultJsonFactory->create()->setData(compact('mode', 'message', 'data'));
+
+        //Create json response.
+        $resultJson = $this->resultJsonFactory->create()->setData(compact('mode', 'message', 'data'));
+        $resultJson->setData(compact('mode', 'message', 'data'));
+        $resultJson->setHttpResponseCode($mode === 'debug' ? 200 : 400);
+        
+        return $resultJson;
     }
 
     /**
