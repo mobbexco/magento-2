@@ -44,20 +44,19 @@ class Info extends \Magento\Payment\Block\Info
         $transport = parent::_prepareSpecificInformation($transport);
 
         // Get all transaction data
-        $order       = $this->getInfo()->getOrder();
-        $trx         = $this->mobbexTransaction->getTransactions(['order_id' => $order->getIncrementId(), 'parent' => 1]);
-        $childs      = $this->mobbexTransaction->getMobbexChilds($trx) ?: [];
-
-        // Get refunded transactions and amount
-        $refundedTrx = $this->mobbexTransaction->getTransactions([
+        $order = $this->getInfo()->getOrder();
+        $trx = $this->mobbexTransaction->getTransactions([
             'order_id' => $order->getIncrementId(),
             'parent' => 1,
             'status_code' => [
-                'in' => [600, 601, 602, 603, 610]
+                'nin' => [600, 601, 602, 603, 610]
             ]
-        ]) ?: [];
-        $refundedChilds = $this->mobbexTransaction->getRefundedChilds($order->getIncrementId()) ?: [];
-        $refundedAmount = $refundedTrx ? $trx['total'] : array_sum(array_column($refundedChilds, 'total'));
+        ]);
+        $childs = $this->mobbexTransaction->getMobbexChilds($trx) ?: [];
+
+        // Get refunded transactions and amount
+        $refundChilds = $this->mobbexTransaction->getRefundedChilds($order->getIncrementId()) ?: [];
+        $refundAmount = array_sum(array_column($refundChilds, 'total'));
 
         // If there is no transaction, return the transport
         if (empty($trx['payment_id']) || empty($trx['operation_type']) || empty($trx['total']))
@@ -66,7 +65,7 @@ class Info extends \Magento\Payment\Block\Info
         $table = [
             'Transaction ID'     => $trx['payment_id'],
             'Total'              => "$ $trx[total]",
-            'Total Refunded'     => "$ $refundedAmount",
+            'Total Refunded'     => "$ $refundAmount",
             'Source'             => "$trx[source_name], $trx[source_number]",
             'Source Installment' => "$trx[installment_count] cuota/s de $ $trx[installment_amount] (plan $trx[installment_name])",
             'Entity Name'        => "$trx[entity_name] (UID $trx[entity_uid])",
@@ -112,7 +111,7 @@ class Info extends \Magento\Payment\Block\Info
         }
 
         // Hide refunded if is empty
-        if (!$refundedAmount)
+        if (!$refundAmount)
             unset($table['Total Refunded']);
 
         // Execute hook to filter data
