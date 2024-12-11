@@ -35,6 +35,14 @@ class Fee extends \Magento\Framework\View\Element\Template
         $order = $this->getParentBlock()->getSource();
         $fee = $order->getFee();
 
+        // Try to modify refund total
+        $refundTotal = $this->getParentBlock()->getTotal('refunded');
+        $refundChilds = $this->mobbexTransaction->getRefundedChilds($order->getIncrementId()) ?: [];
+        $refundAmount = array_sum(array_column($refundChilds, 'total'));
+
+        if ($refundTotal && isset($refundTotal['value']) && $refundAmount)
+            $refundTotal['value'] = $refundAmount;
+
         if ($fee == 0)
             return $this;
 
