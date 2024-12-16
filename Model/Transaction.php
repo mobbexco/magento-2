@@ -133,20 +133,22 @@ class Transaction extends AbstractModel
      * Get refunded childs from db.
      *
      * @param string $incrementalOrderId Incremental order id.
+     * @param string $entity Optional filter by entity uid.
      *
      * @return array
      */
-    public function getRefundedChilds($incrementalOrderId)
+    public function getRefundedChilds($incrementalOrderId, $entity = null)
     {
-        $childs = $this->getTransactions([
+        $filters = [
             'order_id'    => $incrementalOrderId,
-            'parent'      => ['in' => [
-                0, null
-            ]],
-            'status_code' => ['in' => [
-                600, 601, 602, 603, 610
-            ]]
-        ]) ?: [];
+            'parent'      => ['in' => [0, null]],
+            'status_code' => ['in' => [600, 601, 602, 603, 610]]
+        ];
+
+        if($entity)
+            $filters['entity_uid'] = $entity;
+
+        $childs = $this->getTransactions($filters) ?: [];
 
         // Remove ID to use array_unique
         $filteredChilds = array_map(function ($item) {
