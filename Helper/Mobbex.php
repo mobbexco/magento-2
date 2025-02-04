@@ -184,6 +184,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             (float) $orderAmount,
             $this->getEndpointUrl('paymentreturn', ['order_id' => $orderIncrementalId]),
             $this->getEndpointUrl('webhook', ['order_id' => $orderIncrementalId, 'mbbx_token' => $this->config->generateToken()]),
+            $orderData->getOrderCurrencyCode(),
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
@@ -191,7 +192,6 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             'all',
             'mobbexCheckoutRequest',
             "Pedido #$orderIncrementalId",
-            $orderData->getOrderCurrencyCode(),
             $this->config->get('custom_reference') ? $this->getCustomReference($orderEntityId) : null
         );
 
@@ -269,6 +269,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 (float) $quote->getGrandTotal(),
                 $this->getEndpointUrl('paymentreturn', ['quote_id' => $quote->getId()]),
                 $this->getEndpointUrl('webhook', ['quote_id' => $quote->getId()]),
+                $quote->getStore()->getCurrentCurrencyCode(),
                 isset($items) ? $items : [],
                 \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
                 $customer,
@@ -276,7 +277,6 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 'none',
                 'mobbexQuoteCheckoutRequest',
                 "Carrito #" . $quote->getId(),
-                $quote->getStore()->getCurrentCurrencyCode(),
                 \Mobbex\Modules\Checkout::generateReference($quote->getId()) . '_DRAFT_CHECKOUT'
             );
 
