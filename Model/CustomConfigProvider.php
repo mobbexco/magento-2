@@ -47,7 +47,7 @@ class CustomConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-        $checkoutData = $this->config->get('unified_mode') ?: $this->helper->createCheckoutFromQuote();
+        $checkoutData = !$this->config->get('payment_methods') ?: $this->helper->createCheckoutFromQuote();
         $defaultMethod = [
             'subgroup'        => '',
             'subgroup_title'  => $this->config->get('checkout_title'),
