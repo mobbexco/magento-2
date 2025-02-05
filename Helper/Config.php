@@ -33,7 +33,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'custom_reference'                   => 'payment/sugapay/checkout/custom_reference',
         'show_no_interest_labels'            => 'payment/sugapay/checkout/show_no_interest_labels',
         'site_id'                            => 'payment/sugapay/advanced/site_id',
-        'unified_mode'                       => 'payment/sugapay/advanced/unified_mode',
+        'payment_methods'                    => 'payment/sugapay/advanced/payment_methods',
         'online_refund'                      => 'payment/sugapay/advanced/online_refund',
         'advanced_plans_exclusivity'         => 'payment/sugapay/advanced/advanced_plans_exclusivity',
         'convert_currency'                   => 'payment/sugapay/advanced/convert_currency',
