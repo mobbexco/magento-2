@@ -325,11 +325,6 @@
                         <comment>Activa por defecto. Valida que todos planes con reglas avanzadas de tipo "Agente externo" estén configurados individualmente en cada uno de los productos antes de mostrarlos en el checkout.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="convert_currency" translate="label comment" sortOrder="26" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Convertir Moneda</label>
-                        <comment>Convierte los valores de los precios enviados al checkout de la moneda configurada en Magento a ARS.</comment>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
                     <field id="final_currency" translate="label comment" sortOrder="36" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Convertir moneda</label>
                         <comment>Permite procesar la transacción en una moneda diferente a la que se muestra en la tienda (ej: "ARS").</comment>
