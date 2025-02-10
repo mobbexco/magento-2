@@ -47,12 +47,15 @@ class CustomConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-        $checkoutData = !$this->config->get('payment_methods') ?: $this->helper->createCheckoutFromQuote();
         $defaultMethod = [
             'subgroup'        => '',
             'subgroup_title'  => $this->config->get('checkout_title'),
             'subgroup_logo'   => 'https://res.mobbex.com/images/sources/mobbex.png',
         ];
+
+        // Only create checkout if wallet or payment_methods are active
+        if ($this->config->get('wallet') || $this->config->get('payment_methods'))
+            $checkoutData = $this->helper->createCheckoutFromQuote();
 
         $config = [
             'payment' => [
