@@ -66,6 +66,7 @@
                 <advanced>
                     <advanced_plans_exclusivity>1</advanced_plans_exclusivity>
                     <online_refund>1</online_refund>
+                    <payment_methods>0</payment_methods>
                 </advanced>
                 <notifications>
                     <emit_notifications>1</emit_notifications>
