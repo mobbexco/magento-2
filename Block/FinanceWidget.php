@@ -14,7 +14,7 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     public $priceHelper;
 
     /** @var \Magento\Checkout\Model\Session */
-    public $_checkoutSession;
+    public $checkoutSession;
 
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
@@ -22,11 +22,11 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
-    /** Amount ot calculate payment methods */
-    public $total = 0;
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
 
-    /** Products to apply their plans config */
-    public $products = [];
+    /** Total amount to finance */
+    public $total = 0;
 
     /** Sources to show in finance widget */
     public $sources = [];
@@ -38,41 +38,96 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         \Magento\Checkout\Model\Session $checkoutSession,
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Logger $logger,
         array $data = []
     ) {
         parent::__construct($context, $data);
 
         $this->registry         = $registry;
         $this->priceHelper      = $priceHelper;
-        $this->_checkoutSession = $checkoutSession;
+        $this->checkoutSession = $checkoutSession;
         $this->sdk              = $sdk;
         $this->config           = $config;
+        $this->logger           = $logger;
 
-        //Init mobbex php sdk
+        // Init sdk and get action name
         $this->sdk->init();
-
-        // Get current action name
         $action = $this->_request->getFullActionName();
 
-        // Get current objects
-        $product = $this->registry->registry('product');
-        $quote   = $this->_checkoutSession->getQuote();
+        $this->logger->log('debug', 'FinanceWidget Block > Construct', $action);
 
-        // Exit if quote is empty or product cannot be sold
-        if ($action == 'catalog_product_view' ? !$product->isSaleable() : !$quote->hasItems())
+        try {
+            if ($action == 'catalog_product_view') {
+                $this->productPage();
+            } elseif ($action == 'checkout_cart_index') {
+                $this->cartPage();
+            } else {
+                throw new \Exception("Construct Invalid action $action");
+            }
+        } catch (\Exception $e) {
+            if ($e->getMessage())
+                $this->logger->log('error', 'FinanceWidget Block > ', $e->getMessage());
+
             return $this->getLayout()->unsetElement('mbbx.finance.widget');
-
-        $this->products = $action == 'catalog_product_view' ? [$product] : [];
-
-        if(empty($this->products)) {
-            foreach ($quote->getAllVisibleItems() as $item)
-                $this->products[] = $item->getProduct();
         }
-        
-        $this->total = $action == 'catalog_product_view' ? $product->getPriceInfo()->getPrice('final_price')->getValue() : $quote->getGrandTotal();
-        extract($this->config->getAllProductsPlans($this->products));
-        $this->sources = \Mobbex\Repository::getSources($this->total, \Mobbex\Repository::getInstallments($this->products, $common_plans, $advanced_plans));
     }
 
+    public function productPage()
+    {
+        $product = $this->registry->registry('product');
 
+        if (!$this->config->get('financial_active'))
+            throw new \Exception('productPage Called on product when is disabled');
+
+        if (!$product)
+            throw new \Exception('productPage Invalid product');
+
+        if (!$product->isSalable())
+            throw new \Exception;
+
+        // Get plans data
+        $productPlans = $this->config->getAllProductsPlans([$product]);
+
+        // Set as properties to access on template
+        $this->total = $product->getPriceInfo()->getPrice('final_price')->getValue();
+        $this->sources = \Mobbex\Repository::getSources(
+            $this->total,
+            \Mobbex\Repository::getInstallments(
+                [$product],
+                $productPlans['common_plans'],
+                $productPlans['advanced_plans']
+            )
+        );
+    }
+
+    public function cartPage()
+    {
+        $quote = $this->checkoutSession->getQuote();
+
+        if (!$this->config->get('finance_widget_on_cart'))
+            throw new \Exception('cartPage Called on cart when is disabled');
+
+        if (!$quote)
+            throw new \Exception('cartPage Invalid quote');
+
+        if (!$quote->hasItems())
+            throw new \Exception;
+
+        foreach ($quote->getAllVisibleItems() as $item)
+            $products[] = $item->getProduct();
+
+        // Get plans data
+        $productPlans = $this->config->getAllProductsPlans(isset($products) ? $products : []);
+
+        // Set as properties to access on template
+        $this->total = $quote->getGrandTotal();
+        $this->sources = \Mobbex\Repository::getSources(
+            $this->total,
+            \Mobbex\Repository::getInstallments(
+                isset($products) ? $products : [],
+                $productPlans['common_plans'],
+                $productPlans['advanced_plans']
+            )
+        );
+    }
 }
