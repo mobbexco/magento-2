@@ -19,6 +19,9 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var bool */
     public $useFileLogger = false;
 
+    /** @var bool */
+    public $debugMode = false;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
@@ -30,6 +33,9 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
         $this->resultJsonFactory = $resultJsonFactory;
         $this->logFactory        = $logFactory;
         $this->fileLogger        = $fileLogger;
+
+        // Set here to reduce db requests
+        $this->debugMode = $this->config->get('debug_mode');
     }
 
     /**
@@ -66,7 +72,7 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
     public function log($mode, $message, $data = [])
     {
         // Save log to db
-        if ($mode != 'debug' || $this->config->get('debug_mode'))
+        if ($mode != 'debug' || $this->debugMode)
             $this->useFileLogger
                 ? $this->fileLogger->$mode($message, $data)
                 : $this->logFactory->create()->saveLog([
