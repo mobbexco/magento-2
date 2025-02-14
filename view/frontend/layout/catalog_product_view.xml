@@ -4,7 +4,6 @@
         <referenceContainer name="product.info.extrahint">
             <block class="Mobbex\Webpay\Block\FinanceWidget"
                 name="mbbx.finance.widget"
-                cacheable="false"
                 template="Mobbex_Webpay::finance-widget.phtml"
                 ifconfig="payment/sugapay/financial_active"/>
         </referenceContainer>
