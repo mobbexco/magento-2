@@ -452,6 +452,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $observers = $this->eventConfig->getObservers($eventName) ?: [];
             $value     = $filter ? reset($args) : false;
 
+            $this->logger->log('debug', 'Helper Mobbex > executeHook', ['Init data', $name, $filter, gettype($value), count($observers)]);
+
             foreach ($observers as $observerData) {
                 // Instance observer
                 $instanceMethod = !empty($observerData['shared']) ? 'get' : 'create';
@@ -465,6 +467,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                     continue;
 
                 $value = call_user_func_array($method, $args);
+                $this->logger->log('debug', 'Helper Mobbex > executeHook', ['Executed function', $observerData['instance'], $name]);
 
                 if ($filter)
                     $args[0] = $value;
