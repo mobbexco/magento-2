@@ -35,7 +35,7 @@ define([
       this._super();
       this.loadPaymentOptions();
       this.loadScript('https://res.mobbex.com/js/sdk/mobbex@1.1.0.js');
-      this.loadScript('https://res.mobbex.com/js/embed/mobbex.embed@1.0.23.js');
+      this.loadScript('https://api.mobbex.com/p/embed/1.2.0/lib.js');
 
       // Subscribe to method select changes
       this.selectedOption.subscribe(this.selectPaymentMethod.bind(this));
