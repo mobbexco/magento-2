@@ -68,7 +68,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     public $_checkoutSession;
 
     /** @var \Magento\Framework\App\ResourceConnection */
-    public $connection;
+    public $resourceConnection;
 
     public $_request;
 
