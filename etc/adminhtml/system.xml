@@ -303,6 +303,11 @@
                         <label>Orden de los medios de pago</label>
                         <comment>Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago</comment>
                     </field>
+                    <field id="show_featured_installments" translate="label comment" sortOrder="41" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Mostrar financiación destacada</label>
+                        <comment>Habilita o deshabilita que se muestren los íconos de las dos mejores opciones de financiación</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Avanzado</label>
