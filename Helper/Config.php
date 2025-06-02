@@ -23,6 +23,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'method_icon'                        => 'payment/sugapay/appearance/method_icon',
         'show_method_icons'                  => 'payment/sugapay/appearance/show_method_icons',
         'sources_priority'                   => 'payment/sugapay/appearance/sources_priority',
+        'show_featured_installments'         => 'payment/sugapay/appearance/show_featured_installments',
         'embed'                              => 'payment/sugapay/checkout/embed_payment',
         'wallet'                             => 'payment/sugapay/checkout/wallet_active',
         'multicard'                          => 'payment/sugapay/checkout/multicard',
