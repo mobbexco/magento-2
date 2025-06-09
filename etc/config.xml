@@ -61,6 +61,7 @@
 }
                     </widget_style>
                     <show_method_icons>1</show_method_icons>
+                    <show_featured_installments>1</show_featured_installments>
                     <button_logo>https://res.mobbex.com/images/sources/mobbex.png</button_logo>
                 </appearance>
                 <advanced>
