@@ -266,29 +266,6 @@
                         <comment>Sólo valores hexadecimales. Ej. #FFF o #AFAFAF</comment>
                     </field>
 
-                    <field id="button_logo" translate="label comment" sortOrder="35" type="text"
-                    showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Logo del botón de financiación</label>
-                        <comment>
-                            <![CDATA[
-                                Opcional. Ejemplo:<br/>
-                                https://res.mobbex.com/images/sources/mobbex.png<br/>
-                            ]]>
-                        </comment>
-                    </field>
-                    
-                    <field id="button_text" translate="label comment" sortOrder="36" type="text"
-                        showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Texto del botón de financiación</label>
-                        <comment>Modifica el texto del botón de financiación.</comment>
-                    </field>
-
-                    <field id="widget_style" translate="label comment" sortOrder="37" type="textarea"
-                        showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Estilos del botón de financiación</label>
-                        <comment>Modifica los estilos del botón de financiación respetando la sintaxis de CSS.</comment>
-                    </field>
-
                     <field id="method_icon" translate="label comment" sortOrder="33" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Icono del medio de pago</label>
                         <comment>URL de la imagen que se mostrará en el medio de pago principal del checkout. Si hay múltiples medios, el principal es tarjeta de crédito/débito.</comment>
@@ -298,10 +275,6 @@
                         <label>Mostrar iconos de medios de pagos</label>
                         <comment>Habilita o deshabilita los iconos que se muestran en el listado de medios de pagos previo a abrir el checkout</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-                    <field id="sources_priority" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Orden de los medios de pago</label>
-                        <comment>Permite establecer el orden que se utiliza al mostrar los medios de pago en el widget de financiación. Utilice un array en formato json con el reference de los medios de pago</comment>
                     </field>
                     <field id="show_featured_installments" translate="label comment" sortOrder="41" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Mostrar financiación destacada</label>
