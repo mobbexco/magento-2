@@ -123,6 +123,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $orderIncrementalId = $this->_checkoutSession->getLastRealOrderId();
         $orderEntityId      = $this->_checkoutSession->getLastRealOrder()->getEntityId();
         $orderData   = $this->_order->load($orderEntityId);
+        $orderCustomer = $orderData->getCustomer();
         $orderAmount = round($this->_orderInterface->getData('base_grand_total'), 2);
 
         // Get customer data
@@ -136,6 +137,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             'name'           => $orderData->getCustomerName(),
             'email'          => $orderData->getCustomerEmail(), 
             'uid'            => $orderData->getCustomerId(),
+            'createdAt'      => $orderCustomer ? \Mobbex\dateToTime($orderCustomer->getCreatedAt()) : null,
             'phone'          => isset($phone) ? $phone : '',
             'identification' => $this->getDni($orderData),
         ];
