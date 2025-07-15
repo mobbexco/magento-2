@@ -28,8 +28,8 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     /** Total amount to finance */
     public $total = 0;
 
-    /** Sources to show in finance widget */
-    public $sources = [];
+    /** Sources url to get financial information */
+    public $sourcesUrl;
 
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
@@ -43,12 +43,12 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     ) {
         parent::__construct($context, $data);
 
-        $this->registry         = $registry;
-        $this->priceHelper      = $priceHelper;
-        $this->checkoutSession = $checkoutSession;
         $this->sdk              = $sdk;
         $this->config           = $config;
         $this->logger           = $logger;
+        $this->registry         = $registry;
+        $this->priceHelper      = $priceHelper;
+        $this->checkoutSession  = $checkoutSession;
 
         // Init sdk and get action name
         $this->sdk->init();
@@ -85,18 +85,24 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         if (!$product->isSalable())
             throw new \Exception;
 
-        // Get plans data
-        $productPlans = $this->config->getAllProductsPlans([$product]);
+        $data = 
+            [
+                'mbbxProductIds' => [$product->getId()],
+                'mbbxTotal'      => $product->getPriceInfo()->getPrice('final_price')->getValue(),
+            ];
 
-        // Set as properties to access on template
-        $this->total = $product->getPriceInfo()->getPrice('final_price')->getValue();
-        $this->sources = \Mobbex\Repository::getSources(
-            $this->total,
-            \Mobbex\Repository::getInstallments(
-                [$product],
-                $productPlans['common_plans'],
-                $productPlans['advanced_plans']
-            )
+        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
+            [
+                '_query' => $data,
+            ]
+        );
+
+        $this->logger->log('debug', 'FinanceWidget Block > productPage', 
+            [
+                'total'      => $this->total,
+                'product'    => $product->getId(),
+                'sourcesUrl' => $this->sourcesUrl,
+            ]
         );
     }
 
@@ -114,20 +120,18 @@ class FinanceWidget extends \Magento\Backend\Block\Template
             throw new \Exception;
 
         foreach ($quote->getAllVisibleItems() as $item)
-            $products[] = $item->getProduct();
+            $products[] = $item->getProduct()->getId();
 
-        // Get plans data
-        $productPlans = $this->config->getAllProductsPlans(isset($products) ? $products : []);
+        $data =
+            [
+                'mbbxProductIds' => $products,
+                'mbbxTotal'      => $quote->getGrandTotal()
+            ];
 
-        // Set as properties to access on template
-        $this->total = $quote->getGrandTotal();
-        $this->sources = \Mobbex\Repository::getSources(
-            $this->total,
-            \Mobbex\Repository::getInstallments(
-                isset($products) ? $products : [],
-                $productPlans['common_plans'],
-                $productPlans['advanced_plans']
-            )
+        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
+            [
+                '_query' => $data,
+            ]
         );
     }
 }
