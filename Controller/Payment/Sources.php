@@ -12,9 +12,6 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
-
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
@@ -29,7 +26,6 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
 
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Mobbex\Webpay\Helper\Config $config,
         \Magento\Framework\App\RequestInterface $request,
@@ -38,7 +34,6 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
     )
     {
         $this->sdk             = $sdk;
-        $this->helper          = $helper;
         $this->logger          = $logger;
         $this->config          = $config;
         $this->_request        = $request;
