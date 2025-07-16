@@ -75,20 +75,23 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     public function productPage()
     {
         $product = $this->registry->registry('product');
-
+        
         if (!$this->config->get('financial_active'))
             throw new \Exception('productPage Called on product when is disabled');
-
+        
         if (!$product)
             throw new \Exception('productPage Invalid product');
-
+        
         if (!$product->isSalable())
             throw new \Exception;
 
+        $product_id = $product->getId();
+        $total      = $product->getPriceInfo()->getPrice('final_price')->getValue();
+
         $data = 
             [
-                'mbbxProductIds' => [$product->getId()],
-                'mbbxTotal'      => $product->getPriceInfo()->getPrice('final_price')->getValue(),
+                'mbbxTotal'      => $total,
+                'mbbxProductIds' => [$product_id],
             ];
 
         $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
@@ -99,8 +102,8 @@ class FinanceWidget extends \Magento\Backend\Block\Template
 
         $this->logger->log('debug', 'FinanceWidget Block > productPage', 
             [
-                'total'      => $this->total,
-                'product'    => $product->getId(),
+                'total'      => $total,
+                'product'    => $product_id,
                 'sourcesUrl' => $this->sourcesUrl,
             ]
         );
@@ -112,25 +115,35 @@ class FinanceWidget extends \Magento\Backend\Block\Template
 
         if (!$this->config->get('finance_widget_on_cart'))
             throw new \Exception('cartPage Called on cart when is disabled');
-
+        
         if (!$quote)
             throw new \Exception('cartPage Invalid quote');
-
+        
         if (!$quote->hasItems())
             throw new \Exception;
+
+        $total = $quote->getGrandTotal();
 
         foreach ($quote->getAllVisibleItems() as $item)
             $products[] = $item->getProduct()->getId();
 
         $data =
             [
+                'mbbxTotal'      => $total,
                 'mbbxProductIds' => $products,
-                'mbbxTotal'      => $quote->getGrandTotal()
             ];
 
         $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
             [
                 '_query' => $data,
+            ]
+        );
+
+        $this->logger->log('debug', 'FinanceWidget Block > cartPage', 
+            [
+                'total'      => $total,
+                'products'   => $products,
+                'sourcesUrl' => $this->sourcesUrl,
             ]
         );
     }
