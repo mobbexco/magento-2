@@ -70,7 +70,7 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
         }
 
         // Extracts products plans
-        extract($this->config->getProductPlans($products));
+        extract($this->config->getAllProductsPlans($products));
 
         $installments = \Mobbex\Repository::getInstallments(
                 $products,
