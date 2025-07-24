@@ -59,19 +59,21 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
             return is_numeric($id);
         });
 
-        // Gets products objects
-        if (count($product_ids) > 1)
-            $products= array_map(function ($product_id) {
-                return $this->_productFactory->create()->load($product_id);
-                }, $product_ids);
-        else
-            $products = $this->_productFactory->create()->load($product_ids[0]);
+        $products = [];
+
+        // Instance each product
+        foreach ($product_ids as $product_id) {
+            $product = $this->_productFactory->create()->load($product_id);
+
+            if (method_exists($product, 'getId') && $product->getId())
+                $products[] = $product;
+        }
 
         // Extracts products plans
         extract($this->config->getProductPlans($products));
 
         $installments = \Mobbex\Repository::getInstallments(
-                [$products],
+                $products,
                 $common_plans,
                 $advanced_plans
             );
