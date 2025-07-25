@@ -101,7 +101,7 @@ class Webhook extends WebhookBase
             if (!$this->config->validateToken($token))
                 throw new \Exception("Invalid Token: $token", 1);
 
-            if ($postData['type'] !== 'checkout')
+            if (!in_array($postData['type'], ['checkout', 'checkout:expired']))
                 return $this->logger->createJsonResponse('debug', 'Ignored non-checkout webhook', $orderId);
 
             if (empty($orderId) || empty($data['status_code']))
