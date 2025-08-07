@@ -281,6 +281,15 @@
                         <comment>Habilita o deshabilita que se muestren los íconos de las dos mejores opciones de financiación</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                    <field id="best_featured_installments" translate="label comment" sortOrder="41" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Mejores planes de financiación</label>
+                        <comment>Muestra automáticamente los planes de financiación más convenientes según precio y cantidad de cuotas</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="custom_featured_installments" translate="label comment" sortOrder="41" type="text" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Planes de financiación personalizados</label>
+                        <comment>Ingresa los identificadores(ID) de los planes de financiación que quieras mostrar. Serán agrupandos en hasta 3 filas aquellos que compartan precio y cantidad de cuotas</comment>
+                    </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Avanzado</label>
