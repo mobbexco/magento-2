@@ -31,6 +31,9 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     /** Sources url to get financial information */
     public $sourcesUrl;
 
+    /** Featured innstallments configuration */
+    public $featuredInstallments = null;
+
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
@@ -55,6 +58,8 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         $action = $this->_request->getFullActionName();
 
         $this->logger->log('debug', 'FinanceWidget Block > Construct', $action);
+
+        $this->featuredInstallments = $this->getFeaturedInstallments();
 
         try {
             if ($action == 'catalog_product_view') {
@@ -146,5 +151,19 @@ class FinanceWidget extends \Magento\Backend\Block\Template
                 'sourcesUrl' => $this->sourcesUrl,
             ]
         );
+    }
+
+    private function getFeaturedInstallments()
+    {
+        if ($this->config->get('show_featured_installments') != '1')
+            return null;
+
+        if ($this->config->get('best_featured_installments') == '1')
+            return '[]';
+
+        if (!empty($this->config->get('custom_featured_installments')))
+            return json_encode(preg_split('/\s*,\s*/', trim(
+                $this->config->get('custom_featured_installments'
+            ))));
     }
 }

@@ -43,6 +43,7 @@
                     <primary_color>#6f00ff</primary_color>
                     <show_method_icons>1</show_method_icons>
                     <show_featured_installments>1</show_featured_installments>
+                    <best_featured_installments>1</best_featured_installments>
                 </appearance>
                 <advanced>
                     <advanced_plans_exclusivity>1</advanced_plans_exclusivity>

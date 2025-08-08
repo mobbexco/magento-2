@@ -1,7 +1,7 @@
 <div id="mbbx-finance-widget"></div>
 <script>
-    window.mobbexSourcesUrl         = "<?= $block->sourcesUrl ?>";
-    window.mobbexTheme              = "<?= $block->config->get('theme') ?>";
-    window.showFeaturedInstallments = <?= json_encode((bool)$block->config->get('show_featured_installments')); ?>;
+    window.mobbexSourcesUrl     = "<?= $block->sourcesUrl ?>";
+    window.mobbexTheme          = "<?= $block->config->get('theme') ?>";
+    window.featuredInstallments = <?= $block->featuredInstallments ?>;
 </script>
 <script src="<?= $block->getViewFileUrl('Mobbex_Webpay::js/finance-widget.min.js') ?>"></script>
