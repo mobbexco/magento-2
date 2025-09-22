@@ -39,6 +39,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'advanced_plans_exclusivity'         => 'payment/sugapay/advanced/advanced_plans_exclusivity',
         'final_currency'                     => 'payment/sugapay/advanced/final_currency',
         'creditmemo_on_refund'               => 'payment/sugapay/advanced/creditmemo_on_refund',
+        'restore_cart'                       => 'payment/sugapay/advanced/restore_cart',
         'own_dni_field'                      => 'payment/sugapay/checkout/own_dni_field',
         'dni_column'                         => 'payment/sugapay/checkout/dni_column',
         'create_order_email'                 => 'payment/sugapay/checkout/email_settings/create_order_email',
