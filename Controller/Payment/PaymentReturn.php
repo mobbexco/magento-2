@@ -53,10 +53,6 @@ class PaymentReturn extends \Magento\Framework\App\Action\Action implements \Mag
             // If the payment is not successful, show an error and redirect to checkout
             if ($status === 'undefined' || !$status || $status <= 1 || $status >= 400) {
                 if ($this->config->get('restore_cart')) {
-                    $this->messageManager->addError(
-                        __("Ha ocurrido un error al procesar el pago. Por favor, inténtelo nuevamente.")
-                    );
-
                     $this->checkoutSession->restoreQuote();
 
                     // Maybe redirect to checkout payment step

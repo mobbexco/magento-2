@@ -1,2 +1,12 @@
-<div class="crossicon" style="text-align:center;display:block; color:red; font-size:30px; margin:10px auto;">✖</div>
-<p style="text-align:center; display:block; margin:20px auto;"><?= $this->escapeHtml(__('Your order was not successful.')) ?></p>
+<?php if ($this->method === 'sugapay') : ?>
+    <h2 class="mobbex-failure-title"><?= $this->escapeHtml(__('No se ha completado el pago')) ?></h2>
+    <p class="mobbex-failure-text">
+        <?php if ($this->checkoutUid) : ?>
+            <a href="https://mobbex.com/p/checkout/v2/<?= $this->checkoutUid ?>" target="_blank">
+                <?= $this->escapeHtml(__('Presione aquí para volver al checkout.')) ?>
+            </a>
+        <?php else : ?>
+            <?= $this->escapeHtml(__('El checkout ya se encuentra expirado. Vuelva a añadir los items al carrito si desea reintentar el pago.')) ?>
+        <?php endif; ?>
+    </p>
+<?php endif; ?>
