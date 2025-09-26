@@ -158,8 +158,6 @@ define([
         onResult: (data) => {
           location.href =
             this.returnUrl +
-            '&order_id=' +
-            response.orderId +
             '&status=' +
             data.status.code;
         },
@@ -172,8 +170,6 @@ define([
           jQuery('body').trigger('processStop');
           location.href =
             this.returnUrl +
-            '&order_id=' +
-            response.orderId +
             '&status=' +
             (payment ? payment.status.code : '500');
         },
@@ -181,7 +177,7 @@ define([
         onError: (error) => {
           jQuery('body').trigger('processStop');
           location.href =
-            this.returnUrl + '&order_id=' + response.orderId + '&status=500';
+            this.returnUrl + '&status=500';
         },
       };
 
@@ -208,8 +204,7 @@ define([
         })
         .then((data) => {
           window.top.location =
-            this.returnUrl +
-            `&order_id=${response.orderId}&status=${data.data.status.code}`;
+            this.returnUrl + '&status=' +data.data.status.code;
         })
         .catch((e) => {
           console.error(e);
@@ -217,7 +212,7 @@ define([
           this.displayAlert(
             'Error',
             'No se pudo completar el pago.',
-            this.returnUrl + '&order_id=' + response.orderId + '&status=500'
+            this.returnUrl + '&status=500'
           );
         });
     },

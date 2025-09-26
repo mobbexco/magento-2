@@ -31,11 +31,17 @@ class Webhook extends WebhookBase
     /** @var \Magento\Quote\Model\QuoteFactory */
     public $quoteFactory;
 
-    /** @var \Mobbex\Webpay\Model\CustomField */
-    public $customField;
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    public $cf;
 
     /** @var \Mobbex\Webpay\Model\Transaction */
     public $mobbexTransaction;
+
+    /** @var \Magento\Sales\Api\OrderRepositoryInterface */
+    public $orderRepository;
+
+    /** @var \Magento\Quote\Api\CartManagementInterface */
+    public $cartManagement;
 
     /** @var \Mobbex\Webpay\Model\OrderUpdate */
     protected $orderUpdate;
@@ -53,6 +59,8 @@ class Webhook extends WebhookBase
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Mobbex\Webpay\Model\TransactionFactory $transactionFactory,
+        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
+        \Magento\Quote\Api\CartManagementInterface $cartManagement,
         \Magento\Sales\Model\Order $order,
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
     ) {
@@ -64,100 +72,123 @@ class Webhook extends WebhookBase
         $this->quoteFactory      = $quoteFactory;
         $this->orderUpdate       = $orderUpdate;
         $this->mobbexTransaction = $transactionFactory->create();
-        $this->customField       = $customFieldFactory->create();
+        $this->cf                = $customFieldFactory;
+        $this->orderRepository   = $orderRepository;
+        $this->cartManagement    = $cartManagement;
         $this->_order            = $order;
         $this->_request          = $this->getRequest();
     }
 
     /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
     public function execute()
     {
-        $response = [
-            'result' => false,
-        ];
-
         try {
-            // Get request data
-            $postData = $this->_request->getHeader('Content-Type') == 'application/json' 
-                ? json_decode(file_get_contents('php://input'), true) 
-                : $this->_request->getPostValue();
+            $token = $this->_request->getParam('mbbx_token');
+            $orderId = $this->_request->getParam('order_id');
+            $postData = json_decode(file_get_contents('php://input'), true);
 
-            $orderId  = $this->_request->getParam('order_id');
-            $quoteId  = $this->_request->getParam('quote_id');
-            $token    = $this->_request->getParam('mbbx_token');
-            $data     = $this->mobbexTransaction->formatWebhookData($postData['data'], $orderId);
+            $this->logger->log('debug', "WebHook Controller > execute", compact('token', 'orderId', 'postData'));
 
-            // If order ID is empty, try to load from quote id
-            if (empty($orderId) && !empty($quoteId)) {
-                $quote = $this->quoteFactory->create()->load($quoteId);
-                $orderId = $quote->getReservedOrderId();
-            }
-
-            $this->logger->log('debug', "WebHook Controller > execute", compact('orderId', 'data', 'token'));
-
-            // Validate token
             if (!$this->config->validateToken($token))
-                throw new \Exception("Invalid Token: $token", 1);
+                throw new \Exception('Invalid Token');
 
-            if (!in_array($postData['type'], ['checkout', 'checkout:expired']))
-                return $this->logger->createJsonResponse('debug', 'Ignored non-checkout webhook', $orderId);
+            if (empty($postData['type']) || empty($postData['data']))
+                throw new \Exception('Invalid Webhook Data');
 
-            if (empty($orderId) || empty($data['status_code']))
-                throw new \Exception('Empty Order ID or payment status', 1);
+            $order = $this->orderRepository->get($orderId);
 
-            if (strpos($data['payment_id'], 'GRP-') !== false)
-                return $this->logger->createJsonResponse('debug', 'Ignored GRP webhook', $data['order_id']);
-
-            // Save transaction to db and load order
-            $trx = $this->mobbexTransaction->saveTransaction($data);
-            $order = $this->_order->loadByIncrementId($orderId);
-
-            // Get the order status
-            $statusName  = $this->orderUpdate->getStatusConfigName($data['status_code']);
-            $orderStatus = $this->config->get($statusName);
-
-            // Ignore refund webhook if online refunds is active
-            if ($statusName == 'order_status_refunded' && $this->config->get('online_refund'))
-                return $this->logger->createJsonResponse('debug', 'Ignored Refund Webhook (online refunds)');
-
-            // Ignore 3xx status codes
-            if ($data['status_code'] > 299 && $data['status_code'] < 400)
-                return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
-
-            // Execute hook on child webhooks and return
-            if (!$data['parent']) {
-                $this->helper->executeHook('mobbexChildWebhookReceived', false, $postData['data'], $order);
-
-                return $this->logger->createJsonResponse('debug', 'Child Webhook Received');
+            switch ($postData['type']) {
+                case 'checkout':
+                    return $this->processCheckout($order, $postData);
+                case 'checkout:expired':
+                    return $this->processExpiredCheckout($order, $postData);
+                default:
+                    return $this->logger->createJsonResponse('debug', 'Webhook type not supported', $postData['type']);
             }
-
-            if (in_array($orderStatus, $this->orderUpdate->cancelStatuses))
-                return $this->processRefund($data, $orderStatus);
-
-            // Exit if it is a expired operation and the order has already been paid
-            if ($data['status_code'] == 401 && $order->getTotalPaid() > 0)
-                return $this->logger->createJsonResponse('debug', 'Expired operation webhook received after payment', [$orderId, $trx->getId()]);
-
-            // Save payment data on additional information
-            $order->getPayment()->setAdditionalInformation('paymentResponse', $data);
-
-            // Update order data
-            $this->orderUpdate->updateTotals($order, $data);
-            $this->orderUpdate->updateStatus($order, $data);
-
-            // Execute own hook to extend functionalities
-            $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
-
-            // Redirect to sucess page
-            $response['result'] = true;
-            
         } catch (\Exception $e) {
-            $this->logger->createJsonResponse('error', 'WebHook Controller > Error Payment Data: ' . $e->getMessage());
+            return $this->logger->createJsonResponse('error', 'WebHook Controller > Error Payment Data: ' . $e->getMessage());
+        }
+    }
+
+    public function processExpiredCheckout($order, $postData)
+    {
+        $status = isset($postData['data']['status']['code']) ? $postData['data']['status']['code'] : null;
+
+        if (empty($status))
+            throw new \Exception('Empty status code for expired checkout');
+
+        // Exit if it is a expired operation and the order has already been paid
+        if ($order->getTotalPaid() > 0)
+            return $this->logger->createJsonResponse('debug', 'Expired operation webhook received after payment');
+
+        // Update order status to failed
+        $this->orderUpdate->updateStatus($order, [
+            'status_code' => $status,
+            'status_message' => 'Checkout expirado'
+        ]);
+
+        // Remove checkout uid custom field
+        $this->cf->create()->deleteCustomField(
+            $order->getId(),
+            'order',
+            'checkout_uid'
+        );
+
+        return $this->logger->createJsonResponse(
+            'debug',
+            'Expired Checkout Webhook Processed'
+        );
+    }
+
+    public function processCheckout($order, $postData)
+    {
+        $data = $this->mobbexTransaction->formatWebhookData($postData['data']);
+
+        if (empty($data['status_code']))
+            throw new \Exception('Empty payment status');
+
+        if (strpos($data['payment_id'], 'GRP-') !== false)
+            return $this->logger->createJsonResponse('debug', 'Ignored GRP webhook', $data);
+
+        // Save transaction to db
+        $data['order_id'] = $order->getIncrementId();
+        $trx = $this->mobbexTransaction->saveTransaction($data);
+
+        // Get the order status
+        $statusName  = $this->orderUpdate->getStatusConfigName($data['status_code']);
+        $orderStatus = $this->config->get($statusName);
+
+        // Ignore refund webhook if online refunds is active
+        if ($statusName == 'order_status_refunded' && $this->config->get('online_refund'))
+            return $this->logger->createJsonResponse('debug', 'Ignored Refund Webhook (online refunds)');
+
+        // Ignore 3xx status codes
+        if ($data['status_code'] > 299 && $data['status_code'] < 400)
+            return $this->logger->createJsonResponse('debug', 'Webhook > execute | WebHook Received OK: ', $data);
+
+        // Execute hook on child webhooks and return
+        if (!$data['parent']) {
+            $this->helper->executeHook('mobbexChildWebhookReceived', false, $postData['data'], $order);
+
+            return $this->logger->createJsonResponse('debug', 'Child Webhook Received');
         }
 
-        return $this->logger->createJsonResponse('debug', 'WebHook Received OK: ', $response);
+        if (in_array($orderStatus, $this->orderUpdate->cancelStatuses))
+            return $this->processRefund($data, $orderStatus);
+
+        // Save payment data on additional information
+        $order->getPayment()->setAdditionalInformation('paymentResponse', $data);
+
+        // Update order data
+        $this->orderUpdate->updateTotals($order, $data);
+        $this->orderUpdate->updateStatus($order, $data);
+
+        // Execute own hook to extend functionalities
+        $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
+
+        return $this->logger->createJsonResponse('debug', 'WebHook Received OK');
     }
 
     public function processRefund($data, $orderStatus)
