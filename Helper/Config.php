@@ -91,12 +91,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Save a config value to db.
      * 
-     * @param string $path Config identifier.
+     * @param string $path Config identifier. @see $this::$configurationPaths
      * @param mixed $value Value to set.
      */
-    public function save($path, $value)
+    public function save($name, $value)
     {
-        $this->configWriter->save($path, $value);
+        if (empty($this->settingPaths[$name]))
+            throw new \Exception("The configuration path $name does not exist.");
+
+        $this->configWriter->save($this->settingPaths[$name], $value);
     }
 
     /**
