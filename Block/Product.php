@@ -10,9 +10,9 @@ class Product extends \Magento\Backend\Block\Template
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
-   
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
+
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
@@ -29,7 +29,7 @@ class Product extends \Magento\Backend\Block\Template
         \Magento\Backend\Block\Template\Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         \Mobbex\Webpay\Helper\Logger $logger,
         array $data = []
     ) {
@@ -37,7 +37,7 @@ class Product extends \Magento\Backend\Block\Template
 
         $this->sdk    = $sdk;
         $this->config = $config;
-        $this->helper = $helper;
+        $this->eventManager = $eventManager;
         $this->logger = $logger;
         $this->params = $this->_request->getParams();
 

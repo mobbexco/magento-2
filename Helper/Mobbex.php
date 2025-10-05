@@ -70,7 +70,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Magento\Framework\App\ResourceConnection */
     public $resourceConnection;
 
-    public $_request;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
@@ -91,7 +92,8 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\Event\ConfigInterface $eventConfig,
         \Magento\Framework\Event\ObserverFactory $observerFactory,
         \Magento\Directory\Model\RegionFactory $regionFactory,
-        \Magento\Framework\App\ResourceConnection $connection
+        \Magento\Framework\App\ResourceConnection $connection,
+        \Mobbex\Webpay\Model\EventManager $eventManager
     ) {
         $this->config             = $config;
         $this->logger             = $logger;
@@ -112,6 +114,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_orderInterface    = $_orderInterface;
         $this->regionFactory      = $regionFactory;
         $this->resourceConnection = $connection;
+        $this->eventManager       = $eventManager;
     }
 
     /**
@@ -327,7 +330,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->config->getCatalogSetting($product->getId(), 'entity');
 
         // Executes our own hook to try to get entity from vnecoms vendor or product vendor
-        $entity = $this->executeHook('mobbexGetVendorEntity', false, $item);
+        $entity = $this->eventManager->dispatch('mobbexGetVendorEntity', false, $item);
 
         if(!empty($entity))
             return $entity;
@@ -435,51 +438,4 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $string;
     }
-
-    /**
-     * Execute a hook and retrieve the response.
-     * 
-     * @param string $name The hook name (in camel case).
-     * @param bool $filter Filter first arg in each execution.
-     * @param mixed ...$args Arguments to pass.
-     * 
-     * @return mixed Last execution response or value filtered. Null on exceptions.
-     */
-    public function executeHook($name, $filter = false, ...$args)
-    {
-        try {
-            // Use snake case to search event
-            $eventName = ltrim(strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', '_$0', $name)), '_');
-
-            // Get registered observers and first arg to return as default
-            $observers = $this->eventConfig->getObservers($eventName) ?: [];
-            $value     = $filter ? reset($args) : false;
-
-            $this->logger->log('debug', 'Helper Mobbex > executeHook', ['Init data', $name, $filter, gettype($value), count($observers)]);
-
-            foreach ($observers as $observerData) {
-                // Instance observer
-                $instanceMethod = !empty($observerData['shared']) ? 'get' : 'create';
-                $observer       = $this->observerFactory->$instanceMethod($observerData['instance']);
-
-                // Get method to execute
-                $method = [$observer, $name];
-
-                // Only execute if is callable
-                if (!empty($observerData['disabled']) || !is_callable($method))
-                    continue;
-
-                $value = call_user_func_array($method, $args);
-                $this->logger->log('debug', 'Helper Mobbex > executeHook', ['Executed function', $observerData['instance'], $name]);
-
-                if ($filter)
-                    $args[0] = $value;
-            }
-
-            return $value;
-        } catch (\Exception $e) {
-            $this->logger->log('error', 'Helper Mobbex > executeHook | Mobbex Hook Error: ', $e->getMessage());
-        }
-    }
-
 }

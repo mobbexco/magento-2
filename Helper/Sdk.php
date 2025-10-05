@@ -7,9 +7,6 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
-
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
@@ -28,19 +25,22 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Mobbex\Webpay\Helper\Db */
     public $db;
 
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Db $db,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Model\Cache $cache,
         \Magento\Framework\UrlInterface $urlBuilder,
         \Magento\Framework\Module\ResourceInterface $moduleResource,
-        \Magento\Framework\App\ProductMetadataInterface $productMetadata,
-        \Mobbex\Webpay\Model\Cache $cache
+        \Magento\Framework\App\ProductMetadataInterface $productMetadata
     ) {
         $this->config          = $config;
         $this->db              = $db;
-        $this->helper          = $helper;
+        $this->eventManager    = $eventManager;
         $this->logger          = $logger;
         $this->cache           = $cache;
         $this->moduleResource  = $moduleResource;
@@ -60,7 +60,7 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
                 'sdk'      => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
             ], 
             $this->config->getAll(), 
-            [$this->helper, 'executeHook'],
+            [$this->eventManager, 'dispatch'],
             [$this->logger, 'log']
         );
 

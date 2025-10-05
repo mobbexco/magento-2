@@ -102,7 +102,7 @@ if ($this->type == 'product') {
 <?php
 }
 
-$this->helper->executeHook('mobbex' . ucfirst($this->type) . 'Settings', false, $id);
+$this->eventManager->dispatch('mobbex' . ucfirst($this->type) . 'Settings', false, $id);
 
 
 /** STYLES */

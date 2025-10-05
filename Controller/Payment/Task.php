@@ -7,9 +7,6 @@ class Task extends \Magento\Framework\App\Action\Action
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
-
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
@@ -31,7 +28,6 @@ class Task extends \Magento\Framework\App\Action\Action
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Helper\Sdk $sdk,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Mobbex\Webpay\Model\OrderRepository $orderRepository,
         \Mobbex\Webpay\Model\OrderUpdate $orderUpdate
@@ -39,7 +35,6 @@ class Task extends \Magento\Framework\App\Action\Action
         parent::__construct($context);
 
         $this->sdk             = $sdk;
-        $this->helper          = $helper;
         $this->logger          = $logger;
         $this->orderRepository = $orderRepository;
         $this->orderUpdate     = $orderUpdate;
