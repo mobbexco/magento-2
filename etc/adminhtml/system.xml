@@ -67,6 +67,20 @@
                     showInStore="1">
                     <label>Checkout</label>
 
+                    <field id="offsite" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Offsite</label>
+                        <comment>Permite realizar los pagos redireccionando a Mobbex o a través de un modal (Modo Embebido), sin necesidad de desarrollo adicional y sin requerimientos PCI.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
+                    <field id="transparent" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                        showInWebsite="1" showInStore="1">
+                        <label>Transparente</label>
+                        <comment>Permite realizar pagos directamente desde el sitio, mediante un formulario y sin redireccionar a Mobbex. Requiere desarrollo adicional y cumplir con la normativa PCI para su integración.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+
                     <field id="embed_payment" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
                         <label>Embebido</label>
@@ -227,7 +241,7 @@
                         </field>
                     </group>
                 </group>
-                <group id="appearance" translate="label" sortOrder="31" showInDefault="1" showInWebsite="1"
+                <group id="appearance" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                     showInStore="1">
                     <label>Apariencia</label>
                    

@@ -14,6 +14,8 @@
                 <test_mode>0</test_mode>
                 <title>Mobbex</title>
                 <checkout>
+                    <offsite>1</offsite>
+                    <transparent>0</transparent>
                     <embed_payment>1</embed_payment>
                     <payment_mode>payment.v2</payment_mode>
                     <timeout>60</timeout>

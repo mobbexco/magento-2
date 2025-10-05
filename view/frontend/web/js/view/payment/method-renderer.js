@@ -8,12 +8,27 @@ define(
         rendererList
     ) {
         'use strict';
-        rendererList.push(
-            {
-                type: 'sugapay',
-                component: 'Mobbex_Webpay/js/view/payment/method-renderer/sugapay'
-            }
-        );
+
+        const config = window.checkoutConfig.payment.sugapay;
+
+        if (config.offsite) {
+            rendererList.push(
+                {
+                    type: 'sugapay',
+                    component: 'Mobbex_Webpay/js/view/payment/method-renderer/sugapay'
+                }
+            );
+        }
+
+        if (config.transparent) {
+            rendererList.push(
+                {
+                    type: 'sugapay_transparent',
+                    component: 'Mobbex_Webpay/js/view/payment/method-renderer/transparent'
+                }
+            );
+        }
+
         return Component.extend({});
     }
 );

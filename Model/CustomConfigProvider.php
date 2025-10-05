@@ -49,7 +49,7 @@ class CustomConfigProvider implements ConfigProviderInterface
         ];
 
         // Only create checkout if wallet or payment_methods are active
-        if ($this->config->get('wallet') || $this->config->get('payment_methods')) {
+        if ($this->config->get('wallet') || $this->config->get('payment_methods') || $this->config->get('transparent')) {
             try {
                 $checkoutData = $this->quoteHelper->getCheckout(true);
             } catch (\Exception $e) {
@@ -66,6 +66,8 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'wallet'            => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
                     'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [$defaultMethod],
                     'embed'             => $this->config->get('embed'),
+                    'offsite'           => $this->config->get('offsite'),
+                    'transparent'       => $this->config->get('transparent'),
                     'banner'            => $this->config->get('checkout_banner'),
                     'color'             => $this->config->get('color'),
                     'background'        => $this->config->get('background'),
