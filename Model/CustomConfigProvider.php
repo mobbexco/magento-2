@@ -16,27 +16,22 @@ class CustomConfigProvider implements ConfigProviderInterface
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
+    /** @var \Mobbex\Webpay\Helper\Quote */
+    public $quoteHelper;
 
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /** @var \Magento\Quote\Model\QuoteFactory */
-    public $quoteFactory;
-
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
-        \Mobbex\Webpay\Helper\Logger $logger,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory
+        \Mobbex\Webpay\Helper\Quote $quoteHelper,
+        \Mobbex\Webpay\Helper\Logger $logger
     ) {
-        $this->sdk          = $sdk;
-        $this->config       = $config;
-        $this->helper       = $helper;
-        $this->logger       = $logger;
-        $this->quoteFactory = $quoteFactory;
+        $this->sdk    = $sdk;
+        $this->config = $config;
+        $this->quoteHelper = $quoteHelper;
+        $this->logger = $logger;
 
         //Init mobbex php plugins sdk
         $this->sdk->init();
@@ -54,13 +49,20 @@ class CustomConfigProvider implements ConfigProviderInterface
         ];
 
         // Only create checkout if wallet or payment_methods are active
-        if ($this->config->get('wallet') || $this->config->get('payment_methods'))
-            $checkoutData = $this->helper->createCheckoutFromQuote();
+        if ($this->config->get('wallet') || $this->config->get('payment_methods')) {
+            try {
+                $checkoutData = $this->quoteHelper->getCheckout(true);
+            } catch (\Exception $e) {
+                $this->logger->log('error', 'CustomConfigProvider > getConfig | ' . $e->getMessage(), isset($e->data) ? $e->data : []);
+            }
+        }
 
         $config = [
             'payment' => [
                 'sugapay' => [
-                    'quoteId'           => $this->helper->_checkoutSession->getQuote()->getId(),
+                    'quoteId'           => $this->quoteHelper->checkoutSession->getQuote()->getId(),
+                    'checkoutId'        => isset($checkoutData['id']) ? $checkoutData['id'] : null,
+                    'intentToken'       => isset($checkoutData['intent']['token']) ? $checkoutData['intent']['token'] : null,
                     'wallet'            => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
                     'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [$defaultMethod],
                     'embed'             => $this->config->get('embed'),
