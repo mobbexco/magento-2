@@ -39,6 +39,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'advanced_plans_exclusivity'         => 'payment/sugapay/advanced/advanced_plans_exclusivity',
         'final_currency'                     => 'payment/sugapay/advanced/final_currency',
         'creditmemo_on_refund'               => 'payment/sugapay/advanced/creditmemo_on_refund',
+        'restore_cart'                       => 'payment/sugapay/advanced/restore_cart',
         'own_dni_field'                      => 'payment/sugapay/checkout/own_dni_field',
         'dni_column'                         => 'payment/sugapay/checkout/dni_column',
         'create_order_email'                 => 'payment/sugapay/checkout/email_settings/create_order_email',
@@ -90,12 +91,15 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Save a config value to db.
      * 
-     * @param string $path Config identifier.
+     * @param string $path Config identifier. @see $this::$configurationPaths
      * @param mixed $value Value to set.
      */
-    public function save($path, $value)
+    public function save($name, $value)
     {
-        $this->configWriter->save($path, $value);
+        if (empty($this->settingPaths[$name]))
+            throw new \Exception("The configuration path $name does not exist.");
+
+        $this->configWriter->save($this->settingPaths[$name], $value);
     }
 
     /**

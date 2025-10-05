@@ -44,7 +44,7 @@ class Transaction extends AbstractModel
      * 
      * @param array $data
      * 
-     * @return boolean
+     * @return $this
      */
     public function saveTransaction($data)
     {

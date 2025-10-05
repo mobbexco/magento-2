@@ -16,7 +16,7 @@
                 <checkout>
                     <embed_payment>1</embed_payment>
                     <payment_mode>payment.v2</payment_mode>
-                    <timeout>5</timeout>
+                    <timeout>60</timeout>
                     <return_timeout>5</return_timeout>
                     <show_no_interest_labels>1</show_no_interest_labels>
                     <order_status_settings>
@@ -48,6 +48,7 @@
                     <advanced_plans_exclusivity>1</advanced_plans_exclusivity>
                     <online_refund>1</online_refund>
                     <payment_methods>0</payment_methods>
+                    <restore_cart>0</restore_cart>
                 </advanced>
                 <notifications>
                     <emit_notifications>1</emit_notifications>

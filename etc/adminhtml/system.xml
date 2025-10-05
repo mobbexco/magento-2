@@ -312,6 +312,11 @@
                         <comment>Permite la creación de notas de crédito al generar un rembolso.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                    <field id="restore_cart" translate="label comment" sortOrder="28" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Restaurar carrito tras pagos fallidos</label>
+                        <comment>Si está activo, el carrito se restaurará automáticamente si el pago no se completa correctamente.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                 </group>
                 <group id="notifications" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Notificaciones</label>

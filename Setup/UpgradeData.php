@@ -4,6 +4,9 @@ namespace Mobbex\Webpay\Setup;
 
 class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
 {
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
     /** @var \Magento\Eav\Setup\EavSetupFactory */
     public $eavSetupFactory;
 
@@ -29,11 +32,13 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
     public $serializer;
 
     public function __construct(
+        \Mobbex\Webpay\Helper\Config $config,
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
         \Magento\Framework\Serialize\Serializer\Serialize $serializer
     ) {
+        $this->config                   = $config;
         $this->eavSetupFactory          = $eavSetupFactory;
         $this->customFieldFactory       = $customFieldFactory;
         $this->productCollectionFactory = $productCollectionFactory;
@@ -55,9 +60,14 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
         // Init setup
         $this->setup->startSetup();
         $this->eavSetup = $this->eavSetupFactory->create(['setup' => $this->setup]);
+        $currentVersion = (string) $context->getVersion();
+
+        // Update timeout default value from 5 to 60 minutes
+        if (version_compare($currentVersion, '5.0.0', '<') && $this->config->get('timeout') == 5)
+            $this->config->save('timeout', 60);
 
         //Remove deprecated attributes
-        if ($context->getVersion() < '2.1.5')
+        if (version_compare($currentVersion, '2.1.5', '<'))
             $this->removeDeprecatedAttributes();
 
         $this->addOrderStatus([

@@ -53,7 +53,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     public $quoteFactory;
 
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
-    public $customFieldFactory;
+    public $cf;
 
     /** @var \Magento\Checkout\Model\Cart */
     public $_cart;
@@ -95,7 +95,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     ) {
         $this->config             = $config;
         $this->logger             = $logger;
-        $this->customFieldFactory = $customFieldFactory;
+        $this->cf                 = $customFieldFactory;
         $this->quoteFactory       = $quoteFactory;
         $this->_cart              = $cart;
         $this->_order             = $order;
@@ -119,35 +119,30 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCheckout()
     {
-        // get order data
-        $orderIncrementalId = $this->_checkoutSession->getLastRealOrderId();
-        $orderEntityId      = $this->_checkoutSession->getLastRealOrder()->getEntityId();
-        $orderData   = $this->_order->load($orderEntityId);
-        $orderCustomer = $orderData->getCustomer();
-        $orderAmount = round($this->_orderInterface->getData('base_grand_total'), 2);
+        $order = $this->_checkoutSession->getLastRealOrder();
 
         // Get customer data
-        if ($orderData->getBillingAddress()){
-            if (!empty($orderData->getBillingAddress()->getTelephone())) {
-                $phone = $orderData->getBillingAddress()->getTelephone();
+        if ($order->getBillingAddress()){
+            if (!empty($order->getBillingAddress()->getTelephone())) {
+                $phone = $order->getBillingAddress()->getTelephone();
             }
         }
 
+        $orderCustomer = $order->getCustomer();
         $customer = [
-            'name'           => $orderData->getCustomerName(),
-            'email'          => $orderData->getCustomerEmail(), 
-            'uid'            => $orderData->getCustomerId(),
+            'name'           => $order->getCustomerName(),
+            'email'          => $order->getCustomerEmail(), 
+            'uid'            => $order->getCustomerId(),
             'createdAt'      => $orderCustomer ? \Mobbex\dateToTime($orderCustomer->getCreatedAt()) : null,
             'phone'          => isset($phone) ? $phone : '',
-            'identification' => $this->getDni($orderData),
+            'identification' => $this->getDni($order),
         ];
 
         //Get Items
         $items = $products = [];
-        $orderedItems = $this->_orderInterface->getAllVisibleItems();
+        $orderedItems = $order->getAllVisibleItems();
         
         foreach ($orderedItems as $item) {
-
             $product      = $item->getProduct();
             $products[]   = $product;
             $price        = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
@@ -174,33 +169,39 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         //Get products active plans
         extract($this->config->getAllProductsPlans($products));
         
-        if (!empty($this->_orderInterface->getShippingDescription())) {
+        if (!empty($order->getShippingDescription())) {
             $items[] = [
-                'description' => __('Shipping') . ': ' . $this->_orderInterface->getShippingDescription(),
-                'total' => $this->_orderInterface->getShippingInclTax(),
+                'description' => __('Shipping') . ': ' . $order->getShippingDescription(),
+                'total' => $order->getShippingInclTax(),
             ];
         }
 
         $mobbexCheckout = new \Mobbex\Modules\Checkout(
-            $orderEntityId,
-            (float) $orderAmount,
-            $this->getEndpointUrl('paymentreturn', ['order_id' => $orderIncrementalId]),
-            $this->getEndpointUrl('webhook', ['order_id' => $orderIncrementalId, 'mbbx_token' => $this->config->generateToken()]),
-            $orderData->getOrderCurrencyCode(),
+            $order->getId(),
+            (float) $order->getGrandTotal(),
+            $this->getEndpointUrl('paymentreturn'),
+            $this->getEndpointUrl('webhook', ['order_id' => $order->getId(), 'mbbx_token' => $this->config->generateToken()]),
+            $order->getOrderCurrencyCode(),
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
             $customer,
-            $this->getAddresses($orderData),
+            $this->getAddresses($order),
             'all',
             'mobbexCheckoutRequest',
-            "Pedido #$orderIncrementalId",
-            $this->config->get('custom_reference') ? $this->getCustomReference($orderEntityId) : null
+            'Pedido #' . $order->getIncrementId(),
+            $this->config->get('custom_reference') ? $this->getCustomReference($order->getId()) : null
         );
 
-        //Add order id to the response
-        $mobbexCheckout->response['orderId'] = $orderIncrementalId;
-
         $this->logger->log('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
+
+        // Save checkout uid to use later in payment failed page
+        if (isset($mobbexCheckout->response['id']))
+            $this->cf->create()->saveCustomField(
+                $order->getId(),
+                'order',
+                'checkout_uid',
+                $mobbexCheckout->response['id']
+            );
 
         return $mobbexCheckout->response;
     }
@@ -354,7 +355,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         if ($dniColumn && isset($address[$dniColumn]))
             return $address[$dniColumn];
 
-        $customField = $this->customFieldFactory->create();
+        $customField = $this->cf->create();
 
         // Get dni custom field from quote or current user if logged in
         $customerId = $this->customerSession->getCustomer()->getId();

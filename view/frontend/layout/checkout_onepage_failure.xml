@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<body>
+    <referenceContainer name="content">
+        <block class="Mobbex\Webpay\Block\PaymentFailure" name="payment.failure.mobbex" template="Mobbex_Webpay::payment/failure.phtml" cacheable="false" />
+    </referenceContainer>
+</body>
