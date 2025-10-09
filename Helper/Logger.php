@@ -71,15 +71,33 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function log($mode, $message, $data = [])
     {
+        $filteredData = $this->hideSensibleData($data);
+
         // Save log to db
         if ($mode != 'debug' || $this->debugMode)
             $this->useFileLogger
-                ? $this->fileLogger->$mode($message, $data)
+                ? $this->fileLogger->$mode($message, $filteredData)
                 : $this->logFactory->create()->saveLog([
                     'type'          => $mode,
                     'message'       => $message,
-                    'data'          => json_encode($data),
+                    'data'          => json_encode($filteredData),
                     'date'          => date('Y-m-d H:i:s'),
                 ]);
+    }
+
+    /**
+     * Hide sensible data from log.
+     * 
+     * @param array $data
+     */
+    private function hideSensibleData($data)
+    {
+        if (isset($data['body']['source']['card']['number']))
+            $data['body']['source']['card']['number'] = substr($data['body']['source']['card']['number'], 0, 6) . str_repeat('X', strlen($data['body']['source']['card']['number']) - 10) . substr($data['body']['source']['card']['number'], -4);
+
+        if (isset($data['body']['source']['card']['cvv']))
+            $data['body']['source']['card']['cvv'] = '[REDACTED]';
+
+        return $data;
     }
 }
