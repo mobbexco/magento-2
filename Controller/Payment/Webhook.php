@@ -2,19 +2,11 @@
 
 namespace Mobbex\Webpay\Controller\Payment;
 
-// Set parent class
-class_alias(
-    interface_exists('\Magento\Framework\App\CsrfAwareActionInterface')
-        ? 'Mobbex\Webpay\Controller\Payment\WebhookBase'
-        : 'Magento\Framework\App\Action\Action', 
-    'WebhookBase'
-);
-
 /**
  * Class Webhook
  * @package Mobbex\Webpay\Controller\Payment
  */
-class Webhook extends WebhookBase
+class Webhook extends \Magento\Framework\App\Action\Action
 {
     /** @var \Magento\Framework\App\Action\Context */
     public $context;
