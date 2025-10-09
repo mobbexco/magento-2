@@ -1,18 +1,15 @@
 <?php
 
-namespace Mobbex\Webpay\Model;
-
-use Magento\Framework\DataObject;
-use Magento\Payment\Model\Method\AbstractMethod;
-use Magento\Sales\Model\Order;
+namespace Mobbex\Webpay\Model\Method;
 
 /**
- * Class Mobbex
- * @package Mobbex\Webpay\Model
+ * Class Sugapay.
+ * 
+ * @package Mobbex\Webpay\Model\Method
  */
-class Mobbex extends AbstractMethod
+class SugapayTransparent extends \Magento\Payment\Model\Method\AbstractMethod
 {
-    const CODE = 'sugapay';
+    const CODE = 'sugapay_transparent';
 
     /**
      * @var string
@@ -94,8 +91,8 @@ class Mobbex extends AbstractMethod
         $order->setCanSendNewEmailFlag(!!$sendEmail);
 
         // set default payment status
-        $stateObject->setState(Order::STATE_NEW);
-        $stateObject->setStatus(Order::STATE_NEW);
+        $stateObject->setState(\Magento\Sales\Model\Order::STATE_NEW);
+        $stateObject->setStatus(\Magento\Sales\Model\Order::STATE_NEW);
 
         // Set if is notified
         $stateObject->setIsNotified(!!$sendEmail);
@@ -107,11 +104,12 @@ class Mobbex extends AbstractMethod
      */
     public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
+        return true;
         if (!$this->isActive($quote ? $quote->getStoreId() : null)) {
             return false;
         }
 
-        $checkResult = new DataObject();
+        $checkResult = new \Magento\Framework\DataObject();
         $checkResult->setData('is_available', true);
 
         // for future use in observers

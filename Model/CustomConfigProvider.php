@@ -2,13 +2,11 @@
 
 namespace Mobbex\Webpay\Model;
 
-use Magento\Checkout\Model\ConfigProviderInterface;
-
 /**
  * Class CustomConfigProvider
  * @package Mobbex\Webpay\Model
  */
-class CustomConfigProvider implements ConfigProviderInterface
+class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInterface
 {
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
@@ -66,8 +64,8 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'wallet'            => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
                     'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [$defaultMethod],
                     'embed'             => $this->config->get('embed'),
-                    'offsite'           => $this->config->get('offsite'),
-                    'transparent'       => $this->config->get('transparent'),
+                    'offsite'           => $this->config->get('offsite') === '1', 
+                    'transparent'       => $this->config->get('transparent') === '1',
                     'banner'            => $this->config->get('checkout_banner'),
                     'color'             => $this->config->get('color'),
                     'background'        => $this->config->get('background'),

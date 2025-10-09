@@ -4,8 +4,7 @@
     <system>
         <section id="payment">
             <group id="sugapay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-
-                <label>Mobbex Sugapay</label>
+                <label>Mobbex</label>
 
                 <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
@@ -66,20 +65,6 @@
                 <group id="checkout" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1"
                     showInStore="1">
                     <label>Checkout</label>
-
-                    <field id="offsite" translate="label comment" sortOrder="1" type="select" showInDefault="1"
-                        showInWebsite="1" showInStore="1">
-                        <label>Offsite</label>
-                        <comment>Permite realizar los pagos redireccionando a Mobbex o a través de un modal (Modo Embebido), sin necesidad de desarrollo adicional y sin requerimientos PCI.</comment>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
-
-                    <field id="transparent" translate="label comment" sortOrder="1" type="select" showInDefault="1"
-                        showInWebsite="1" showInStore="1">
-                        <label>Transparente</label>
-                        <comment>Permite realizar pagos directamente desde el sitio, mediante un formulario y sin redireccionar a Mobbex. Requiere desarrollo adicional y cumplir con la normativa PCI para su integración.</comment>
-                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    </field>
 
                     <field id="embed_payment" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                         showInWebsite="1" showInStore="1">
@@ -355,6 +340,28 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
                 </group>
+            </group>
+            <group id="sugapay_transparent" translate="label" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Mobbex Transparent</label>
+                <comment>Permite realizar pagos directamente desde el sitio, mediante un formulario y sin redireccionar a Mobbex. Requiere desarrollo adicional y cumplir con la normativa PCI para su integración.</comment>
+
+                <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Estado del módulo</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="title" translate="label comment" sortOrder="2" type="text" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Título</label>
+                    <comment>Texto que se muestra al cliente en la opción de pago del checkout</comment>
+                </field>
+
+                <field id="logo" translate="label comment" sortOrder="3" type="text" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Logo</label>
+                    <comment>URL de la imagen que se mostrará en la opción de pago del checkout</comment>
+                </field>
             </group>
         </section>
     </system>
