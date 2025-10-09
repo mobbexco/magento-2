@@ -88,17 +88,12 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         $product_id = $product->getId();
         $total      = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
-        $data = 
-            [
-                'mbbxTotal'      => $total,
-                'mbbxProductIds' => [$product_id],
-            ];
-
-        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
-            [
-                '_query' => $data,
-            ]
-        );
+        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", [
+            '_query' => [
+                'total'      => $total,
+                'productIds' => [$product_id],
+            ],
+        ]);
 
         $this->logger->log('debug', 'FinanceWidget Block > productPage', 
             [
@@ -127,17 +122,12 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         foreach ($quote->getAllVisibleItems() as $item)
             $products[] = $item->getProduct()->getId();
 
-        $data =
-            [
-                'mbbxTotal'      => $total,
-                'mbbxProductIds' => $products,
-            ];
-
-        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
-            [
-                '_query' => $data,
-            ]
-        );
+        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", [
+            '_query' => [
+                'total'      => $total,
+                'productIds' => $products,
+            ],
+        ]);
 
         $this->logger->log('debug', 'FinanceWidget Block > cartPage', 
             [
