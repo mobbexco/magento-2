@@ -76,9 +76,9 @@ class Process extends \Magento\Framework\App\Action\Action
             if (!in_array($opRes['status']['code'], ['3', '100', '200']))
                 throw new \Mobbex\Exception('Operation process with error code', 0, $opRes);
 
-            die(json_encode(['result' => 'success']));
+            die(json_encode(['result' => 'success', 'code' => $opRes['status']['code']]));
         } catch (\Exception $e) {
-            return $this->logger->createJsonResponse('error', 'Transparent detection error: ' . $e->getMessage());
+            return $this->logger->createJsonResponse('error', 'Transparent process error: ' . $e->getMessage());
         }
     }
 

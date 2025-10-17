@@ -343,7 +343,7 @@
             </group>
             <group id="sugapay_transparent" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Mobbex Transparent</label>
-                <comment>Permite realizar pagos directamente desde el sitio, mediante un formulario y sin redireccionar a Mobbex. Requiere desarrollo adicional y cumplir con la normativa PCI para su integración.</comment>
+                <comment>Permite realizar pagos directamente desde el sitio, mediante un formulario y sin redireccionar a Mobbex. Requiere certificación de la normativa PCI para su integración.</comment>
 
                 <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">

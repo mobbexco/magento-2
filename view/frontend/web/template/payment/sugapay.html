@@ -1,13 +1,16 @@
 <div id="mbbx-container"></div>
 
 <!-- ko foreach: availableMethods -->
-<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == subgroup}">
+<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == subgroup && $parent.isActive()}">
     <div class="payment-method-title field choice">
-        <input type="radio" name="payment[method]" data-bind="
-            attr: {id: 'payment_method_' + subgroup},
-            checked: $parent.selectedOption,
-            checkedValue: subgroup
-            " />
+        <input type="radio"
+            name="payment[method]" 
+            class="radio"
+            attr="id: 'payment_method_' + subgroup"
+            click="$parent.selectPaymentMethod.bind($parent)"
+            ko-value="subgroup"
+            ko-checked="$parent.selectedOption"
+            />
         <label data-bind="attr: {for: 'payment_method_' + subgroup}">
             <!-- ko if: $parent.config.show_method_icons == 1  -->
             <img data-bind="attr: { src: $index() === 0 && $parent.config.method_icon ? $parent.config.method_icon : subgroup_logo, alt: subgroup_title, style: 'background: ' +  $parent.config.color}" />
@@ -46,13 +49,16 @@
 <!-- /ko -->
 
 <!-- ko foreach: availableCards -->
-<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == card.card_number}">
+<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == card.card_number && $parent.isActive()}">
     <div class="payment-method-title field choice">
-        <input type="radio" name="payment[method]" data-bind="
-            attr: {id: 'payment_method_' + card.card_number},
-            checked: $parent.selectedOption,
-            checkedValue: card.card_number
-            " />
+        <input type="radio"
+            name="payment[method]" 
+            class="radio"
+            attr="id: 'payment_method_' + card.card_number"
+            click="$parent.selectPaymentMethod.bind($parent)"
+            ko-value="card.card_number"
+            ko-checked="$parent.selectedOption"
+            />
         <label data-bind="attr: {for: 'payment_method_' + card.card_number}">
             <!-- ko if: $parent.config.show_method_icons == 1 -->
             <img data-bind="attr: { src: source.card.issuer.logo, alt: source.name, style: 'max-width: 50px;' }" />

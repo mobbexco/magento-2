@@ -19,9 +19,7 @@
             <render args="ccForm" />
         </form>
         <div class="payment-method-billing-address">
-            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
-            <!-- ko template: getTemplate() --><!-- /ko -->
-            <!--/ko-->
+            <each args="$parent.getRegion(getBillingAddressFormName())" render="" />
         </div>
         <div class="checkout-agreements-block">
             <each args="$parent.getRegion('before-place-order')" render="" />

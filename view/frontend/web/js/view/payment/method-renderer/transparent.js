@@ -49,7 +49,10 @@ define([
         installmentTextTNA: ko.observable(null),
         installmentTextTEA: ko.observable(null),
 
-        isActive: function() { return true; },
+        isActive: function() {
+            return this.getCode() === this.isChecked();
+        },
+
         getCode: function() { return 'sugapay_transparent'; },
 
         // Formatear el número de tarjeta con espacios cada 4 dígitos
@@ -195,8 +198,15 @@ define([
             // Limitar DNI a 9 caracteres
             this.limitFieldLength(this.cardHolderDocument, 9);
 
-            // Limitar nombre a 26 caracteres
-            this.limitFieldLength(this.cardHolderName, 26);
+            // Limitar nombre a 26 caracteres y filtra números
+            this.cardHolderName.subscribe(function(newValue) {
+                var strValue = typeof newValue === 'string' ? newValue : String(newValue);
+
+                var cleanValue = strValue.replace(/\d/g, '').slice(0, 26);
+                if (strValue !== cleanValue) {
+                    self.cardHolderName(cleanValue);
+                }
+            });
 
             // Limitar CVV a 4 caracteres
             this.cardCvv.subscribe(function(newValue) {
@@ -273,18 +283,18 @@ define([
                 return false;
             }
 
-            const data = await res.json();
+            const json = await res.json();
             this.isLoading(false);
 
-            if (!data || data?.result !== 'success') {
+            if (!json || json?.result !== 'success') {
                 this.messageContainer.addErrorMessage({ message: 'Error en el procesamiento del pago. Intenta nuevamente.' });
-                console.error('Invalid payment process response:', data);
+                console.error('Invalid payment process response:', json);
                 return;
             }
 
             // Redirigir a la URL de retorno con estado de éxito
             window.top.location.href = urlBuilder.build(
-                `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}`
+                `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}&status=${json?.code}`
             );
             return;
         }
