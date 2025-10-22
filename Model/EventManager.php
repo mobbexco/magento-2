@@ -57,7 +57,7 @@ class EventManager
                     continue;
 
                 $value = call_user_func_array($method, $args);
-                $this->logger->log('debug', 'Dispatch event result', [$observerData['instance'], $name]);
+                $this->logger->log('debug', 'Dispatch event result', [$observerData['instance'], $name, $value]);
 
                 if ($filter)
                     $args[0] = $value;

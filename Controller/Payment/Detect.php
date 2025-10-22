@@ -17,15 +17,20 @@ class Detect extends \Magento\Framework\App\Action\Action
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Helper\Config $config,
         \Magento\Framework\App\Action\Context $context
     ) {
         parent::__construct($context);
 
         $this->sdk = $sdk;
         $this->logger = $logger;
+        $this->config = $config;
 
         $this->sdk->init();
     }
@@ -82,6 +87,7 @@ class Detect extends \Magento\Framework\App\Action\Action
                 'data' => ['bin' => $bin],
                 'options' => [
                     'installments' => true,
+                    'multivendor' => $this->config->get('multivendor') ?: null,
                     'filter' => null,
                     'brand' => true,
                     'brands' => true,

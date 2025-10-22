@@ -60,7 +60,7 @@
                 </notifications>
             </sugapay>
             <sugapay_transparent>
-                <active>1</active>
+                <active>0</active>
                 <group>online</group>
                 <model>Mobbex\Webpay\Model\Method\SugapayTransparent</model>
                 <title>Tarjeta de crédito o débito</title>
