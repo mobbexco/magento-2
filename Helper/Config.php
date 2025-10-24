@@ -23,7 +23,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'method_icon'                        => 'payment/sugapay/appearance/method_icon',
         'show_method_icons'                  => 'payment/sugapay/appearance/show_method_icons',
         'sources_priority'                   => 'payment/sugapay/appearance/sources_priority',
-        'show_featured_installments'         => 'payment/sugapay/appearance/show_featured_installments',
+        'show_featured_plans_on_cart'        => 'payment/sugapay/appearance/show_featured_plans_on_cart',
         'embed'                              => 'payment/sugapay/checkout/embed_payment',
         'wallet'                             => 'payment/sugapay/checkout/wallet_active',
         'multicard'                          => 'payment/sugapay/checkout/multicard',
@@ -62,7 +62,9 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     ];
 
     /** Mobbex Catalog Settings */
-    public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'subscription_uid'];
+    public $catalogSettings = [ 
+        'advanced_plans', 'entity', 'subscription_uid', 'show_featured', 'featured_plans', 'manual_config', 'selected_plans'
+    ];
     
     /** @var \Mobbex\Webpay\Model\CustomField */
     public $customField;
@@ -150,9 +152,9 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         $value = $this->customField->getCustomField($id, $catalogType, $field);
 
         if (strpos($field, '_plans') !== false)
-            return $value ? $this->serializer->unserialize($value) : [];
+            return $value ? json_decode($value, true) : [];
 
-        return $value ?: '';
+        return $value;
     }
 
     /**
@@ -233,5 +235,29 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
             "{$this->get('api_key')}|{$this->get('access_token')}",
             PASSWORD_DEFAULT
         );
+    }
+
+    /**
+     * handleFeaturedPlans handles the product particular featured plans configuration
+     * "[]" value is used to show automatic featured plans
+     * 
+     * @param string $productId
+     * 
+     * @return null|string setting value
+     */
+    public function handleFeaturedPlans($productId = null)
+    {
+        if (!$productId)
+            return null;
+
+        $showFeatured  = $this->getCatalogSetting($productId, "show_featured", 'product');
+        if ($showFeatured === "no")
+            return null;
+
+        $manualConfig  = $this->getCatalogSetting($productId, "manual_config", 'product');
+        if ($manualConfig == "no")
+            return "[]";
+
+        return json_encode($this->getCatalogSetting($productId, "featured_plans", 'product'));
     }
 }
