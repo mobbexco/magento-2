@@ -31,6 +31,9 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     /** Sources url to get financial information */
     public $sourcesUrl;
 
+    /** product or category featured settings from plans configuration */
+    public $featuredPlans;
+
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
@@ -85,16 +88,17 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         if (!$product->isSalable())
             throw new \Exception;
 
-        $product_id = $product->getId();
-        $total      = $product->getPriceInfo()->getPrice('final_price')->getValue();
+        $productId = $product->getId();
+        $total     = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
         $data = 
             [
                 'mbbxTotal'      => $total,
-                'mbbxProductIds' => [$product_id],
+                'mbbxProductIds' => [$productId],
             ];
 
-        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
+        $this->featuredPlans = $this->config->handleFeaturedPlans($productId);
+        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", 
             [
                 '_query' => $data,
             ]
@@ -103,7 +107,7 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         $this->logger->log('debug', 'FinanceWidget Block > productPage', 
             [
                 'total'      => $total,
-                'product'    => $product_id,
+                'product'    => $productId,
                 'sourcesUrl' => $this->sourcesUrl,
             ]
         );
@@ -133,7 +137,8 @@ class FinanceWidget extends \Magento\Backend\Block\Template
                 'mbbxProductIds' => $products,
             ];
 
-        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", 
+        $this->featuredPlans = $this->config->get("show_featured_plans_on_cart") ? "[]" : null;
+        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", 
             [
                 '_query' => $data,
             ]
