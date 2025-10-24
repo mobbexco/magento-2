@@ -13,7 +13,7 @@ foreach ($this->config->catalogSettings as $value) {
 }
 
 try {
-    extract(\Mobbex\Repository::getPlansFilterFields($id, $common_plans, $advanced_plans));
+    $filtered_plans = json_encode(\Mobbex\Repository::getPlansFilterFields($id));
 } catch (\Exception $e) {
     $commonFields = $advancedFields = $sourceNames = $sourceGroups = [];
     $this->logger->log('error', "Template > getContent | {$e->getMessage()}");
@@ -21,62 +21,10 @@ try {
 
 /** TEMPLATE PLANS FILTER  */
 ?>
-
-<table class="mbbx-plans-cont">
-    <tbody>
-        <tr style="text-align: center;">
-            <td><?= $this->escapeHtml(__('Common Plans')) ?></td>
-            <td><?= $this->escapeHtml(__('Advanced Plans')) ?></td>
-        </tr>
-        <tr>
-            <td class="mbbx-plans">
-                <?php foreach ($commonFields as $field) : ?>
-                    <div class="mbbx-plan">
-
-                        <div class="source-popover">
-                            <h4>Medios Disponibles</h4>
-                            <?php foreach ($sourceGroups[$field['label']] as $sourceRef) : ?>
-                                <div class="mbbx-plan-group">
-                                    <img src="https://res.mobbex.com/images/sources/original/<?= $this->escapeHtml($sourceRef); ?>.png">
-                                    <small><?= isset($sourceNames[$sourceRef]) ? $this->escapeHtml($sourceNames[$sourceRef]) : $this->escapeHtml($sourceRef) ?></small>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-
-                        <div class="mbbx-plan-cont">
-                            <input type="checkbox" name="<?= $this->escapeHtml($field['id']) ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $this->escapeHtml($field['id']) ?>" data-form-part="<?= $this->escapeHtml($this->form) ?>">
-                            <label for="<?= $this->escapeHtml($field['id']) ?>"><?= $this->escapeHtml($field['label']) ?></label>
-                        </div>
-
-                        <p class="description"><?= $this->escapeHtml($field['description']) ?></p>
-
-                    </div>
-                <?php endforeach; ?>
-            </td>
-
-            <td class="mbbx-plans">
-                <?php foreach ($advancedFields as $sourceRef => $fields) : ?>
-                    <div class="mbbx-plan-source">
-                        <img src="https://res.mobbex.com/images/sources/png/<?= $this->escapeHtml($sourceRef) ?>.png">
-                        <p><?= $this->escapeHtml($sourceNames[$sourceRef]) ?></p>
-                    </div>
-                    <?php foreach ($fields as $field) : ?>
-                        <div class="mbbx-plan-advanced">
-                            <input type="checkbox" name="<?= $this->escapeHtml($field['id']) ?>" <?= $field['value'] ? 'checked="checked"' : '' ?> id="<?= $this->escapeHtml($field['id']) ?>" data-form-part="<?= $this->escapeHtml($this->form) ?>">
-                            <label for="<?= $this->escapeHtml($field['id']) ?>"><?= $this->escapeHtml($field['label']) ?></label>
-                            <p class="description"><?= $this->escapeHtml($field['description']) ?></p>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endforeach; ?>
-            </td>
-        </tr>
-    </tbody>
-</table>
-
+<div id="mbbx-plans-configurator" style="display:flex"></div>
 <?php
 
 /** TEMPLATE MULTIVENDOR */
-
 ?>
 <div style="margin-top: 20px;">
     <h3><?= $this->escapeHtml(__('Split y Multivendor')) ?></h3>
@@ -88,7 +36,6 @@ try {
 <?php
 
 /** TEMPLATE SUBSCRIPTION MODE */
-
 if ($this->type == 'product') {
 ?>
     <div class="mbbx-subscription">
@@ -109,92 +56,6 @@ $this->helper->executeHook('mobbex' . ucfirst($this->type) . 'Settings', false, 
 
 ?>
 <style>
-
-    .mbbx-plan {
-        position: relative;
-    }
-
-
-    .mbbx-plans-cont {
-        border: 1px gainsboro solid;
-        width: 500px;
-    }
-
-    .mbbx-plans-cont tbody {
-        vertical-align: top
-    }
-
-    .mbbx-plans-cont td {
-        width: 50%;
-        border: 1px gainsboro solid;
-        padding: 15px;
-    }
-
-    .mbbx-plans-cont label {
-        font-weight: 400 !important;
-    }
-
-    .mbbx-plans-cont .description {
-        color: grey;
-        font-size: 1.2rem;
-    }
-
-    .mbbx-plan-advanced {
-        padding-left: 20px;
-    }
-
-    .mbbx-plan-source * {
-        display: inline;
-    }
-
-    .mbbx-plan-source img {
-        width: 30px;
-        border-radius: 100%;
-    }
-
-    .mbbx-plan-cont {
-        display: flex;
-        align-items: center;
-        padding: 0 10px;
-    }
-
-    .mbbx-plan-group {
-        display: flex;
-        justify-content: left;
-        align-items: center;
-        padding: 5px;
-        background-color: #eaeffb;
-    }
-
-    .mbbx-plan-group img {
-        width: 1.5em;
-        margin: 0 5px;
-    }
-
-    .source-popover {
-        display: none;
-        position: absolute;
-        left: 12em;
-        max-width: 15em;
-        width: 100%;
-        border-radius: 5px;
-        background-color: #eaeffb;
-        padding: 1rem;
-        z-index: 100;
-    }
-
-    .source-popover h3 {
-        text-align: center;
-    }
-
-    .mbbx-plan:hover .source-popover {
-        display: block;
-    }
-
-    .mbbx-plan-group p {
-        margin: 0;
-    }
-
     .hidden {
         display: none;
     }
@@ -203,3 +64,13 @@ $this->helper->executeHook('mobbex' . ucfirst($this->type) . 'Settings', false, 
         margin-top: 20px;
     }
 </style>
+<script id="mbbx-finance-data">
+    window.platformFormName        = "<?=$this->escapeHtml($this->form)?>";
+    window.mobbexSources           = <?= isset($filtered_plans) ? $filtered_plans : "[]" ?>;
+    window.mobbexSelectedPlans     = <?= isset($selected_plans) ? json_encode($selected_plans) : "[]" ?>;
+    window.mobbexFeaturedPlans     = <?= isset($featured_plans) ? json_encode($featured_plans) : "[]" ?>;
+    window.mobbexAdvancedPlans     = <?= isset($advanced_plans) ? json_encode($advanced_plans) : "[]" ?>;
+    window.mobbexManual            = Boolean(<?= isset($manual_config) ? $manual_config == "yes" : 0 ?>);
+    window.mobbexShowFeaturedPlans = Boolean(<?= isset($show_featured) ? $show_featured == "yes" : 0 ?>);
+</script>
+<script src="<?= $block->getViewFileUrl('Mobbex_Webpay::js/plans-configurator.min.js') ?>"></script>
