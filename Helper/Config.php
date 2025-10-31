@@ -169,7 +169,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $common_plans = $advanced_plans = [];
 
-        foreach (['common_plans', 'advanced_plans'] as $value) {
+        foreach (['common_plans', 'mobbex_advanced_plans'] as $value) {
             //Get product active plans
             ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
             //Get product category active plans
@@ -241,23 +241,45 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
      * handleFeaturedPlans handles the product particular featured plans configuration
      * "[]" value is used to show automatic featured plans
      * 
-     * @param string $productId
+     * @param object $product
      * 
      * @return null|string setting value
      */
-    public function handleFeaturedPlans($productId = null)
+    public function handleFeaturedPlans($product = null)
     {
-        if (!$productId)
+        if (!$product)
             return null;
 
-        $showFeatured  = $this->getCatalogSetting($productId, "show_featured", 'product');
+        $productId = $product->getId();
+
+        $showFeatured = $this->getCatalogSetting($productId, "show_featured", 'product');
         if ($showFeatured === "no")
             return null;
 
-        $manualConfig  = $this->getCatalogSetting($productId, "manual_config", 'product');
+        $manualConfig = $this->getCatalogSetting($productId, "manual_config", 'product');
         if ($manualConfig == "no")
             return "[]";
 
-        return json_encode($this->getCatalogSetting($productId, "featured_plans", 'product'));
+        $featuredPlans = $this->getCatalogSetting($productId, "featured_plans", 'product');
+        return $this->getCategoriesFeaturedPlans($product, $featuredPlans);
+    }
+
+    /**
+     * Get featured plans from product categories
+     * 
+     * @param string|int $id
+     * @param array      $featured_plans
+     * 
+     * @return string $comprlete_featured_plans
+     */
+    public function getCategoriesFeaturedPlans($product, $featuredPlans = []) 
+    {
+        foreach ($product->getCategoryIds() as $categoryId)
+            $featuredPlans = array_merge(
+                $featuredPlans,
+                $this->getCatalogSetting($categoryId, 'featured_plans', 'category')
+            );
+
+        return json_encode($featuredPlans);
     }
 }
