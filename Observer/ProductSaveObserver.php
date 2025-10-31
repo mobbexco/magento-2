@@ -48,10 +48,10 @@ class ProductSaveObserver implements ObserverInterface
             'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
             'subscription_uid' => isset($this->params['sub_uid']) ? $this->params['sub_uid'] : '',
             'common_plans'     => isset($this->params['common_plans'  ]) ? $this->params['common_plans'] : "[]",
-            'advanced_plans'   => isset($this->params['advanced_plans']) ? $this->params['advanced_plans'] : "[]",
-            'selected_plans'   => isset($this->params['selected_plans']) ? $this->params['selected_plans'] : "[]",
             'manual_config'    => isset($this->params['mobbex_manual_config']) ? $this->params['mobbex_manual_config'] : "no",
             'featured_plans'   => isset($this->params['mobbex_featured_plans']) ? $this->params['mobbex_featured_plans'] : "[]",
+            'advanced_plans'   => isset($this->params['mobbex_advanced_plans']) ? $this->params['mobbex_advanced_plans'] : "[]",
+            'selected_plans'   => isset($this->params['mobbex_selected_plans']) ? $this->params['mobbex_selected_plans'] : "[]",
             'show_featured'    => isset($this->params['mobbex_show_featured_plans']) ? $this->params['mobbex_show_featured_plans'] : "no",
         ];
         
