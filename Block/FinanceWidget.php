@@ -91,21 +91,18 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         $productId = $product->getId();
         $total     = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
-        $data = 
-            [
+        $data = [
                 'mbbxTotal'      => $total,
                 'mbbxProductIds' => [$productId],
-            ];
+        ];
 
-        $this->featuredPlans = $this->config->handleFeaturedPlans($productId);
-        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", 
-            [
+        $this->featuredPlans = $this->config->handleFeaturedPlans($product);
+        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", [
                 '_query' => $data,
             ]
         );
 
-        $this->logger->log('debug', 'FinanceWidget Block > productPage', 
-            [
+        $this->logger->log('debug', 'FinanceWidget Block > productPage', [
                 'total'      => $total,
                 'product'    => $productId,
                 'sourcesUrl' => $this->sourcesUrl,
@@ -131,21 +128,18 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         foreach ($quote->getAllVisibleItems() as $item)
             $products[] = $item->getProduct()->getId();
 
-        $data =
-            [
+        $data = [
                 'mbbxTotal'      => $total,
                 'mbbxProductIds' => $products,
-            ];
+        ];
 
         $this->featuredPlans = $this->config->get("show_featured_plans_on_cart") ? "[]" : null;
-        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", 
-            [
+        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", [
                 '_query' => $data,
             ]
         );
 
-        $this->logger->log('debug', 'FinanceWidget Block > cartPage', 
-            [
+        $this->logger->log('debug', 'FinanceWidget Block > cartPage', [
                 'total'      => $total,
                 'products'   => $products,
                 'sourcesUrl' => $this->sourcesUrl,
