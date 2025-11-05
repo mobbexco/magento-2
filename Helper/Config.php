@@ -169,7 +169,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $common_plans = $advanced_plans = [];
 
-        foreach (['common_plans', 'mobbex_advanced_plans'] as $value) {
+        foreach (['common_plans', 'advanced_plans'] as $value) {
             //Get product active plans
             ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
             //Get product category active plans
@@ -250,36 +250,78 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         if (!$product)
             return null;
 
-        $productId = $product->getId();
-
-        $showFeatured = $this->getCatalogSetting($productId, "show_featured", 'product');
-        if ($showFeatured === "no")
+        $showFeatured = $this->getAllPlansConfiguratorSettings($product, "show_featured");
+        if (!$showFeatured)
             return null;
 
-        $manualConfig = $this->getCatalogSetting($productId, "manual_config", 'product');
-        if ($manualConfig == "no")
+        $manualConfig = $this->getAllPlansConfiguratorSettings($product, "manual_config");
+        if (!$manualConfig)
             return "[]";
 
-        $featuredPlans = $this->getCatalogSetting($productId, "featured_plans", 'product');
-        return $this->getCategoriesFeaturedPlans($product, $featuredPlans);
+        return $this->getAllPlansConfiguratorSettings($product, "featured_plans");
     }
 
     /**
-     * Get featured plans from product categories
+     * Get specific field values from product categories
      * 
-     * @param string|int $id
-     * @param array      $featured_plans
+     * @param object     $product
+     * @param string     $fieldName
      * 
-     * @return string $comprlete_featured_plans
+     * @return string|bool
      */
-    public function getCategoriesFeaturedPlans($product, $featuredPlans = []) 
+    private function getAllPlansConfiguratorSettings($product, $fieldName) 
     {
+        $id = $product->getId();
+        // gets product settings
+        $productFieldValue = $this->getCatalogSetting($id, $fieldName, 'product');
+
+        // gets categories settings
+        // merge in array value case
+        if (is_array($productFieldValue)) {
+            $productFieldValue = $this->displayFeaturedPlans($id) 
+                ? $productFieldValue 
+                : [];
+
+            foreach ($product->getCategoryIds() as $categoryId) {
+                $categoryFieldValue = $this->displayFeaturedPlans($categoryId, 'category') 
+                    ? $this->getCatalogSetting($categoryId, $fieldName, 'category')
+                    : [];
+
+                $productFieldValue  = array_merge(
+                    $productFieldValue, 
+                    $categoryFieldValue
+                );
+            }
+
+            return json_encode($productFieldValue);
+        }
+
+        // check flags in string value case
+        $categoriesFieldValues = [];
         foreach ($product->getCategoryIds() as $categoryId)
-            $featuredPlans = array_merge(
-                $featuredPlans,
-                $this->getCatalogSetting($categoryId, 'featured_plans', 'category')
+            array_push(
+                $categoriesFieldValues,
+                $this->getCatalogSetting($categoryId, $fieldName, 'category')
             );
 
-        return json_encode($featuredPlans);
+        return empty($categoriesFieldValues) 
+            ? $productFieldValue == "yes"
+            : (in_array("yes", $categoriesFieldValues) || $productFieldValue == "yes");
+    }
+
+
+    /**
+     * Get product display featured plans settings
+     * 
+     * @param string|int $id
+     * 
+     * @return bool
+     */
+    private function displayFeaturedPlans($id, $catalogType="product") 
+    {
+        return (
+            $this->getCatalogSetting($id, "show_featured", $catalogType) == "yes"
+            && $this->getCatalogSetting($id, "manual_config", $catalogType) == "yes"
+        );
     }
 }
