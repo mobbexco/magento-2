@@ -119,7 +119,7 @@ class PaymentReturn implements \Magento\Framework\App\Action\HttpGetActionInterf
 
                 $this->logger->log('debug', 'PaymentReturn > execute', $this->_order->debug());
 
-                if ($status > 1 && $status < 400) {
+                if ($status >= 1 && $status < 400) {
                     return $this->redirectFactory->create()->setPath('checkout/onepage/success');
                 } else {
                     //If there are a quote id restore the cart

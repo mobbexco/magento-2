@@ -3,6 +3,7 @@
 namespace Mobbex\Webpay\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
+use Magento\LoginAsCustomer\Model\IsLoginAsCustomerEnabledForCustomerResult as LoginAsCustomer;
 
 /**
  * Class CustomConfigProvider
@@ -30,13 +31,20 @@ class CustomConfigProvider implements ConfigProviderInterface
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Mobbex $helper,
         \Mobbex\Webpay\Helper\Logger $logger,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory
+        \Magento\Backend\Model\Auth\Session $session,
+        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Quote\Model\QuoteFactory $quoteFactory,
+        LoginAsCustomer $loginAsCustomer,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory
     ) {
-        $this->sdk          = $sdk;
-        $this->config       = $config;
-        $this->helper       = $helper;
-        $this->logger       = $logger;
-        $this->quoteFactory = $quoteFactory;
+        $this->sdk             = $sdk;
+        $this->config          = $config;
+        $this->helper          = $helper;
+        $this->logger          = $logger;
+        $this->quoteFactory    = $quoteFactory;
+        $this->session         = $session;
+        $this->customField     = $customFieldFactory->create();
+        $this->logedAsCustomer = $session->isLoggedIn();
 
         //Init mobbex php plugins sdk
         $this->sdk->init();
@@ -54,6 +62,8 @@ class CustomConfigProvider implements ConfigProviderInterface
             'subgroup_logo'   => 'https://res.mobbex.com/images/sources/mobbex.png',
         ];
 
+        
+
         $config = [
             'payment' => [
                 'sugapay' => [
@@ -66,6 +76,9 @@ class CustomConfigProvider implements ConfigProviderInterface
                     'background'        => $this->config->get('background'),
                     'show_method_icons' => $this->config->get('show_method_icons'),
                     'method_icon'       => $this->config->get('method_icon'),
+                    'template'          =>  'Mobbex_Webpay/payment/'.(true ? 'sale_point' : 'sugapay'),
+                    'terminals'         => false ? [] : $this->getMobbexPosList(),
+                    'user'              => $this->helper->getImpersonation()
                 ],
             ],
         ];
@@ -74,5 +87,20 @@ class CustomConfigProvider implements ConfigProviderInterface
         $this->logger->log('debug', 'CustomConfigProvider > getConfig', $config);
 
         return $config;
+    }
+
+    public function getMobbexPosList()
+    { 
+        $result = \Mobbex\Api::request([
+            'method' => 'GET',
+            'uri'    => "pos/",
+        ]);
+
+        $selectedPos = array_filter($result['docs'], function($pos){
+            if(in_array($pos['uid'], json_decode($this->customField->getCustomField(1, 'user', 'pos_list'), true)))
+                return $pos;
+        });
+
+        return $selectedPos;
     }
 }

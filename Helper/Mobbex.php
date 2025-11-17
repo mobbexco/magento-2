@@ -28,6 +28,9 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var Session */
     protected $customerSession;
 
+    /** @var \Magento\Backend\Model\Auth\Session */
+    protected $authSession;
+    
     /** @var \Magento\Sales\Api\Data\OrderInterface */
     protected $_orderInterface;
 
@@ -86,6 +89,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Catalog\Helper\Image $imageHelper,
         \Magento\Framework\App\ProductMetadataInterface $productMetadata,
         \Magento\Customer\Model\Session $customerSession,
+        \Magento\Backend\Model\Auth\Session $authSession,
         \Magento\Sales\Api\Data\OrderInterface $_orderInterface,
         \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Framework\Event\ConfigInterface $eventConfig,
@@ -112,6 +116,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_orderInterface    = $_orderInterface;
         $this->regionFactory      = $regionFactory;
         $this->resourceConnection = $connection;
+        $this->authSession        = $authSession;
     }
 
     /**
@@ -199,6 +204,57 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         $mobbexCheckout->response['orderId'] = $orderIncrementalId;
 
         $this->logger->log('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
+
+        return $mobbexCheckout->response;
+    }
+
+    public function getPOSConnection($pos_id)
+    {
+        // get order data
+        $orderIncrementalId = $this->_checkoutSession->getLastRealOrderId();
+        $orderEntityId      = $this->_checkoutSession->getLastRealOrder()->getEntityId();
+        $orderData   = $this->_order->load($orderEntityId);
+        $orderAmount = round($this->_orderInterface->getData('base_grand_total'), 2);
+        $orderedItems = $this->_orderInterface->getAllVisibleItems();
+
+        // Get customer data
+        if ($orderData->getBillingAddress()) {
+            if (!empty($orderData->getBillingAddress()->getTelephone())) {
+                $phone = $orderData->getBillingAddress()->getTelephone();
+            }
+        }
+
+        $customer = [
+            'name'           => $orderData->getCustomerName(),
+            'email'          => $orderData->getCustomerEmail(),
+            'uid'            => $orderData->getCustomerId(),
+            'phone'          => isset($phone) ? $phone : '',
+            'identification' => $this->getDni($orderData),
+        ];
+
+        foreach ($orderedItems as $item)
+            $products[] = $item->getProduct();
+
+        //Get products active plans
+        extract($this->config->getAllProductsPlans($products));
+
+        $mobbexCheckout = new \Mobbex\Modules\Pos(
+            $orderEntityId,
+            $pos_id,
+            (float) $orderAmount,
+            $this->getEndpointUrl('webhook', ['order_id' => $orderIncrementalId, 'mbbx_token' => $this->config->generateToken()]),
+            [],
+            \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
+            $customer,
+            'mobbexCheckoutRequest',
+            "Pedido #$orderIncrementalId",
+            $this->config->get('custom_reference') ? $this->getCustomReference($orderEntityId) : null
+        );
+
+        //Add order id to the response
+        $mobbexCheckout->response['orderId'] = $orderIncrementalId;
+
+        $this->logger->log('debug', "Helper Mobbex > getPOSConnection | Checkout Response: ", $mobbexCheckout->response);
 
         return $mobbexCheckout->response;
     }
@@ -474,6 +530,15 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         } catch (\Exception $e) {
             $this->logger->log('error', 'Helper Mobbex > executeHook | Mobbex Hook Error: ', $e->getMessage());
         }
+    }
+
+    public function getImpersonation()
+    {
+        $adminUser = $this->authSession->getUser();
+        if ($adminUser)
+            return $userId = $adminUser->getId();
+
+        return null;
     }
 
 }
