@@ -4,4 +4,7 @@
     <type name="Magento\Checkout\Model\ShippingInformationManagement">
         <plugin name="Mobbex_Webpay::saveCheckoutFieldsPlugin" type="Mobbex\Webpay\Plugin\SaveCheckoutForm"/>
     </type>
+    <type name="Magento\Framework\App\Request\CsrfValidator">
+        <plugin name="csrf_validator_skip" type="Mobbex\Webpay\Plugin\CsrfValidatorSkip" />
+    </type>
 </config>

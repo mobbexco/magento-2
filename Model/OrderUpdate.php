@@ -25,8 +25,8 @@ class OrderUpdate
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     /** @var \Magento\Sales\Model\Order */
     public $_order;
@@ -75,7 +75,7 @@ class OrderUpdate
 
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Magento\Sales\Model\Order $order,
@@ -94,7 +94,7 @@ class OrderUpdate
         \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
     ) {
         $this->config                = $config;
-        $this->helper                = $helper;
+        $this->eventManager          = $eventManager;
         $this->logger                = $logger;
         $this->_order                = $order;
         $this->orderSender           = $orderSender;
@@ -371,7 +371,7 @@ class OrderUpdate
     public function cancelOrder($order, $memo = true)
     {
         // Hook for cancel suborders first
-        $this->helper->executeHook('mobbexCancelSubOrder', false, $order->getId());
+        $this->eventManager->dispatch('mobbexCancelSubOrder', false, $order->getId());
 
         // First, try to cancel
         if ($order->canCancel())

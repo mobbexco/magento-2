@@ -11,3 +11,85 @@ ul#wallet-cards li {
     margin-right: .5em;
     transform: translateY(10px);
 }
+
+
+.payment-method fieldset.payment-mobbex {
+    border: 1px solid;
+    border-color: #bbb;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    max-width: 524px;
+    margin-bottom: 35px;
+
+
+    #sugapay_transparent_type_number_div input {
+        width: 100% !important;
+    }
+
+    img[src*='res.mobbex'] {
+        border-radius: 5px;
+        max-height: 32px;
+    }
+
+    #sugapay_transparent_type_number_div {
+        .field-tooltip {
+            right: 5px;
+            top: 10px;
+        }
+    }
+
+    #sugapay_transparent_type_exp_div {
+        width: 49% !important;
+        display: inline-block;
+    }
+
+    #sugapay_transparent_type_cvv_div {
+        width: 49% !important;
+        float: right;
+
+        input {
+            width: 100% !important;
+        }
+
+        .field-tooltip {
+            right: 10px;
+            top: 9px;
+        }
+    }
+
+    #sugapay_transparent_type_installments_div {
+        padding: 15px 0;
+    }
+
+    .control {
+        height: 54px;
+        position: relative;
+
+        input, select {
+            height: 48px;
+        }
+
+        .label.mobbex-label-embedded {
+            display: none;
+            font-weight: normal;
+            font-size: 11px;
+            overflow: hidden;
+            top: 4px;
+            padding-left: 10px;
+            pointer-events: none;
+            position: absolute;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 70%;
+        }
+
+        input:not(:placeholder-shown) {
+            padding-top: 10px !important;
+        }
+
+        input:not(:placeholder-shown) + .label {
+            display: block;
+        }
+    }
+}

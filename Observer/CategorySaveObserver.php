@@ -7,8 +7,8 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CategorySaveObserver implements ObserverInterface
 {
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
     public $customFieldFactory;
@@ -21,12 +21,12 @@ class CategorySaveObserver implements ObserverInterface
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Magento\Framework\Serialize\Serializer\Serialize $serializer
     )
     {
-        $this->helper             = $helper;
+        $this->eventManager       = $eventManager;
         $this->customFieldFactory = $customFieldFactory;
         $this->params             = $context->getRequest()->getParams();
         $this->serializer         = $serializer;
@@ -68,6 +68,6 @@ class CategorySaveObserver implements ObserverInterface
             $customField->saveCustomField($observer->getCategory()->getId(), 'category', $key, $value);
         }
 
-        $this->helper->executeHook('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
+        $this->eventManager->dispatch('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
     }
 }

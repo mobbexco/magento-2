@@ -5,7 +5,7 @@
         <payment>
             <sugapay>
                 <payment_action>capture</payment_action>
-                <model>Mobbex\Webpay\Model\Mobbex</model>
+                <model>Mobbex\Webpay\Model\Method\Sugapay</model>
                 <active>1</active>
                 <order_status>pending</order_status>
                 <allowspecific>0</allowspecific>
@@ -14,6 +14,8 @@
                 <test_mode>0</test_mode>
                 <title>Mobbex</title>
                 <checkout>
+                    <offsite>1</offsite>
+                    <transparent>0</transparent>
                     <embed_payment>1</embed_payment>
                     <payment_mode>payment.v2</payment_mode>
                     <timeout>60</timeout>
@@ -57,6 +59,14 @@
                     <emit_customer_waiting_notification>1</emit_customer_waiting_notification>
                 </notifications>
             </sugapay>
+            <sugapay_transparent>
+                <active>0</active>
+                <group>online</group>
+                <model>Mobbex\Webpay\Model\Method\SugapayTransparent</model>
+                <title>Tarjeta de crédito o débito</title>
+                <logo>https://res.sugaway.io/g9ROENHebGamEm8iZUbPJYuevDY=//images/sources/original/card.png</logo>
+                <payment_action>capture</payment_action>
+            </sugapay_transparent>
         </payment>
     </default>
 </config>
