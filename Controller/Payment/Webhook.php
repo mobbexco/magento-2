@@ -2,19 +2,11 @@
 
 namespace Mobbex\Webpay\Controller\Payment;
 
-// Set parent class
-class_alias(
-    interface_exists('\Magento\Framework\App\CsrfAwareActionInterface')
-        ? 'Mobbex\Webpay\Controller\Payment\WebhookBase'
-        : 'Magento\Framework\App\Action\Action', 
-    'WebhookBase'
-);
-
 /**
  * Class Webhook
  * @package Mobbex\Webpay\Controller\Payment
  */
-class Webhook extends WebhookBase
+class Webhook extends \Magento\Framework\App\Action\Action
 {
     /** @var \Magento\Framework\App\Action\Context */
     public $context;
@@ -22,8 +14,8 @@ class Webhook extends WebhookBase
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
@@ -54,7 +46,7 @@ class Webhook extends WebhookBase
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Helper\Config $config,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Magento\Quote\Model\QuoteFactory $quoteFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
@@ -67,7 +59,7 @@ class Webhook extends WebhookBase
         parent::__construct($context);
 
         $this->config            = $config;
-        $this->helper            = $helper;
+        $this->eventManager      = $eventManager;
         $this->logger            = $logger;
         $this->quoteFactory      = $quoteFactory;
         $this->orderUpdate       = $orderUpdate;
@@ -170,7 +162,7 @@ class Webhook extends WebhookBase
 
         // Execute hook on child webhooks and return
         if (!$data['parent']) {
-            $this->helper->executeHook('mobbexChildWebhookReceived', false, $postData['data'], $order);
+            $this->eventManager->dispatch('mobbexChildWebhookReceived', false, $postData['data'], $order);
 
             return $this->logger->createJsonResponse('debug', 'Child Webhook Received');
         }
@@ -186,7 +178,7 @@ class Webhook extends WebhookBase
         $this->orderUpdate->updateStatus($order, $data);
 
         // Execute own hook to extend functionalities
-        $this->helper->executeHook('mobbexWebhookReceived', false, $postData['data'], $order);
+        $this->eventManager->dispatch('mobbexWebhookReceived', false, $postData['data'], $order);
 
         return $this->logger->createJsonResponse('debug', 'WebHook Received OK');
     }
@@ -200,7 +192,7 @@ class Webhook extends WebhookBase
         $this->orderUpdate->updateStatus($this->_order, $data);
 
         // Execute own hook to extend functionalities
-        $this->helper->executeHook('mobbexWebhookReceived', false, json_decode($data['data'], true), $this->_order);
+        $this->eventManager->dispatch('mobbexWebhookReceived', false, json_decode($data['data'], true), $this->_order);
 
         return $this->logger->createJsonResponse('debug', 'Webhook > processRefund | WebHook Received OK');
     }

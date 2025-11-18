@@ -4,8 +4,7 @@
     <system>
         <section id="payment">
             <group id="sugapay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
-
-                <label>Mobbex Sugapay</label>
+                <label>Mobbex</label>
 
                 <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
                     showInWebsite="1" showInStore="1">
@@ -227,7 +226,7 @@
                         </field>
                     </group>
                 </group>
-                <group id="appearance" translate="label" sortOrder="31" showInDefault="1" showInWebsite="1"
+                <group id="appearance" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
                     showInStore="1">
                     <label>Apariencia</label>
                    
@@ -341,6 +340,28 @@
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
                 </group>
+            </group>
+            <group id="sugapay_transparent" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Mobbex Transparent</label>
+                <comment>Permite realizar pagos directamente desde el sitio, mediante un formulario y sin redireccionar a Mobbex. Requiere certificación de la normativa PCI para su integración.</comment>
+
+                <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Estado del módulo</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="title" translate="label comment" sortOrder="2" type="text" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Título</label>
+                    <comment>Texto que se muestra al cliente en la opción de pago del checkout</comment>
+                </field>
+
+                <field id="logo" translate="label comment" sortOrder="3" type="text" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Logo</label>
+                    <comment>URL de la imagen que se mostrará en la opción de pago del checkout</comment>
+                </field>
             </group>
         </section>
     </system>

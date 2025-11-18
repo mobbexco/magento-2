@@ -51,8 +51,8 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
     public function execute()
     {
         // Gets query params
-        $total       = $this->_request->getParam('mbbxTotal');
-        $product_ids = $this->_request->getParam('mbbxProductIds');
+        $total       = $this->_request->getParam('total');
+        $product_ids = $this->_request->getParam('productIds') ?: [];
 
         // Filters out non-numeric values
         $product_ids = array_filter($product_ids, function ($id) {

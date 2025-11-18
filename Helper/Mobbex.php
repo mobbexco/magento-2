@@ -10,35 +10,11 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
     const VERSION = '4.2.1';
 
-    /** @var ScopeConfigInterface */
-    public $scopeConfig;
-
-    /** @var ObjectManagerInterface */
-    protected $_objectManager;
-
-    /** @var StoreManagerInterface */
-    protected $_storeManager;
-
     /** @var Image */
     protected $imageHelper;
     
-    /** @var ProductMetadataInterface */
-    protected $productMetadata;
-    
     /** @var Session */
     protected $customerSession;
-
-    /** @var \Magento\Sales\Api\Data\OrderInterface */
-    protected $_orderInterface;
-
-    /** @var ProductRepository */
-    protected $productRepository;
-
-    /** @var \Magento\Framework\Event\ConfigInterface */
-    public $eventConfig;
-
-    /** @var \Magento\Framework\Event\ObserverFactory */
-    public $observerFactory;
 
     /** @var \Magento\Directory\Model\RegionFactory */
     public $regionFactory;
@@ -49,77 +25,54 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /** @var \Magento\Quote\Model\QuoteFactory */
-    public $quoteFactory;
-
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
     public $cf;
 
-    /** @var \Magento\Checkout\Model\Cart */
-    public $_cart;
-
-    /** @var \Magento\Sales\Model\Order */
-    public $_order;
-
     /** @var \Magento\Framework\UrlInterface */
-    public $_urlBuilder;
+    public $urlBuilder;
 
     /** @var \Magento\Checkout\Model\Session */
-    public $_checkoutSession;
+    public $checkoutSession;
 
     /** @var \Magento\Framework\App\ResourceConnection */
     public $resourceConnection;
 
-    public $_request;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        \Magento\Checkout\Model\Cart $cart,
-        \Magento\Sales\Model\Order $order,
         \Magento\Framework\UrlInterface $urlBuilder,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Store\Model\StoreManagerInterface $_storeManager,
         \Magento\Catalog\Helper\Image $imageHelper,
-        \Magento\Framework\App\ProductMetadataInterface $productMetadata,
         \Magento\Customer\Model\Session $customerSession,
-        \Magento\Sales\Api\Data\OrderInterface $_orderInterface,
-        \Magento\Catalog\Model\ProductRepository $productRepository,
-        \Magento\Framework\Event\ConfigInterface $eventConfig,
-        \Magento\Framework\Event\ObserverFactory $observerFactory,
         \Magento\Directory\Model\RegionFactory $regionFactory,
-        \Magento\Framework\App\ResourceConnection $connection
+        \Magento\Framework\App\ResourceConnection $connection,
+        \Mobbex\Webpay\Model\EventManager $eventManager
     ) {
         $this->config             = $config;
         $this->logger             = $logger;
         $this->cf                 = $customFieldFactory;
-        $this->quoteFactory       = $quoteFactory;
-        $this->_cart              = $cart;
-        $this->_order             = $order;
-        $this->_checkoutSession   = $checkoutSession;
-        $this->_urlBuilder        = $urlBuilder;
-        $this->scopeConfig        = $scopeConfig;
-        $this->_storeManager      = $_storeManager;
+        $this->checkoutSession    = $checkoutSession;
+        $this->urlBuilder         = $urlBuilder;
         $this->imageHelper        = $imageHelper;
-        $this->productMetadata    = $productMetadata;
         $this->customerSession    = $customerSession;
-        $this->productRepository  = $productRepository;
-        $this->eventConfig        = $eventConfig;
-        $this->observerFactory    = $observerFactory;
-        $this->_orderInterface    = $_orderInterface;
         $this->regionFactory      = $regionFactory;
         $this->resourceConnection = $connection;
+        $this->eventManager       = $eventManager;
     }
 
     /**
-     * @return bool
+     * Create a Mobebx Checkout from current order.
+     * 
+     * @return array $checkout
      */
     public function getCheckout()
     {
-        $order = $this->_checkoutSession->getLastRealOrder();
+        $order = $this->checkoutSession->getLastRealOrder();
+        $orderCustomer = $order->getCustomer();
 
         // Get customer data
         if ($order->getBillingAddress()){
@@ -127,16 +80,6 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 $phone = $order->getBillingAddress()->getTelephone();
             }
         }
-
-        $orderCustomer = $order->getCustomer();
-        $customer = [
-            'name'           => $order->getCustomerName(),
-            'email'          => $order->getCustomerEmail(), 
-            'uid'            => $order->getCustomerId(),
-            'createdAt'      => $orderCustomer ? \Mobbex\dateToTime($orderCustomer->getCreatedAt()) : null,
-            'phone'          => isset($phone) ? $phone : '',
-            'identification' => $this->getDni($order),
-        ];
 
         //Get Items
         $items = $products = [];
@@ -184,7 +127,14 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $order->getOrderCurrencyCode(),
             $items,
             \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
-            $customer,
+            [
+                'name' => $order->getCustomerName(),
+                'email' => $order->getCustomerEmail(),
+                'uid' => $order->getCustomerId(),
+                'createdAt' => $orderCustomer ? \Mobbex\dateToTime($orderCustomer->getCreatedAt()) : null,
+                'phone' => isset($phone) ? $phone : '',
+                'identification' => $this->getDni($order),
+            ],
             $this->getAddresses($order),
             'all',
             'mobbexCheckoutRequest',
@@ -206,100 +156,12 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
         return $mobbexCheckout->response;
     }
 
-    /**
-     * Create a checkout from the given quote.
-     * 
-     * @param Magento\Quote\Model\Quote $quote
-     * 
-     * @return array
-     */
-    public function createCheckoutFromQuote()
-    {
-        // Get quote
-        $quote = $this->_checkoutSession->getQuote();
-        
-        // Get customer and shipping data
-        $shippingAddress = $quote->getBillingAddress()->getData();
-        $shippingAmount  = $quote->getShippingAddress()->getShippingAmount();
-        
-        foreach ($quote->getItemsCollection() as $item) {
-            $subscription = $this->config->getCatalogSetting($item->getProductId(), 'subscription_uid');
-
-            if ($subscription) {
-                $items[] = [
-                    'type'      => 'subscription',
-                    'reference' => $subscription
-                ];
-            } else {
-                $items[] = [
-                    'description' => $item->getName(),
-                    'quantity'    => $item->getQty(),
-                    'total'       => (float) $item->getPrice(),
-                    'entity'      => $this->getEntity($item),
-                ];
-            }
-        }
-
-        //Get products active plans
-        $products = [];
-        foreach ($quote->getItemsCollection() as $item)
-        $products[] = $item->getProduct();
-        extract($this->config->getAllProductsPlans($products));
-            
-        // Add shipping item if possible
-        if ($shippingAmount)
-        $items[] = [
-            'description' => 'Shipping',
-            'total'       => $shippingAmount,
-        ];
-
-        // Get the name checking the position
-        $firstName = isset($shippingAddress['firstname']) ? $shippingAddress['firstname'] : '';
-        $lastName  = isset($shippingAddress['lastname'])  ? $shippingAddress['lastname']  : '';
-
-        $customer = [
-            'email'          => $quote->getCustomerEmail(),
-            'name'           => "$firstName $lastName",
-            'identification' => '',
-            'uid'            => $quote->getCustomerId(),
-            'phone'          => isset($shippingAddress['telephone']) ? $shippingAddress['telephone'] : '',
-        ];
-            
-        try {
-
-            $mobbexCheckout = new \Mobbex\Modules\Checkout(
-                $quote->getId(),
-                (float) $quote->getGrandTotal(),
-                $this->getEndpointUrl('paymentreturn', ['quote_id' => $quote->getId()]),
-                $this->getEndpointUrl('webhook', ['quote_id' => $quote->getId()]),
-                $quote->getStore()->getCurrentCurrencyCode(),
-                isset($items) ? $items : [],
-                \Mobbex\Repository::getInstallments($quote->getItemsCollection(), $common_plans, $advanced_plans),
-                $customer,
-                $this->getAddresses($quote),
-                'none',
-                'mobbexQuoteCheckoutRequest',
-                "Carrito #" . $quote->getId(),
-                \Mobbex\Modules\Checkout::generateReference($quote->getId()) . '_DRAFT_CHECKOUT'
-            );
-
-            $this->logger->log('debug', "Helper Mobbex > getCheckoutFromQuote | Checkout Response: ", $mobbexCheckout->response); 
-            
-            return $mobbexCheckout->response;
-
-        } catch (\Exception $e) {
-            $this->logger->log('error', 'Helper Mobbex > getCheckoutFromQuote | '.$e->getMessage(), isset($e->data) ? $e->data : []);
-            return false;
-        }
-        
-    }
-
     public function getEndpointUrl($controller, $data = [])
-    {   
-        if($this->config->get('debug_mode'))
+    {
+        if ($this->config->get('debug_mode'))
             $data['XDEBUG_SESSION_START'] = 'PHPSTORM';
             
-        return $this->_urlBuilder->getUrl("sugapay/payment/$controller", [
+        return $this->urlBuilder->getUrl("sugapay/payment/$controller", [
             '_secure'      => true,
             '_current'     => true,
             '_use_rewrite' => true,
@@ -327,7 +189,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->config->getCatalogSetting($product->getId(), 'entity');
 
         // Executes our own hook to try to get entity from vnecoms vendor or product vendor
-        $entity = $this->executeHook('mobbexGetVendorEntity', false, $item);
+        $entity = $this->eventManager->dispatch('mobbexGetVendorEntity', false, $item);
 
         if(!empty($entity))
             return $entity;
@@ -435,51 +297,4 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $string;
     }
-
-    /**
-     * Execute a hook and retrieve the response.
-     * 
-     * @param string $name The hook name (in camel case).
-     * @param bool $filter Filter first arg in each execution.
-     * @param mixed ...$args Arguments to pass.
-     * 
-     * @return mixed Last execution response or value filtered. Null on exceptions.
-     */
-    public function executeHook($name, $filter = false, ...$args)
-    {
-        try {
-            // Use snake case to search event
-            $eventName = ltrim(strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', '_$0', $name)), '_');
-
-            // Get registered observers and first arg to return as default
-            $observers = $this->eventConfig->getObservers($eventName) ?: [];
-            $value     = $filter ? reset($args) : false;
-
-            $this->logger->log('debug', 'Helper Mobbex > executeHook', ['Init data', $name, $filter, gettype($value), count($observers)]);
-
-            foreach ($observers as $observerData) {
-                // Instance observer
-                $instanceMethod = !empty($observerData['shared']) ? 'get' : 'create';
-                $observer       = $this->observerFactory->$instanceMethod($observerData['instance']);
-
-                // Get method to execute
-                $method = [$observer, $name];
-
-                // Only execute if is callable
-                if (!empty($observerData['disabled']) || !is_callable($method))
-                    continue;
-
-                $value = call_user_func_array($method, $args);
-                $this->logger->log('debug', 'Helper Mobbex > executeHook', ['Executed function', $observerData['instance'], $name]);
-
-                if ($filter)
-                    $args[0] = $value;
-            }
-
-            return $value;
-        } catch (\Exception $e) {
-            $this->logger->log('error', 'Helper Mobbex > executeHook | Mobbex Hook Error: ', $e->getMessage());
-        }
-    }
-
 }
