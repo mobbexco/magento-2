@@ -1,0 +1,14 @@
+<?php
+/** @var \Mobbex\Webpay\Block\ProductBanner $block */
+// ?>
+
+<script type="text/x-magento-init">
+{
+    "*": { "Mobbex_Webpay/js/product-tag": { 
+        "financeDataUrl": "<?= $block->escapeUrl($block->getFinanceDataUrl()) ?>",
+        "showTag": "<?= $block->isTagEnabled() ?>",
+        "showBanner": "<?= $block->isBannerEnabled() ?>" 
+        } 
+    }
+}
+</script>
