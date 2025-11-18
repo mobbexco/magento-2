@@ -2,7 +2,7 @@
 
 namespace Mobbex\Webpay\Block;
 
-class ProductBanner extends \Magento\Framework\View\Element\Template
+class ProductTag extends \Magento\Framework\View\Element\Template
 {
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;

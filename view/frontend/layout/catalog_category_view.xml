@@ -8,9 +8,9 @@
     <body>
         <referenceContainer name="content">
             <block 
-                class="Mobbex\Webpay\Block\ProductBanner" 
+                class="Mobbex\Webpay\Block\ProductTag" 
                 name="product.banner.block"
-                template="Mobbex_Webpay::product_banner.phtml"
+                template="Mobbex_Webpay::product_tag.phtml"
             />
         </referenceContainer>
     </body>
