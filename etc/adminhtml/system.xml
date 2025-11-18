@@ -281,6 +281,18 @@
                         <comment>Habilita o deshabilita que se muestren los íconos de las dos mejores planes de financiación en el carrito</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
+                    <field id="show_tag_on_products_catalog" translate="label comment" sortOrder="41" type="select" showInDefault="1" 
+                        showInWebsite="1" showInStore="1">
+                        <label>Mostrar etiqueta de financiación en productos</label>
+                        <comment>Habilita o deshabilita que se muestre una pequeña etiqueta en cada producto del catálogo que tenga configurado por lo menos un plan destacado</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="show_banner_on_products_catalog" translate="label comment" sortOrder="41" type="select" showInDefault="1" 
+                        showInWebsite="1" showInStore="1">
+                        <label>Mostrar banner de financiación en productos</label>
+                        <comment>Habilita o deshabilita que se muestre el banner en cada producto del catálogo que tenga configurado por lo menos un plan destacado</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
                 </group>
                 <group id="advanced" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Avanzado</label>
