@@ -1,0 +1,185 @@
+<fieldset
+    data-bind="attr: {class: 'fieldset payment items ccard payment-mobbex field-to-pay' + getCode(), id: 'payment_form_cc_' + getCode()}">
+    <div class="form-pay">
+        <div class="field-to-pay">
+            <div class="mbx-loading" data-bind="blockLoader: isLoading">
+                <!-- Input real para número de tarjeta -->
+                <div class="field mobbex-input-group number required"
+                    data-bind="attr: {id: getCode() + '_type_number_div'}">
+                    <div class="control">
+                        <input type="tel" 
+                            name="payment[card_number]"
+                            class="input-text"
+                            data-bind="attr: {
+                                autocomplete: 'cc-number',
+                                id: getCode() + '_cc_number',
+                                title: $t('Número de tarjeta'),
+                                placeholder: $t('Número de tarjeta'),
+                                'data-container': getCode() + '-cc-number',
+                                'data-validate': JSON.stringify({'required':true, 'pattern':'^[0-9]{13,19}$'})
+                            },
+                            enable: isActive($parents),
+                            value: cardNumber,
+                            valueUpdate: 'keyup'" />
+                        <label data-bind="attr: {for: getCode() + '_cc_number'}" class="label mobbex-label-embedded">
+                            <span><!-- ko i18n: 'Número de tarjeta'--><!-- /ko --></span>
+                        </label>
+                        <span class="field-tooltip toggle">
+                            <ul class="credit-card-types">
+                                <!-- ko if: selectedCardType -->
+                                <li class="item _active">
+                                    <img data-bind="attr: {
+                                        'src': 'https://res.mobbex.com/images/sources/original/' + selectedCardType() + '.png',
+                                        'alt': selectedCardType(),
+                                        'height': 26
+                                        }">
+                                </li>
+                                <!-- /ko -->
+                                <!-- ko ifnot: selectedCardType -->
+                                    <!-- ko foreach: {data: availableCardTypes, as: 'item'} -->
+                                    <li class="item _hidden" data-bind="css: {
+                                                            _active: $parent.selectedCardType() == item.reference,
+                                                            _hidden: $parent.selectedCardType() != item.reference || !$parent.selectedCardType()
+                                                            } ">
+                                    <img data-bind="attr: {
+                                        'src': 'https://res.mobbex.com/images/sources/original/' + item.reference + '.png',
+                                        'alt': item.name,
+                                        'height': 26
+                                        }">
+                                    </li>
+                                    <!--/ko-->
+                                <!-- /ko -->
+                            </ul>
+                        </span>
+                    </div>
+                </div>
+                <!-- Fecha de vencimiento en solo un campo MM / AA -->
+                <div class="field mobbex-input-group date required"
+                    data-bind="attr: {id: getCode() + '_type_exp_div'}">
+                    <div class="control">
+                        <input type="text" class="input-text" name="payment[card_expiration]" 
+                            data-bind="attr: {
+                                autocomplete: 'cc-exp',
+                                id: getCode() + '_expiration',
+                                title: $t('Fecha de vencimiento (MM / AA)'),
+                                placeholder: $t('Fecha de vencimiento (MM / AA)'),
+                                'data-container': getCode() + '-cc-expiration',
+                                'data-validate': JSON.stringify({'required':true, 'pattern':'^(0[1-9]|1[0-2])\\/([0-9]{2})$'})
+                            },
+                            enable: isActive($parents),
+                            value: cardExpiration,
+                            valueUpdate: 'keyup'" />
+                        <label data-bind="attr: {for: getCode() + '_expiration'}" class="label mobbex-label-embedded">
+                            <span><!-- ko i18n: 'Fecha de vencimiento (MM / AA)'--><!-- /ko --></span>
+                        </label>
+                    </div>
+                </div>
+                <!-- Input real para CVV -->
+                <div class="field mobbex-input-group cvv required"
+                    data-bind="attr: {id: getCode() + '_type_cvv_div'}">
+                    <div class="control">
+                        <input type="number"
+                            name="payment[card_cvv]"
+                            class="input-text"
+                            data-bind="attr: {
+                                autocomplete: 'cc-csc',
+                                id: getCode() + '_cid',
+                                title: $t('Código de seguridad'),
+                                placeholder: $t('Código de seguridad'),
+                                'data-container': getCode() + '-cc-cvv',
+                                'data-validate': JSON.stringify({'required':true, 'pattern':'^[0-9]{3,4}$'})
+                            },
+                            enable: isActive($parents),
+                            value: cardCvv,
+                            valueUpdate: 'keyup'" />
+                        <label data-bind="attr: {for: getCode() + '_cid'}" class="label mobbex-label-embedded">
+                            <span><!-- ko i18n: 'Código de seguridad'--><!-- /ko --></span>
+                        </label>
+                        <div class="field-tooltip toggle">
+                            <span class="field-tooltip-action action-cvv" tabindex="0" data-toggle="dropdown"
+                                data-bind="attr: {title: $t('¿Qué es esto?')}, mageInit: {'dropdown':{'activeClass': '_active'}}">
+                                <span><!-- ko i18n: '¿Qué es esto?'--><!-- /ko --></span>
+                            </span>
+                            <div class="field-tooltip-content" data-target="dropdown">
+                                <span translate="'Número de seguridad 3 o 4 dígitos que suele figurar en el dorso de la tarjeta.'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field mobbex-input-group holder fullname required">
+                    <div class="control">
+                        <input type="text" class="input-text" name="payment[card_holder_name]" data-bind="
+                                    attr: {
+                                        autocomplete: 'cc-name',
+                                        id: getCode() + '_cardholder_name',
+                                        title: $t('Nombre completo del titular'),
+                                        placeholder: $t('Nombre completo del titular'),
+                                        'data-container': getCode() + '-cc-cardholder-name',
+                                        'data-validate': JSON.stringify({'required':true})
+                                    },
+                                    enable: isActive($parents),
+                                    value: cardHolderName,
+                                    valueUpdate: 'keyup'" />
+                        <label data-bind="attr: {for: getCode() + '_cardholder_name'}" class="label mobbex-label-embedded">
+                            <span><!-- ko i18n: 'Nombre completo del titular'--><!-- /ko --></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="field mobbex-input-group holder document-identification document-number">
+                    <div class="control">
+                        <input type="text" name="payment[card_holder_document]" class="input-text" autocomplete="off" data-bind="attr: {
+                                                autocomplete: 'off',
+                                                id: getCode() + '_document_identification',
+                                                title: $t('DNI'),
+                                                placeholder: $t('DNI'),
+                                                'data-container': getCode() + '-document-identification',
+                                                'data-validate': JSON.stringify({'required':true, 'pattern':'^[0-9]{7,8}$'})
+                                            },
+                                            enable: isActive($parents),
+                                            value: cardHolderDocument,
+                                            valueUpdate: 'keyup'" />
+                        <label data-bind="attr: {for: getCode() + '_document_identification'}" class="label mobbex-label-embedded">
+                            <span><!-- ko i18n: 'DNI'--><!-- /ko --></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="field mobbex-input-group installments" data-bind="attr: {id: getCode() + '_type_installments_div'}">
+                    <div class="control">
+                        <label data-bind="attr: {for: getCode() + '_installments'}" class="label">
+                            <span><!-- ko i18n: 'Cantidad de cuotas' --><!-- /ko --></span>
+                        </label>
+                        <select class="select select-installments" name="payment[card_installments]" data-bind="
+                                    attr: {
+                                        autocomplete: 'off',
+                                        id: getCode() + '_installments',
+                                        'data-container': getCode() + '-installments',
+                                        'data-validate': JSON.stringify({required:true})
+                                    },
+                                    enable: isActive($parents),
+                                    options: cardListInstallments(),
+                                    optionsValue: 'reference',
+                                    optionsText: 'name',
+                                    value: cardInstallment">
+                        </select>
+                    </div>
+                    <!-- ko if: installmentTextInfo() === true -->
+                    <article class="mbx-tax-info">
+                        <!-- ko if: installmentTextCFT() !== null -->
+                        <span data-bind="text: installmentTextCFT, css: 'text-cft'"></span>
+                        <!-- /ko -->
+                        <!-- ko if: installmentTextTNA() !== null -->
+                        <span data-bind="text: installmentTextTNA, css: 'text-tna'"></span>
+                        <!-- /ko -->
+                        <!-- ko if: installmentTextTEA() !== null -->
+                        <span data-bind="text: installmentTextTEA, css: 'text-tea'"></span>
+                        <!-- /ko -->
+                        <span>
+                            .&nbsp;<span data-bind="text: $t('Tasa fija'), css: 'text-fixed-rate'"></span>.
+                        </span>
+                    </article>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>
+</fieldset>

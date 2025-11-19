@@ -91,16 +91,13 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         $productId = $product->getId();
         $total     = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
-        $data = [
-                'mbbxTotal'      => $total,
-                'mbbxProductIds' => [$productId],
-        ];
-
         $this->featuredPlans = $this->config->handleFeaturedPlans($product);
-        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", [
-                '_query' => $data,
+        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", [
+            '_query' => [
+                'total'      => $total,
+                'productIds' => [$productId],
             ]
-        );
+        ]);
 
         $this->logger->log('debug', 'FinanceWidget Block > productPage', [
                 'total'      => $total,
@@ -128,16 +125,13 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         foreach ($quote->getAllVisibleItems() as $item)
             $products[] = $item->getProduct()->getId();
 
-        $data = [
-                'mbbxTotal'      => $total,
-                'mbbxProductIds' => $products,
-        ];
-
         $this->featuredPlans = $this->config->get("show_featured_plans_on_cart") ? "[]" : null;
-        $this->sourcesUrl    = $this->getUrl("sugapay/payment/sources", [
-                '_query' => $data,
+        $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", [
+            '_query' => [
+                'total'      => $total,
+                'productIds' => $products,
             ]
-        );
+        ]);
 
         $this->logger->log('debug', 'FinanceWidget Block > cartPage', [
                 'total'      => $total,

@@ -3,20 +3,18 @@
 <input type="hidden" name="mbbx_options_loaded" value="1" data-form-part="<?= $this->escapeHtml($this->form) ?>">
 
 <?php
-$id   = isset($this->params['id']) ? $this->params['id'] : 0;
-
-foreach ($this->config->catalogSettings as $value) {
-    if ($this->type == 'category' && strpos('subscription', $value) !== false)
-        continue;
-
-    ${$value} = $this->config->getCatalogSetting($id, $value, $this->type);
-}
 
 try {
-    $filtered_plans = json_encode(\Mobbex\Repository::getPlansFilterFields($id));
+    $id               = isset($this->params['id']) ? $this->params['id'] : 0;
+    $advanced_plans   = $this->config->getCatalogSetting($id, 'advanced_plans', $this->type);
+    $entity           = $this->config->getCatalogSetting($id, 'entity', $this->type);
+    $show_featured    = $this->config->getCatalogSetting($id, 'show_featured', $this->type);
+    $featured_plans   = $this->config->getCatalogSetting($id, 'featured_plans', $this->type);
+    $manual_config    = $this->config->getCatalogSetting($id, 'manual_config', $this->type);
+    $subscription_uid = $this->config->getCatalogSetting($id, 'subscription_uid', $this->type);
+    $sourceFields = json_encode(\Mobbex\Repository::getPlansFilterFields($id));
 } catch (\Exception $e) {
-    $commonFields = $advancedFields = $sourceNames = $sourceGroups = [];
-    $this->logger->log('error', "Template > getContent | {$e->getMessage()}");
+    $this->logger->log('error', "Mobbex: Error fetching catalog settings. {$e->getMessage()}");
 }
 
 /** TEMPLATE PLANS FILTER  */
@@ -49,7 +47,7 @@ if ($this->type == 'product') {
 <?php
 }
 
-$this->helper->executeHook('mobbex' . ucfirst($this->type) . 'Settings', false, $id);
+$this->eventManager->dispatch('mobbex' . ucfirst($this->type) . 'Settings', false, $id);
 
 
 /** STYLES */
@@ -66,8 +64,7 @@ $this->helper->executeHook('mobbex' . ucfirst($this->type) . 'Settings', false, 
 </style>
 <script id="mbbx-finance-data">
     window.platformFormName        = "<?=$this->escapeHtml($this->form)?>";
-    window.mobbexSources           = <?= isset($filtered_plans) ? $filtered_plans : "[]" ?>;
-    window.mobbexSelectedPlans     = <?= isset($selected_plans) ? json_encode($selected_plans) : "[]" ?>;
+    window.mobbexSources           = <?= isset($sourceFields) ? $sourceFields : "[]" ?>;
     window.mobbexFeaturedPlans     = <?= isset($featured_plans) ? json_encode($featured_plans) : "[]" ?>;
     window.mobbexAdvancedPlans     = <?= isset($advanced_plans) ? json_encode($advanced_plans) : "[]" ?>;
     window.mobbexManual            = Boolean(<?= isset($manual_config) ? $manual_config == "yes" : 0 ?>);

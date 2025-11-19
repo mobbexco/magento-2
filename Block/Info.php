@@ -13,22 +13,22 @@ class Info extends \Magento\Payment\Block\Info
     /** @var \Mobbex\Webpay\Model\CustomField */
     public $customField;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context, 
         \Magento\Framework\App\State $_state,
         \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         array $data = []
     ) {
         parent::__construct($context, $data);
 
         $this->mobbexTransaction = $mobbexTransactionFactory->create();
         $this->customField       = $customFieldFactory->create();
-        $this->helper            = $helper;
+        $this->eventManager      = $eventManager;
         $this->_state            = $_state;
     }
 
@@ -115,7 +115,7 @@ class Info extends \Magento\Payment\Block\Info
             unset($table['Total Refunded']);
 
         // Execute hook to filter data
-        $table = $this->helper->executeHook('mobbexOrderPanelInfo', true, $table, $this->getInfo(), $trx, $childs);
+        $table = $this->eventManager->dispatch('mobbexOrderPanelInfo', true, $table, $this->getInfo(), $trx, $childs);
 
         // Create final table (force type and translate)
         $finalTable = [];

@@ -7,8 +7,8 @@ use Magento\Framework\Event\ObserverInterface;
 
 class ProductSaveObserver implements ObserverInterface
 {
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
@@ -32,6 +32,7 @@ class ProductSaveObserver implements ObserverInterface
         \Magento\Framework\App\Action\Context $context,
         \Mobbex\Webpay\Helper\Mobbex $helper,
         \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Magento\Framework\Serialize\Serializer\Serialize $serialize,
         \Mobbex\Webpay\Helper\Logger $logger,
@@ -41,6 +42,7 @@ class ProductSaveObserver implements ObserverInterface
         $this->helper             = $helper;
         $this->config             = $config;
         $this->logger             = $logger;
+        $this->eventManager       = $eventManager;
         $this->customFieldFactory = $customFieldFactory;
         $this->params             = $context->getRequest()->getParams();
         $this->serializer         = $serialize;
@@ -63,11 +65,9 @@ class ProductSaveObserver implements ObserverInterface
         $productConfigs = [
             'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
             'subscription_uid' => isset($this->params['sub_uid']) ? $this->params['sub_uid'] : '',
-            'common_plans'     => isset($this->params['common_plans'  ]) ? $this->params['common_plans'] : "[]",
             'manual_config'    => isset($this->params['mobbex_manual_config']) ? $this->params['mobbex_manual_config'] : "no",
             'featured_plans'   => isset($this->params['mobbex_featured_plans']) ? $this->params['mobbex_featured_plans'] : "[]",
             'advanced_plans'   => isset($this->params['mobbex_advanced_plans']) ? $this->params['mobbex_advanced_plans'] : "[]",
-            'selected_plans'   => isset($this->params['mobbex_selected_plans']) ? $this->params['mobbex_selected_plans'] : "[]",
             'show_featured'    => isset($this->params['mobbex_show_featured_plans']) ? $this->params['mobbex_show_featured_plans'] : "no",
         ];
 
@@ -81,7 +81,8 @@ class ProductSaveObserver implements ObserverInterface
         }
 
         $this->saveBestPlan($product);
-        $this->helper->executeHook('mobbexSaveProductSettings', false, $product, $this->params);
+
+        $this->eventManager->dispatch('mobbexSaveProductSettings', false, $observer->getProduct(), $this->params);
     }
 
     /**
@@ -123,13 +124,10 @@ class ProductSaveObserver implements ObserverInterface
         // $product = $observer->getProduct();
         $total   = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
-        // Get product plans
-        extract($this->config->getProductPlans($product));
-
         $installments = \Mobbex\Repository::getInstallments(
             [$id],
-            $common_plans,
-            $advanced_plans
+            [],
+            $this->config->getProductPlans($product)
         );
 
         // Get sources from cache or Mobbex API

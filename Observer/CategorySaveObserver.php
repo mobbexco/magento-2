@@ -7,8 +7,8 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CategorySaveObserver implements ObserverInterface
 {
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
-    public $helper;
+    /** @var \Mobbex\Webpay\Model\EventManager */
+    public $eventManager;
 
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
     public $customFieldFactory;
@@ -21,12 +21,12 @@ class CategorySaveObserver implements ObserverInterface
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Model\EventManager $eventManager,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Magento\Framework\Serialize\Serializer\Serialize $serializer
     )
     {
-        $this->helper             = $helper;
+        $this->eventManager       = $eventManager;
         $this->customFieldFactory = $customFieldFactory;
         $this->params             = $context->getRequest()->getParams();
         $this->serializer         = $serializer;
@@ -46,11 +46,9 @@ class CategorySaveObserver implements ObserverInterface
         //Get mobbex configs
         $categoryConfigs = [
             'entity'         => isset($this->params['entity']) ? $this->params['entity'] : '',
-            'common_plans'   => isset($this->params['common_plans']) ? $this->params['common_plans']: "[]",
             'manual_config'  => isset($this->params['mobbex_manual_config']) ? $this->params['mobbex_manual_config'] : "no",
             'featured_plans' => isset($this->params['mobbex_featured_plans']) ? $this->params['mobbex_featured_plans'] : "[]",
             'advanced_plans' => isset($this->params['mobbex_advanced_plans']) ? $this->params['mobbex_advanced_plans'] : "[]",
-            'selected_plans' => isset($this->params['mobbex_selected_plans']) ? $this->params['mobbex_selected_plans'] : "[]",
             'show_featured'  => isset($this->params['mobbex_show_featured_plans']) ? $this->params['mobbex_show_featured_plans'] : "no",
         ];
 
@@ -60,6 +58,6 @@ class CategorySaveObserver implements ObserverInterface
             $customField->saveCustomField($observer->getCategory()->getId(), 'category', $key, $value);
         }
 
-        $this->helper->executeHook('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
+        $this->eventManager->dispatch('mobbexSaveCategorySettings', false, $observer->getCategory(), $this->params);
     }
 }

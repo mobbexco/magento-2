@@ -26,6 +26,8 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'show_featured_plans_on_cart'        => 'payment/sugapay/appearance/show_featured_plans_on_cart',
         'show_tag_on_products_catalog'       => 'payment/sugapay/appearance/show_tag_on_products_catalog',
         'show_banner_on_products_catalog'    => 'payment/sugapay/appearance/show_banner_on_products_catalog',
+        'offsite'                            => 'payment/sugapay/active',
+        'transparent'                        => 'payment/sugapay_transparent/active',
         'embed'                              => 'payment/sugapay/checkout/embed_payment',
         'wallet'                             => 'payment/sugapay/checkout/wallet_active',
         'multicard'                          => 'payment/sugapay/checkout/multicard',
@@ -64,8 +66,13 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     ];
 
     /** Mobbex Catalog Settings */
-    public $catalogSettings = [ 
-        'advanced_plans', 'entity', 'subscription_uid', 'show_featured', 'featured_plans', 'manual_config', 'selected_plans'
+    public $catalogSettings = [
+        'advanced_plans',
+        'entity',
+        'subscription_uid',
+        'show_featured',
+        'featured_plans',
+        'manual_config'
     ];
     
     /** @var \Mobbex\Webpay\Model\CustomField */
@@ -158,55 +165,31 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $value;
     }
-
     /**
-     * Get all active plans from a given product and his categories
+     * Get all active plans from given products and their categories.
      * 
-     * @param object $product
+     * @param object ...$products
      * 
-     * @return array
-     * 
+     * @return array Only active plans with externalMatch rule.
      */
-    public function getProductPlans($product)
+    public function getProductPlans(...$products)
     {
-        $common_plans = $advanced_plans = [];
-
-        foreach (['common_plans', 'advanced_plans'] as $value) {
-            //Get product active plans
-            ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
-            //Get product category active plans
-            foreach ($product->getCategoryIds() as $categoryId)
-                ${$value} = array_merge(${$value}, $this->getCatalogSetting($categoryId, $value, 'category'));
-        }
-
-        // Avoid duplicated plans
-        $common_plans   = array_unique($common_plans);
-        $advanced_plans = array_unique($advanced_plans);
-
-       return compact('common_plans', 'advanced_plans');
-    }
-
-    /**
-     * Get all plans from given products
-     * 
-     * @param array $products
-     * 
-     * @return array $array
-     * 
-     */
-    public function getAllProductsPlans($products)
-    {
-        $common_plans = $advanced_plans = [];
+        $advanced_plans = [];
 
         foreach ($products as $product) {
-            // Merge all product plans
-            $product_plans  = $this->getProductPlans($product);
-            // Merge all catalog plans
-            $common_plans   = array_merge($common_plans, $product_plans['common_plans']);
-            $advanced_plans = array_merge($advanced_plans, $product_plans['advanced_plans']);
+            // Merge product plans
+            $advanced_plans = array_merge($advanced_plans,
+                $this->getCatalogSetting($product->getId(), 'advanced_plans')
+            );
+
+            // Merge categories plans
+            foreach ($product->getCategoryIds() as $categoryId)
+                $advanced_plans = array_merge($advanced_plans,
+                    $this->getCatalogSetting($categoryId, 'advanced_plans', 'category')
+                );
         }
 
-        return compact('common_plans', 'advanced_plans');
+       return array_unique($advanced_plans);
     }
 
     /**

@@ -51,8 +51,8 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
     public function execute()
     {
         // Gets query params
-        $total       = $this->_request->getParam('mbbxTotal');
-        $product_ids = $this->_request->getParam('mbbxProductIds');
+        $total       = $this->_request->getParam('total');
+        $product_ids = $this->_request->getParam('productIds') ?: [];
 
         // Filters out non-numeric values
         $product_ids = array_filter($product_ids, function ($id) {
@@ -69,14 +69,11 @@ class Sources implements \Magento\Framework\App\Action\HttpGetActionInterface
                 $products[] = $product;
         }
 
-        // Extracts products plans
-        extract($this->config->getAllProductsPlans($products));
-
         $installments = \Mobbex\Repository::getInstallments(
-                $products,
-                $common_plans,
-                $advanced_plans
-            );
+            $products,
+            [],
+            $this->config->getProductPlans(...$products)
+        );
 
         try {
             $sources = \Mobbex\Repository::getSources(

@@ -37,14 +37,8 @@ define([
       this.loadScript('https://res.mobbex.com/js/sdk/mobbex@1.1.0.js');
       this.loadScript('https://api.mobbex.com/p/embed/1.2.0/lib.js');
 
-      // Subscribe to method select changes
-      this.selectedOption.subscribe(this.selectPaymentMethod.bind(this));
-
       // Select the first method by default
-      if (
-        quote?.paymentMethod()?.method === this.getCode() &&
-        this.availableMethods().length > 0
-      )
+      if (this.isActive() && this.availableMethods().length > 0)
         this.selectedOption(this.availableMethods()[0]?.subgroup);
 
       // Set returnUrl to use later
@@ -92,8 +86,8 @@ define([
       return 'sugapay';
     },
 
-    isActive: function () {
-      return true;
+    isActive: function() {
+        return this.getCode() === this.isChecked();
     },
 
     afterPlaceOrder: function () {
