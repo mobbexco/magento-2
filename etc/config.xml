@@ -44,7 +44,7 @@
                     <background_color>#ECF2F6</background_color>
                     <primary_color>#6f00ff</primary_color>
                     <show_method_icons>1</show_method_icons>
-                    <show_featured_installments>1</show_featured_installments>
+                    <show_featured_plans_on_cart>1</show_featured_plans_on_cart>
                 </appearance>
                 <advanced>
                     <advanced_plans_exclusivity>1</advanced_plans_exclusivity>

@@ -7,6 +7,9 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    public $logger;
+
     /** @var \Magento\Eav\Setup\EavSetupFactory */
     public $eavSetupFactory;
 
@@ -33,16 +36,21 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
 
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
+        \Mobbex\Webpay\Helper\Logger $logger,
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
         \Magento\Framework\Serialize\Serializer\Serialize $serializer
     ) {
         $this->config                   = $config;
+        $this->logger                   = $logger;
         $this->eavSetupFactory          = $eavSetupFactory;
         $this->customFieldFactory       = $customFieldFactory;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->serializer               = $serializer;
+
+        // Maybe the logger table is not created yet
+        $this->logger->useFileLogger = true;
     }
 
     /**
@@ -62,9 +70,13 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
         $this->eavSetup = $this->eavSetupFactory->create(['setup' => $this->setup]);
         $currentVersion = (string) $context->getVersion();
 
-        // Update timeout default value from 5 to 60 minutes
-        if (version_compare($currentVersion, '5.0.0', '<') && $this->config->get('timeout') == 5)
-            $this->config->save('timeout', 60);
+        if (version_compare($currentVersion, '5.0.0', '<')) {
+            // Update timeout default value from 5 to 60 minutes
+            if (intval($this->config->get('timeout')) === 5)
+                $this->config->save('timeout', 60);
+
+            $this->rencodeAdvancedPlans();
+        }
 
         //Remove deprecated attributes
         if (version_compare($currentVersion, '2.1.5', '<'))
@@ -87,6 +99,7 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
                 'label' => 'Autorizado (Mobbex)',
             ],
         ]);
+        $this->setup->endSetup();
     }
 
     /**
@@ -97,39 +110,60 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
         $productEntity = \Magento\Catalog\Model\Product::ENTITY;
 
         foreach (['ahora_3', 'ahora_6', 'ahora_12', 'ahora_18'] as $planRef) {
-            // If attribute exists
-            if ($this->eavSetup->getAttribute($productEntity, $planRef, 'attribute_id')) {
-                // Get all uses
-                foreach ($this->getProductAttributeUses($planRef) as $productId => $product) {
-                    $commonPlans = $this->customFieldFactory->create()->getCustomField($productId, 'product', 'common_plans') 
-                        ? $this->serializer->unserialize($this->customFieldFactory->create()->getCustomField($productId, 'product', 'common_plans')) 
-                        : [];
+            if (!$this->eavSetup->getAttribute($productEntity, $planRef, 'attribute_id')) continue;
 
-                    // Move value to common_plans array and save
-                    $commonPlans[] = $planRef;
-                    $this->customFieldFactory->create()->saveCustomField($productId, 'product', 'common_plans', $this->serializer->serialize($commonPlans));
-                }
-
-                // Remove attribute
-                $this->eavSetup->removeAttribute($productEntity, $planRef);
-            }
+            // If attribute exists, remove it
+            $this->eavSetup->removeAttribute($productEntity, $planRef);
         }
     }
 
     /**
-     * Retrieve all products uses for the given attribute.
-     * 
-     * @param string $attributeCode
-     * 
-     * @return Product[] 
-     */
-    public function getProductAttributeUses($attributeCode)
+    * Try to rencode advanced plans from old format (serialized) to new format (JSON).
+    */
+    public function rencodeAdvancedPlans()
     {
-        return $this->productCollectionFactory
-            ->create()
-            ->addAttributeToFilter($attributeCode, '1')
-            ->load()
-            ->getItems() ?: [];
+        /** @var \Mobbex\Webpay\Model\CustomField */
+        $customField = $this->customFieldFactory->create();
+
+        $rows = $customField->searchRows(null, 'advanced_plans');
+
+        if (!is_array($rows))
+            return $this->logger->log('error', 'Mobbex: Cannot obtain rows for advanced plans re-encoding');
+
+        foreach ($rows as $row) {
+            // First check if data has new format already
+            $plans = json_decode($row['data'], true);
+
+            if (is_array($plans))
+                continue;
+
+            try {
+                // Now, try to unserialize old format
+                $plans = $this->serializer->unserialize($row['data']);
+
+                // Nothing to do
+                if (!is_array($plans))
+                    continue;
+
+                /** @var \Mobbex\Webpay\Model\CustomField */
+                $customField = $this->customFieldFactory->create();
+
+                // Save updated plans
+                $customField->saveCustomField(
+                    $row['row_id'],
+                    $row['object'],
+                    'advanced_plans',
+                    json_encode($plans)
+                );
+            } catch (\Exception $e) {
+                $rowEncoded = $row instanceof \Magento\Framework\DataObject ? $row->toJson() : json_encode($row);
+
+                $this->logger->log(
+                    'error',
+                    "Mobbex: Error updating advanced plans. " . $e->getMessage() . $rowEncoded
+                );
+            }
+        }
     }
 
     /**

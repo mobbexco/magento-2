@@ -275,9 +275,9 @@
                         <comment>Habilita o deshabilita los iconos que se muestran en el listado de medios de pagos previo a abrir el checkout</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
-                    <field id="show_featured_installments" translate="label comment" sortOrder="41" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Mostrar financiación destacada</label>
-                        <comment>Habilita o deshabilita que se muestren los íconos de las dos mejores opciones de financiación</comment>
+                    <field id="show_featured_plans_on_cart" translate="label comment" sortOrder="41" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Mostrar financiación destacada en el carrito</label>
+                        <comment>Habilita o deshabilita que se muestren los íconos de las dos mejores planes de financiación en el carrito</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     </field>
                 </group>

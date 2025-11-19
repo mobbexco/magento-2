@@ -88,7 +88,6 @@ class Quote
             }
         }
 
-        $productPlans = $this->config->getAllProductsPlans($products);
         $address = $quote->getShippingAddress();
 
         if (!empty($address->getShippingDescription())) {
@@ -111,7 +110,7 @@ class Quote
             $draft ? null : $this->getEndpointUrl('webhook', ['quote_id' => $quote->getId(), 'mbbx_token' => $this->config->generateToken()]),
             $quote->getStoreCurrencyCode(),
             $items,
-            \Mobbex\Repository::getInstallments($itemCollection, $productPlans['common_plans'], $productPlans['advanced_plans']),
+            \Mobbex\Repository::getInstallments($itemCollection, [], $this->config->getProductPlans(...$products)),
             $this->getCustomer($quote),
             $this->getAddresses($quote),
             $draft ? 'none' : 'all',

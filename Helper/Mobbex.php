@@ -108,9 +108,6 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
                 ];
             }
         }
-
-        //Get products active plans
-        extract($this->config->getAllProductsPlans($products));
         
         if (!empty($order->getShippingDescription())) {
             $items[] = [
@@ -126,7 +123,7 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
             $this->getEndpointUrl('webhook', ['order_id' => $order->getId(), 'mbbx_token' => $this->config->generateToken()]),
             $order->getOrderCurrencyCode(),
             $items,
-            \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
+            \Mobbex\Repository::getInstallments($orderedItems, [], $this->config->getProductPlans(...$products)),
             [
                 'name' => $order->getCustomerName(),
                 'email' => $order->getCustomerEmail(),

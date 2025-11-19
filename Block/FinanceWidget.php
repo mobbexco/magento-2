@@ -31,6 +31,9 @@ class FinanceWidget extends \Magento\Backend\Block\Template
     /** Sources url to get financial information */
     public $sourcesUrl;
 
+    /** product or category featured settings from plans configuration */
+    public $featuredPlans;
+
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
@@ -85,20 +88,20 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         if (!$product->isSalable())
             throw new \Exception;
 
-        $product_id = $product->getId();
-        $total      = $product->getPriceInfo()->getPrice('final_price')->getValue();
+        $productId = $product->getId();
+        $total     = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
+        $this->featuredPlans = $this->config->handleFeaturedPlans($product);
         $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", [
             '_query' => [
                 'total'      => $total,
-                'productIds' => [$product_id],
-            ],
+                'productIds' => [$productId],
+            ]
         ]);
 
-        $this->logger->log('debug', 'FinanceWidget Block > productPage', 
-            [
+        $this->logger->log('debug', 'FinanceWidget Block > productPage', [
                 'total'      => $total,
-                'product'    => $product_id,
+                'product'    => $productId,
                 'sourcesUrl' => $this->sourcesUrl,
             ]
         );
@@ -122,15 +125,15 @@ class FinanceWidget extends \Magento\Backend\Block\Template
         foreach ($quote->getAllVisibleItems() as $item)
             $products[] = $item->getProduct()->getId();
 
+        $this->featuredPlans = $this->config->get("show_featured_plans_on_cart") ? "[]" : null;
         $this->sourcesUrl = $this->getUrl("sugapay/payment/sources", [
             '_query' => [
                 'total'      => $total,
                 'productIds' => $products,
-            ],
+            ]
         ]);
 
-        $this->logger->log('debug', 'FinanceWidget Block > cartPage', 
-            [
+        $this->logger->log('debug', 'FinanceWidget Block > cartPage', [
                 'total'      => $total,
                 'products'   => $products,
                 'sourcesUrl' => $this->sourcesUrl,

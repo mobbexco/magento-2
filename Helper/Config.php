@@ -23,7 +23,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'method_icon'                        => 'payment/sugapay/appearance/method_icon',
         'show_method_icons'                  => 'payment/sugapay/appearance/show_method_icons',
         'sources_priority'                   => 'payment/sugapay/appearance/sources_priority',
-        'show_featured_installments'         => 'payment/sugapay/appearance/show_featured_installments',
+        'show_featured_plans_on_cart'        => 'payment/sugapay/appearance/show_featured_plans_on_cart',
         'offsite'                            => 'payment/sugapay/active',
         'transparent'                        => 'payment/sugapay_transparent/active',
         'embed'                              => 'payment/sugapay/checkout/embed_payment',
@@ -64,7 +64,14 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     ];
 
     /** Mobbex Catalog Settings */
-    public $catalogSettings = [ 'common_plans', 'advanced_plans', 'entity', 'subscription_uid'];
+    public $catalogSettings = [
+        'advanced_plans',
+        'entity',
+        'subscription_uid',
+        'show_featured',
+        'featured_plans',
+        'manual_config'
+    ];
     
     /** @var \Mobbex\Webpay\Model\CustomField */
     public $customField;
@@ -152,59 +159,35 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         $value = $this->customField->getCustomField($id, $catalogType, $field);
 
         if (strpos($field, '_plans') !== false)
-            return $value ? $this->serializer->unserialize($value) : [];
+            return $value ? json_decode($value, true) : [];
 
-        return $value ?: '';
+        return $value;
     }
-
     /**
-     * Get all active plans from a given product and his categories
+     * Get all active plans from given products and their categories.
      * 
-     * @param object $product
+     * @param object ...$products
      * 
-     * @return array
-     * 
+     * @return array Only active plans with externalMatch rule.
      */
-    public function getProductPlans($product)
+    public function getProductPlans(...$products)
     {
-        $common_plans = $advanced_plans = [];
-
-        foreach (['common_plans', 'advanced_plans'] as $value) {
-            //Get product active plans
-            ${$value} = array_merge($this->getCatalogSetting($product->getId(), $value), ${$value});
-            //Get product category active plans
-            foreach ($product->getCategoryIds() as $categoryId)
-                ${$value} = array_merge(${$value}, $this->getCatalogSetting($categoryId, $value, 'category'));
-        }
-
-        // Avoid duplicated plans
-        $common_plans   = array_unique($common_plans);
-        $advanced_plans = array_unique($advanced_plans);
-
-       return compact('common_plans', 'advanced_plans');
-    }
-
-    /**
-     * Get all plans from given products
-     * 
-     * @param array $products
-     * 
-     * @return array $array
-     * 
-     */
-    public function getAllProductsPlans($products)
-    {
-        $common_plans = $advanced_plans = [];
+        $advanced_plans = [];
 
         foreach ($products as $product) {
-            // Merge all product plans
-            $product_plans  = $this->getProductPlans($product);
-            // Merge all catalog plans
-            $common_plans   = array_merge($common_plans, $product_plans['common_plans']);
-            $advanced_plans = array_merge($advanced_plans, $product_plans['advanced_plans']);
+            // Merge product plans
+            $advanced_plans = array_merge($advanced_plans,
+                $this->getCatalogSetting($product->getId(), 'advanced_plans')
+            );
+
+            // Merge categories plans
+            foreach ($product->getCategoryIds() as $categoryId)
+                $advanced_plans = array_merge($advanced_plans,
+                    $this->getCatalogSetting($categoryId, 'advanced_plans', 'category')
+                );
         }
 
-        return compact('common_plans', 'advanced_plans');
+       return array_unique($advanced_plans);
     }
 
     /**
@@ -234,6 +217,94 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         return password_hash(
             "{$this->get('api_key')}|{$this->get('access_token')}",
             PASSWORD_DEFAULT
+        );
+    }
+
+    /**
+     * handleFeaturedPlans handles the product particular featured plans configuration
+     * "[]" value is used to show automatic featured plans
+     * 
+     * @param object $product
+     * 
+     * @return null|string setting value
+     */
+    public function handleFeaturedPlans($product = null)
+    {
+        if (!$product)
+            return null;
+
+        $showFeatured = $this->getAllPlansConfiguratorSettings($product, "show_featured");
+        if (!$showFeatured)
+            return null;
+
+        $manualConfig = $this->getAllPlansConfiguratorSettings($product, "manual_config");
+        if (!$manualConfig)
+            return "[]";
+
+        return $this->getAllPlansConfiguratorSettings($product, "featured_plans");
+    }
+
+    /**
+     * Get specific field values from product categories
+     * 
+     * @param object     $product
+     * @param string     $fieldName
+     * 
+     * @return string|bool
+     */
+    private function getAllPlansConfiguratorSettings($product, $fieldName) 
+    {
+        $id = $product->getId();
+        // gets product settings
+        $productFieldValue = $this->getCatalogSetting($id, $fieldName, 'product');
+
+        // gets categories settings
+        // merge in array value case
+        if (is_array($productFieldValue)) {
+            $productFieldValue = $this->displayFeaturedPlans($id) 
+                ? $productFieldValue 
+                : [];
+
+            foreach ($product->getCategoryIds() as $categoryId) {
+                $categoryFieldValue = $this->displayFeaturedPlans($categoryId, 'category') 
+                    ? $this->getCatalogSetting($categoryId, $fieldName, 'category')
+                    : [];
+
+                $productFieldValue  = array_merge(
+                    $productFieldValue, 
+                    $categoryFieldValue
+                );
+            }
+
+            return json_encode($productFieldValue);
+        }
+
+        // check flags in string value case
+        $categoriesFieldValues = [];
+        foreach ($product->getCategoryIds() as $categoryId)
+            array_push(
+                $categoriesFieldValues,
+                $this->getCatalogSetting($categoryId, $fieldName, 'category')
+            );
+
+        return empty($categoriesFieldValues) 
+            ? $productFieldValue == "yes"
+            : (in_array("yes", $categoriesFieldValues) || $productFieldValue == "yes");
+    }
+
+
+    /**
+     * Get product display featured plans settings
+     * 
+     * @param string|int $id
+     * 
+     * @return bool
+     */
+    private function displayFeaturedPlans($id, $catalogType="product") 
+    {
+        return (
+            $this->getCatalogSetting($id, "show_featured", $catalogType) == "yes"
+            && $this->getCatalogSetting($id, "manual_config", $catalogType) == "yes"
         );
     }
 }

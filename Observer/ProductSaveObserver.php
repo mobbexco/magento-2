@@ -43,24 +43,14 @@ class ProductSaveObserver implements ObserverInterface
         if (empty($this->params['mbbx_options_loaded']))
             return;
 
-        // Get plans selected
-        $commonPlans = $advancedPlans = [];
-        foreach ($this->params as $key => $value) {
-            if (strpos($key, 'common_plan_') !== false && $value === '0') {
-                // Add UID to common plans
-                $commonPlans[] = explode('common_plan_', $key)[1];
-            } else if (strpos($key, 'advanced_plan_') !== false && $value === '1') {
-                // Add UID to advanced plans
-                $advancedPlans[] = explode('advanced_plan_', $key)[1];
-            }
-        }
-
         //Get mobbex configs
         $productConfigs = [
             'entity'           => isset($this->params['entity']) ? $this->params['entity'] : '',
             'subscription_uid' => isset($this->params['sub_uid']) ? $this->params['sub_uid'] : '',
-            'common_plans'     => $this->serializer->serialize($commonPlans),
-            'advanced_plans'   => $this->serializer->serialize($advancedPlans),
+            'manual_config'    => isset($this->params['mobbex_manual_config']) ? $this->params['mobbex_manual_config'] : "no",
+            'featured_plans'   => isset($this->params['mobbex_featured_plans']) ? $this->params['mobbex_featured_plans'] : "[]",
+            'advanced_plans'   => isset($this->params['mobbex_advanced_plans']) ? $this->params['mobbex_advanced_plans'] : "[]",
+            'show_featured'    => isset($this->params['mobbex_show_featured_plans']) ? $this->params['mobbex_show_featured_plans'] : "no",
         ];
         
         //Save mobbex custom fields
