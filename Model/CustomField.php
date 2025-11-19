@@ -41,6 +41,39 @@ class CustomField extends AbstractModel
     }
 
     /**
+     * Search custom field rows. Filter by object, field_name or data.
+     * 
+     * @param string|null $object
+     * @param string|null $field_name
+     * @param string|null $data
+     * @param int|null $limit Quantity of results. Can be a lot of rows.
+     * @param int|null $page Use to paginate results.
+     * 
+     * @return \Magento\Framework\DataObject[]
+     */
+    public function searchRows($object = null, $field_name = null, $data = null, $limit = null, $page = null)
+    {
+        $collection = $this->getCollection();
+
+        if ($object !== null)
+            $collection->addFieldToFilter('object', $object);
+
+        if ($field_name !== null)
+            $collection->addFieldToFilter('field_name', $field_name);
+
+        if ($data !== null)
+            $collection->addFieldToFilter('data', $data);
+
+        if ($limit !== null)
+            $collection->setPageSize($limit);
+
+        if ($page !== null && $limit !== null)
+            $collection->setCurPage($page);
+
+        return $collection->getItems();
+    }
+
+    /**
      * Saves custom field
      * 
      * @param int $row_id
@@ -48,7 +81,7 @@ class CustomField extends AbstractModel
      * @param string $field_name
      * @param string $data
      * 
-     * @return boolean
+     * @return $this
      */
     public function saveCustomField($row_id, $object, $field_name, $data)
     {
@@ -68,6 +101,15 @@ class CustomField extends AbstractModel
         return $this->save();
     }
 
+    /**
+     * Deletes a custom field
+     * 
+     * @param int $row_id
+     * @param string $object
+     * @param string $field_name
+     * 
+     * @return bool
+     */
     public function deleteCustomField($row_id, $object, $field_name)
     {
         $previousId = $this->getCustomField($row_id, $object, $field_name, 'customfield_id');
@@ -77,5 +119,7 @@ class CustomField extends AbstractModel
 
         $this->load($previousId);
         $this->delete();
+
+        return true;
     }
 }
