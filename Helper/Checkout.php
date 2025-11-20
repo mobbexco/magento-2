@@ -2,7 +2,7 @@
 
 namespace Mobbex\Webpay\Helper;
 
-class Mobbex
+class Checkout
 {
     /** @var \Mobbex\Webpay\Helper\Logger */
     private $logger;

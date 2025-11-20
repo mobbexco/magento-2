@@ -12,7 +12,7 @@ class MobbexPos implements \Magento\Framework\App\Action\HttpGetActionInterface
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    /** @var \Mobbex\Webpay\Helper\Pos */
     public $helper;
 
     /** @var \Mobbex\Webpay\Helper\Logger */
@@ -20,7 +20,7 @@ class MobbexPos implements \Magento\Framework\App\Action\HttpGetActionInterface
 
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Pos $helper,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Magento\Framework\App\RequestInterface $request
     ) {
@@ -38,9 +38,9 @@ class MobbexPos implements \Magento\Framework\App\Action\HttpGetActionInterface
         try {
             $posId  = $this->_request->getParam('pos_id');
 
-            $posConnection = $this->helper->getPOSConnection($posId);
+            $intent = $this->helper->createPaymentIntent($posId);
 
-            return $this->logger->createJsonResponse('debug', 'POS connection obtained OK:', $posConnection);
+            return $this->logger->createJsonResponse('debug', 'POS connection obtained OK:', $intent);
         } catch (\Exception $e) {
             return $this->logger->createJsonResponse('error', $e->getMessage(), isset($e->data) ? $e->data : []);
         }
