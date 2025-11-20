@@ -168,7 +168,7 @@ define([
       $.ajax({
         dataType: 'json',
         method: 'GET',
-        url: urlBuilder.build(`sugapay/payment/mobbexpos/?pos_id=${this.selectedOption()}`),
+        url: urlBuilder.build(`sugapay/payment/pos/?pos_id=${this.selectedOption()}`),
         success: function (response) {
           if(response?.data?.orderId)
             location.href = returnUrl + '&order_id=' + response.data.orderId + '&status=1';
