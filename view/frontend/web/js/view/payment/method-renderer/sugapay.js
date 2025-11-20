@@ -21,11 +21,12 @@ define([
 
   return Component.extend({
     defaults: {
-      template: 'Mobbex_Webpay/payment/sugapay',
+      template: window.checkoutConfig.payment.sugapay.template,
       redirectAfterPlaceOrder: false,
     },
     config: window.checkoutConfig.payment.sugapay,
     availableMethods: ko.observableArray([]),
+    availablePOS: ko.observableArray([]),
     availableCards: ko.observableArray([]),
     selectedOption: ko.observable(null),
     selectedOptionData: null,
@@ -33,6 +34,7 @@ define([
 
     initialize: function () {
       this._super();
+      this.loadPOSlist();
       this.loadPaymentOptions();
       this.loadScript('https://res.mobbex.com/js/sdk/mobbex@1.1.0.js');
       this.loadScript('https://api.mobbex.com/p/embed/1.2.0/lib.js');
@@ -57,6 +59,14 @@ define([
       self.config?.wallet?.forEach(function (card) {
         self.availableCards.push(card);
       });
+    },
+
+    loadPOSlist: function () {
+      var self = this;
+
+      self.config?.terminals.forEach(function (pos) {
+        self.availablePOS.push(pos);
+      })
     },
 
     loadScript: function (src, async = true) {
@@ -93,8 +103,14 @@ define([
     afterPlaceOrder: function () {
       $('body').trigger('processStart');
 
+      if(true)
+        this.salesAppProcess();
+      else
+        this.checkoutProcess();
+    },
+
+    checkoutProcess: async function () {
       this.createCheckout(
-        urlBuilder.build('sugapay/payment/checkout/'),
         (res) => {
           $('body').trigger('processStop');
 
@@ -123,13 +139,11 @@ define([
       );
     },
 
-    createCheckout: function (url, callback) {
-      var self = this;
-
+    createCheckout: async function (callback) {
       $.ajax({
         dataType: 'json',
         method: 'GET',
-        url: url,
+        url: urlBuilder.build('sugapay/payment/checkout/'),
         success: function (response) {
           callback(response.data);
         },
@@ -138,6 +152,38 @@ define([
             'Error',
             'No se ha podido obtener la información del pago.',
             this.returnUrl + '&status=500'
+          );
+        },
+      });
+    },
+
+    salesAppProcess: async function () {
+      this.createPOSConnection();
+    },
+
+    createPOSConnection: async function () {
+      const self = this; 
+      const returnUrl  = this.returnUrl;
+
+      $.ajax({
+        dataType: 'json',
+        method: 'GET',
+        url: urlBuilder.build(`sugapay/payment/mobbexpos/?pos_id=${this.selectedOption()}`),
+        success: function (response) {
+          if(response?.data?.orderId)
+            location.href = returnUrl + '&order_id=' + response.data.orderId + '&status=1';
+          
+          this.displayAlert(
+            'Error',
+            'No se ha podido obtener la información del pago.',
+            returnUrl + '&status=500'
+          );
+        },
+        error: function (e) {
+          self.displayAlert(
+            'Error',
+            'No se ha podido obtener la información del pago.',
+            returnUrl + '&status=500'
           );
         },
       });
