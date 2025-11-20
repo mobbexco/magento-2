@@ -1,16 +1,16 @@
 <div class="pos-list">
     <h2 class="checkbox-title">Selecciona tus POS</h2>
     <div class="checkbox-list">
-        <?php foreach ($this->posList as $pos): ?>
+        <?php foreach ($this->entityPosList as $pos): ?>
             <div class="checkbox-item">
                 <div class="pos-input">
                     <input 
                         type="checkbox" 
                         id="<?= $pos['reference'] ?>" 
-                        name="mobbex_pos[]" value="<?= $pos['value'] ?>" 
-                        <?= in_array($pos['value'], $this->selectedPos) ? 'checked' : '' ?>
+                        name="mobbex_pos[]" value="<?= $pos['uid'] ?>" 
+                        <?= in_array($pos['uid'], $this->userPosList) ? 'checked' : '' ?>
                     >
-                    <label for="<?= $pos['reference'] ?>"><?= $pos['label'] ?></label>
+                    <label for="<?= $pos['reference'] ?>"><?= $pos['name'] ?></label>
                 </div>
                 <p class="checkbox-description"> <?= $pos['description'] ?></p>
             </div>

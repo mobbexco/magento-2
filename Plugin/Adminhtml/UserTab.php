@@ -17,7 +17,7 @@ class UserTab
             [
                 'label' => __('Mobbex POS'),
                 'title' => __('Mobbex POS'),
-                'content' => $subject->getLayout()->createBlock('Mobbex\Webpay\Block\User\MobbexCustomTab')
+                'content' => $subject->getLayout()->createBlock('Mobbex\Webpay\Block\User\PosConfig')
                     ->setTemplate('Mobbex_Webpay::user/mobbex-tab.phtml')
                     ->toHtml(),
                 'sort_order' => 100,

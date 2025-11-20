@@ -78,22 +78,38 @@ class Pos
     }
 
     /**
-     * List all POS available for the admin user provided
+     * Get all POS terminals available from the Mobbex account.
      * 
-     * @param int $adminUserId
-     * 
-     * @return array
+     * @return array[] List of POS terminals
      */
-    public function listAvailablePosFromUser($adminUserId)
+    public function getAllPosList()
     {
         $result = \Mobbex\Api::request([
             'method' => 'GET',
             'uri'    => "pos",
         ]);
 
-        // Throws exception if no POS found on account
-        if (empty($result['docs']) || !is_array($result['docs']))
-            throw new \Mobbex\Exception("No POS Terminals found on the Mobbex account", 1, $result);
+        if (empty($result['docs']) || !is_array($result['docs'])) {
+            $this->logger->log('error', 'No POS terminals found in Mobbex account', $result);
+            return [];
+        }
+
+        return $result['docs'];
+    }
+
+    /**
+     * List all POS available for the admin user provided
+     * 
+     * @param int $adminUserId
+     * 
+     * @return array[]
+     */
+    public function listAvailablePosFromUser($adminUserId)
+    {
+        $allPos = $this->getAllPosList();
+
+        if (!$allPos)
+            return [];
 
         /** @var \Mobbex\Webpay\Model\CustomField */
         $customField = $this->cf->create();
@@ -105,8 +121,28 @@ class Pos
         if (!is_array($userPos) || empty($userPos))
             return [];
 
-        return array_filter($result['docs'], function($pos) use ($userPos) {
+        return array_filter($allPos, function($pos) use ($userPos) {
             return isset($pos['uid']) && in_array($pos['uid'], $userPos);
         });
+    }
+
+    /**
+     * List all UIDs of the POS availables for the admin user provided.
+     * 
+     * @param int $adminUserId
+     * 
+     * @return string[] Only the POS UIDs
+     */
+    public function listAvailablePosUidsFromUser($adminUserId)
+    {
+        if (!$adminUserId)
+            return [];
+
+        /** @var \Mobbex\Webpay\Model\CustomField */
+        $customField = $this->cf->create();
+        $posListJson = $customField->getCustomField($adminUserId, 'user', 'pos_list');
+
+        $selectedPos = json_decode($posListJson, true);
+        return is_array($selectedPos) ? $selectedPos : [];
     }
 }
