@@ -1,0 +1,112 @@
+<?php
+
+namespace Mobbex\Webpay\Helper;
+
+class Pos
+{
+    /** @var \Mobbex\Webpay\Helper\Logger */
+    private $logger;
+
+    /** @var \Mobbex\Webpay\Helper\Order */
+    private $orderHelper;
+
+    /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
+    private $cf;
+
+    /** @var \Magento\Checkout\Model\Session */
+    private $checkoutSession;
+
+    public function __construct(
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Helper\Order $orderHelper,
+        \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
+        \Magento\Checkout\Model\Session $checkoutSession
+    ) {
+        $this->logger             = $logger;
+        $this->orderHelper        = $orderHelper;
+        $this->cf                 = $customFieldFactory;
+        $this->checkoutSession    = $checkoutSession;
+    }
+
+    /**
+     * Create a payment intent for the posUid provided and current order.
+     * 
+     * @param string $posUid
+     * 
+     * @return array
+     */
+    public function createPaymentIntent($posUid)
+    {
+        $order = $this->checkoutSession->getLastRealOrder();
+
+        // Build intent using order data (same as checkout)
+        $checkoutData = $this->orderHelper->buildCheckoutData($order);
+        $intent = new \Mobbex\Modules\Pos(
+            $checkoutData['id'],
+            $posUid,
+            $checkoutData['total'],
+            $checkoutData['webhook'],
+            [],
+            $checkoutData['installments'],
+            $checkoutData['customer'],
+            'mobbexPosOperationRequest',
+            $checkoutData['description'],
+            $checkoutData['reference']
+        );
+
+        $this->logger->log(
+            'debug',
+            "Mobbex\Webpay\Helper\Pos::createPaymentIntent | POS Payment Intent Response: ",
+            $intent->response
+        );
+
+        return $intent->response;
+    }
+
+    /**
+     * Get the admin user id if logged as customer.
+     * 
+     * @return int
+     */
+    public function getLacAdminUserId()
+    {
+        $adminUserGetter = \Magento\Framework\App\ObjectManager::getInstance()->get(
+            \Magento\LoginAsCustomerApi\Api\GetLoggedAsCustomerAdminIdInterface::class
+        );
+
+        return (int) ($adminUserGetter ? $adminUserGetter->execute() : 0);
+    }
+
+    /**
+     * List all POS available for the admin user provided
+     * 
+     * @param int $adminUserId
+     * 
+     * @return array
+     */
+    public function listAvailablePosFromUser($adminUserId)
+    {
+        $result = \Mobbex\Api::request([
+            'method' => 'GET',
+            'uri'    => "pos",
+        ]);
+
+        // Throws exception if no POS found on account
+        if (empty($result['docs']) || !is_array($result['docs']))
+            throw new \Mobbex\Exception("No POS Terminals found on the Mobbex account", 1, $result);
+
+        /** @var \Mobbex\Webpay\Model\CustomField */
+        $customField = $this->cf->create();
+
+        // Search admin user assigned POS
+        $userPos = $customField->getCustomField($adminUserId, 'user', 'pos_list');
+        $userPos = json_decode($userPos, true);
+
+        if (!is_array($userPos) || empty($userPos))
+            return [];
+
+        return array_filter($result['docs'], function($pos) use ($userPos) {
+            return isset($pos['uid']) && in_array($pos['uid'], $userPos);
+        });
+    }
+}

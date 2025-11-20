@@ -2,381 +2,74 @@
 
 namespace Mobbex\Webpay\Helper;
 
-/**
- * Class Mobbex
- * @package Mobbex\Webpay\Helper
- */
-class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
+class Mobbex
 {
-    const VERSION = '4.2.1';
-
-    /** @var Image */
-    protected $imageHelper;
-    
-    /** @var Session */
-    protected $customerSession;
-
-    /** @var \Magento\Backend\Model\Auth\Session */
-    protected $authSession;
-    
-    /** @var \Magento\Sales\Api\Data\OrderInterface */
-    protected $_orderInterface;
-
-    /** @var ProductRepository */
-    protected $productRepository;
-
-    /** @var \Magento\Framework\Event\ConfigInterface */
-    public $eventConfig;
-
-    /** @var \Magento\Framework\Event\ObserverFactory */
-    public $observerFactory;
-
-    /** @var \Magento\Directory\Model\RegionFactory */
-    public $regionFactory;
-
-    /** @var \Mobbex\Webpay\Helper\Config */
-    public $config;
-
     /** @var \Mobbex\Webpay\Helper\Logger */
-    public $logger;
+    private $logger;
+
+    /** @var \Mobbex\Webpay\Helper\Order */
+    private $orderHelper;
 
     /** @var \Mobbex\Webpay\Model\CustomFieldFactory */
-    public $cf;
-
-    /** @var \Magento\Framework\UrlInterface */
-    public $urlBuilder;
+    private $cf;
 
     /** @var \Magento\Checkout\Model\Session */
-    public $checkoutSession;
-
-    /** @var \Magento\Framework\App\ResourceConnection */
-    public $resourceConnection;
-
-    /** @var \Mobbex\Webpay\Model\EventManager */
-    public $eventManager;
+    private $checkoutSession;
 
     public function __construct(
-        \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Helper\Order $orderHelper,
         \Mobbex\Webpay\Model\CustomFieldFactory $customFieldFactory,
-        \Magento\Framework\UrlInterface $urlBuilder,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Catalog\Helper\Image $imageHelper,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Backend\Model\Auth\Session $authSession,
-        \Magento\Sales\Api\Data\OrderInterface $_orderInterface,
-        \Magento\Catalog\Model\ProductRepository $productRepository,
-        \Magento\Framework\Event\ConfigInterface $eventConfig,
-        \Magento\Framework\Event\ObserverFactory $observerFactory,
-        \Magento\Directory\Model\RegionFactory $regionFactory,
-        \Magento\Framework\App\ResourceConnection $connection,
-        \Mobbex\Webpay\Model\EventManager $eventManager
+        \Magento\Checkout\Model\Session $checkoutSession
     ) {
-        $this->config             = $config;
         $this->logger             = $logger;
+        $this->orderHelper        = $orderHelper;
         $this->cf                 = $customFieldFactory;
         $this->checkoutSession    = $checkoutSession;
-        $this->urlBuilder         = $urlBuilder;
-        $this->imageHelper        = $imageHelper;
-        $this->customerSession    = $customerSession;
-        $this->regionFactory      = $regionFactory;
-        $this->resourceConnection = $connection;
-        $this->eventManager       = $eventManager;
-        $this->authSession        = $authSession;
-        $this->_orderInterface    = $_orderInterface;
-        $this->productRepository  = $productRepository;
-        $this->eventConfig        = $eventConfig;
-        $this->observerFactory    = $observerFactory;
     }
 
     /**
-     * Create a Mobebx Checkout from current order.
+     * Create a checkout for the current order.
      * 
-     * @return array $checkout
+     * @return array
      */
-    public function getCheckout()
+    public function createPaymentIntent()
     {
         $order = $this->checkoutSession->getLastRealOrder();
-        $orderCustomer = $order->getCustomer();
 
-        // Get customer data
-        if ($order->getBillingAddress()){
-            if (!empty($order->getBillingAddress()->getTelephone())) {
-                $phone = $order->getBillingAddress()->getTelephone();
-            }
-        }
-
-        //Get Items
-        $items = $products = [];
-        $orderedItems = $order->getAllVisibleItems();
-        
-        foreach ($orderedItems as $item) {
-            $product      = $item->getProduct();
-            $products[]   = $product;
-            $price        = $item->getRowTotalInclTax() ? : $product->getFinalPrice();
-            $subscription = $this->config->getCatalogSetting($product->getId(), 'subscription_uid');
-            $entity       = $this->getEntity($item);
-
-            if ($subscription) {
-                $items[] = [
-                    'type'      => 'subscription',
-                    'reference' => $subscription,
-                    'total'     => round($item->getPrice(), 2)
-                ];
-            } else {
-                $items[] = [
-                    "image"       => $this->imageHelper->init($product, 'product_small_image')->getUrl(),
-                    "description" => $product->getName(),
-                    "quantity"    => $item->getQtyOrdered(),
-                    "total"       => round($price, 2),
-                    "entity"      => $entity
-                ];
-            }
-        }
-        
-        if (!empty($order->getShippingDescription())) {
-            $items[] = [
-                'description' => __('Shipping') . ': ' . $order->getShippingDescription(),
-                'total' => $order->getShippingInclTax(),
-            ];
-        }
-
-        $mobbexCheckout = new \Mobbex\Modules\Checkout(
-            $order->getId(),
-            (float) $order->getGrandTotal(),
-            $this->getEndpointUrl('paymentreturn'),
-            $this->getEndpointUrl('webhook', ['order_id' => $order->getId(), 'mbbx_token' => $this->config->generateToken()]),
-            $order->getOrderCurrencyCode(),
-            $items,
-            \Mobbex\Repository::getInstallments($orderedItems, [], $this->config->getProductPlans(...$products)),
-            [
-                'name' => $order->getCustomerName(),
-                'email' => $order->getCustomerEmail(),
-                'uid' => $order->getCustomerId(),
-                'createdAt' => $orderCustomer ? \Mobbex\dateToTime($orderCustomer->getCreatedAt()) : null,
-                'phone' => isset($phone) ? $phone : '',
-                'identification' => $this->getDni($order),
-            ],
-            $this->getAddresses($order),
+        // Build intent using order data (same as checkout)
+        $checkoutData = $this->orderHelper->buildCheckoutData($order);
+        $intent = new \Mobbex\Modules\Checkout(
+            $checkoutData['id'],
+            $checkoutData['total'],
+            $checkoutData['return_url'],
+            $checkoutData['webhook'],
+            $checkoutData['currency'],
+            $checkoutData['items'],
+            $checkoutData['installments'],
+            $checkoutData['customer'],
+            $checkoutData['addresses'],
             'all',
             'mobbexCheckoutRequest',
-            'Pedido #' . $order->getIncrementId(),
-            $this->config->get('custom_reference') ? $this->getCustomReference($order->getId()) : null
+            $checkoutData['description'],
+            $checkoutData['reference']
         );
 
-        $this->logger->log('debug', "Helper Mobbex > getCheckout | Checkout Response: ", $mobbexCheckout->response);
+        $this->logger->log(
+            'debug',
+            "Mobbex\Webpay\Helper\Checkout::createPaymentIntent | Checkout Payment Intent Response: ",
+            $intent->response
+        );
 
         // Save checkout uid to use later in payment failed page
-        if (isset($mobbexCheckout->response['id']))
+        if (isset($intent->response['id']))
             $this->cf->create()->saveCustomField(
                 $order->getId(),
                 'order',
                 'checkout_uid',
-                $mobbexCheckout->response['id']
+                $intent->response['id']
             );
 
-        return $mobbexCheckout->response;
-    }
-
-    public function getEndpointUrl($controller, $data = [])
-    {
-        if ($this->config->get('debug_mode'))
-            $data['XDEBUG_SESSION_START'] = 'PHPSTORM';
-            
-        return $this->urlBuilder->getUrl("sugapay/payment/$controller", [
-            '_secure'      => true,
-            '_current'     => true,
-            '_use_rewrite' => true,
-            '_query'       => $data,
-        ]);
-    }
-
-    /**
-     * Get the entity from item
-     * 
-     * @param object $item
-     * 
-     * @return string|null $entity
-     */
-    public function getEntity($item)
-    {
-        // Checks if multivendor mode is active
-        if($this->config->get('multivendor') != 'active' && $this->config->get('multivendor') != 'unified')
-            return;
-
-        $product = $item->getProduct();
-
-        // Try to get entity from product
-        if($this->config->getCatalogSetting($product->getId(), 'entity'))
-            return $this->config->getCatalogSetting($product->getId(), 'entity');
-
-        // Executes our own hook to try to get entity from vnecoms vendor or product vendor
-        $entity = $this->eventManager->dispatch('mobbexGetVendorEntity', false, $item);
-
-        if(!empty($entity))
-            return $entity;
-
-        // Try to get entity from category
-        $categories = $product->getCategoryIds();
-        foreach ($categories as $category) {
-            if($this->config->getCatalogSetting($category, 'entity', 'category'))
-                return $this->config->getCatalogSetting($category, 'entity', 'category'); 
-        }
-	}
-
-    /**
-     * Get DNI configured by quote or current user if logged in.
-     * 
-     * @param object $order
-     * 
-     * @return string $dni 
-     */
-    public function getDni($order)
-    {
-        $address   = $order->getBillingAddress()->getData();
-        $dniColumn = $this->config->get('dni_column');
-
-        if ($dniColumn && isset($address[$dniColumn]))
-            return $address[$dniColumn];
-
-        $customField = $this->cf->create();
-
-        // Get dni custom field from quote or current user if logged in
-        $customerId = $this->customerSession->getCustomer()->getId();
-        $object     = $customerId ? 'customer' : 'quote';
-        $rowId      = $customerId ? $customerId : $order->getQuoteId();
-
-        return $customField->getCustomField($rowId, $object, 'dni') ?: '';
-    }
-
-    /**
-     * Get Addresses data for Mobebx Checkout.
-     * 
-     * @param class $data
-     * 
-     * @return array $addresses
-     */
-    public function getAddresses($data)
-    {
-        $addresses = $addressesData = array();
-
-        //Check if there are billing address
-        if($data->getBillingAddress())
-            $addressesData[] = $data->getBillingAddress()->getData();
-        
-        //Check if there are shipping address
-        if($data->getShippingAddress())
-            $addressesData[] = $data->getShippingAddress()->getData();
-
-        foreach ($addressesData as $address) {
-            $region = $this->regionFactory->create()->load($address['region_id'])->getData();
-            $street = (string) $address['street'];
-
-            $addresses[] = [
-                'type'         => isset($address["address_type"]) ? $address["address_type"] : '',
-                'country'      => isset($address["country_id"]) ? \Mobbex\Repository::convertCountryCode($address["country_id"]) : '',
-                'street'       => trim(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street))),
-                'streetNumber' => str_replace(preg_replace('/(\D{0})+(\d*)+$/', '', trim($street)), '', trim($street)),
-                'streetNotes'  => '',
-                'zipCode'      => isset($address["postcode"]) ? $address["postcode"] : '',
-                'city'         => isset($address["city"]) ? $address["city"] : '',
-                'state'        => (isset($address["country_id"]) && isset($region['code'])) ? str_replace((string) $address["country_id"] . '-', '', (string) $region['code']) : ''
-            ];
-        }
-
-        return $addresses;
-    }
-
-    /**
-     * Obtains the custom reference seted in configs.
-     * @param int $id Order id.
-     * 
-     * @return string
-     */
-    public function getCustomReference($id)
-    {
-        $string = $this->config->get('custom_reference');
-        $connection = $this->resourceConnection->getConnection();
-
-        // Get columns
-        preg_match_all('/\{([^}]+)\}/', $string, $matches);
-
-        foreach ($matches[0] as $index => $placeholder) {
-            // Get table and column name
-            $column = $matches[1][$index];
-
-            // Get query
-            $query = $connection->select()
-                ->from($connection->getTableName('sales_order'), [$column])
-                ->where('entity_id = :entity_id');
-
-            // get result
-            $result = $connection->fetchOne($query, ['entity_id' => (int)$id]);
-
-            // Update reference
-            $string = str_replace($placeholder, $result ?: '', $string);
-        }
-
-        return $string;
-    }
-
-    public function getPOSConnection($pos_id)
-    {
-        // get order data
-        $orderIncrementalId = $this->_checkoutSession->getLastRealOrderId();
-        $orderEntityId      = $this->_checkoutSession->getLastRealOrder()->getEntityId();
-        $orderData   = $this->_order->load($orderEntityId);
-        $orderAmount = round($this->_orderInterface->getData('base_grand_total'), 2);
-        $orderedItems = $this->_orderInterface->getAllVisibleItems();
-
-        // Get customer data
-        if ($orderData->getBillingAddress()) {
-            if (!empty($orderData->getBillingAddress()->getTelephone())) {
-                $phone = $orderData->getBillingAddress()->getTelephone();
-            }
-        }
-
-        $customer = [
-            'name'           => $orderData->getCustomerName(),
-            'email'          => $orderData->getCustomerEmail(),
-            'uid'            => $orderData->getCustomerId(),
-            'phone'          => isset($phone) ? $phone : '',
-            'identification' => $this->getDni($orderData),
-        ];
-
-        foreach ($orderedItems as $item)
-            $products[] = $item->getProduct();
-
-        //Get products active plans
-        extract($this->config->getAllProductsPlans($products));
-
-        $mobbexCheckout = new \Mobbex\Modules\Pos(
-            $orderEntityId,
-            $pos_id,
-            (float) $orderAmount,
-            $this->getEndpointUrl('webhook', ['order_id' => $orderIncrementalId, 'mbbx_token' => $this->config->generateToken()]),
-            [],
-            \Mobbex\Repository::getInstallments($orderedItems, $common_plans, $advanced_plans),
-            $customer,
-            'mobbexCheckoutRequest',
-            "Pedido #$orderIncrementalId",
-            $this->config->get('custom_reference') ? $this->getCustomReference($orderEntityId) : null
-        );
-
-        //Add order id to the response
-        $mobbexCheckout->response['orderId'] = $orderIncrementalId;
-
-        $this->logger->log('debug', "Helper Mobbex > getPOSConnection | Checkout Response: ", $mobbexCheckout->response);
-
-        return $mobbexCheckout->response;
-    }
-
-    public function getImpersonation()
-    {
-        $adminUser = $this->authSession->getUser();
-        if ($adminUser)
-            return $userId = $adminUser->getId();
-
-        return null;
+        return $intent->response;
     }
 }
