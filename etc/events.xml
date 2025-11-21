@@ -18,6 +18,6 @@
         <observer name="mobbex_order_place_after" instance="Mobbex\Webpay\Observer\OrderPlaceAfter"/>
     </event>
     <event name="admin_user_save_before">
-        <observer name="mobbex_save_user_pos" instance="Mobbex\Webpay\Observer\SaveUserPos"/>
+        <observer name="mobbex_save_user_settings" instance="Mobbex\Webpay\Observer\SaveUserSettings"/>
     </event>
 </config>

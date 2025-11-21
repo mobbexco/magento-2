@@ -7,22 +7,23 @@ class UserTab
     /**
      * Add custom tab to the user edit page
      *
-     * @param UserEditTabs $subject
-     * @return UserEditTabs
+     * @param \Magento\User\Block\User\Edit\Tabs $subject
+     * 
+     * @return \Magento\User\Block\User\Edit\Tabs
      */
     public function beforeToHtml(\Magento\User\Block\User\Edit\Tabs $subject)
     {
-        $subject->addTab(
-            'custom_tab',
+        return $subject->addTab(
+            'mobbex_user_settings',
             [
-                'label' => __('Mobbex POS'),
-                'title' => __('Mobbex POS'),
-                'content' => $subject->getLayout()->createBlock('Mobbex\Webpay\Block\User\PosConfig')
-                    ->setTemplate('Mobbex_Webpay::user/mobbex-tab.phtml')
-                    ->toHtml(),
+                'label' => 'Mobbex',
+                'title' => 'Mobbex',
                 'sort_order' => 100,
+                'content' => $subject->getLayout()
+                    ->createBlock('Mobbex\Webpay\Block\UserSettings')
+                    ->setTemplate('Mobbex_Webpay::user-settings.phtml')
+                    ->toHtml(),
             ]
         );
-        return $subject;
     }
 }
