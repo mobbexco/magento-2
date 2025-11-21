@@ -17,13 +17,13 @@ class Process extends \Magento\Framework\App\Action\Action
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    /** @var \Mobbex\Webpay\Helper\Checkout */
     public $helper;
 
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Logger $logger,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Checkout $helper,
         \Magento\Framework\App\Action\Context $context
     ) {
         parent::__construct($context);
@@ -45,7 +45,7 @@ class Process extends \Magento\Framework\App\Action\Action
             $this->validateBody($postData);
 
             // Create checkout from order
-            $checkout = $this->helper->getCheckout();
+            $checkout = $this->helper->createPaymentIntent();
 
             if (empty($checkout) || empty($checkout['intent']['token']))
                 throw new \Exception('Error on checkout creation.');

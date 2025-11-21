@@ -12,7 +12,7 @@ class Checkout implements \Magento\Framework\App\Action\HttpGetActionInterface
     /** @var \Mobbex\Webpay\Helper\Sdk */
     public $sdk;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    /** @var \Mobbex\Webpay\Helper\Checkout */
     public $helper;
 
     /** @var \Mobbex\Webpay\Helper\Logger */
@@ -20,7 +20,7 @@ class Checkout implements \Magento\Framework\App\Action\HttpGetActionInterface
 
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Checkout $helper,
         \Mobbex\Webpay\Helper\Logger $logger
     )
     {
@@ -35,7 +35,7 @@ class Checkout implements \Magento\Framework\App\Action\HttpGetActionInterface
     public function execute()
     {
         try {
-            $checkoutData = $this->helper->getCheckout();
+            $checkoutData = $this->helper->createPaymentIntent();
             return $this->logger->createJsonResponse('debug', 'Checkout created OK:', $checkoutData);
         } catch (\Exception $e) {
             return $this->logger->createJsonResponse('error', $e->getMessage(), isset($e->data) ? $e->data : []);

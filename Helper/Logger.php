@@ -67,10 +67,19 @@ class Logger extends \Magento\Framework\App\Helper\AbstractHelper
      * 
      * @param string $mode 
      * @param string $message
-     * @param string $data
+     * @param mixed $data Array of data or Exception instance
      */
     public function log($mode, $message, $data = [])
     {
+        // Handle Exception instances
+        if ($data instanceof \Exception) {
+            $data = [
+                'exception' => $data->getMessage(),
+                'trace' => $data->getTraceAsString()
+            ];
+            $message .= $data['exception'];
+        }
+
         $filteredData = $this->hideSensibleData($data);
 
         // Save log to db
