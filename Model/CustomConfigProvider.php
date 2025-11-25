@@ -59,7 +59,7 @@ class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInte
         if ($this->config->get('pos')) {
             try {
                 $admin_user = $this->posHelper->getLacAdminUserId();
-                $terminals = $this->posHelper->listAvailablePosFromUser($this->posHelper->getLacAdminUserId());
+                $terminals = $this->posHelper->getUserAssignedPosList($this->posHelper->getLacAdminUserId());
             } catch (\Exception $e) {
                 $this->logger->log('error', 'CustomConfigProvider. Error getting POS information ' . $e->getMessage(), isset($e->data) ? $e->data : []);
             }

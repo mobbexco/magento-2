@@ -78,7 +78,7 @@ class Pos
     }
 
     /**
-     * Get all POS terminals available from the Mobbex account.
+     * Get all POS terminals available from the Mobbex entity.
      * 
      * @return array[] List of POS terminals
      */
@@ -98,26 +98,22 @@ class Pos
     }
 
     /**
-     * List all POS available for the admin user provided
+     * List all POS available for the admin user provided.
      * 
      * @param int $adminUserId
      * 
      * @return array[]
      */
-    public function listAvailablePosFromUser($adminUserId)
+    public function getUserAssignedPosList($adminUserId)
     {
         $allPos = $this->getAllPosList();
 
         if (!$allPos)
             return [];
 
-        /** @var \Mobbex\Webpay\Model\CustomField */
-        $customField = $this->cf->create();
+        $userPos = $this->getUserAssignedPosUids($adminUserId);
 
-        // Search admin user assigned POS
-        $userPos = $customField->getCustomField($adminUserId, 'user', 'pos_list');
-        $userPos = json_decode($userPos, true);
-
+        // Return if the user has not assigned POS
         if (!is_array($userPos) || empty($userPos))
             return [];
 
@@ -127,13 +123,13 @@ class Pos
     }
 
     /**
-     * List all UIDs of the POS availables for the admin user provided.
+     * List UIDs of the all POS assigned for the admin user provided.
      * 
      * @param int $adminUserId
      * 
      * @return string[] Only the POS UIDs
      */
-    public function listAvailablePosUidsFromUser($adminUserId)
+    public function getUserAssignedPosUids($adminUserId)
     {
         if (!$adminUserId)
             return [];

@@ -38,6 +38,6 @@ class UserSettings extends \Magento\Backend\Block\Template
         $sdk->init();
 
         $this->entityPosList = $this->posHelper->getAllPosList();
-        $this->userPosList = $this->posHelper->listAvailablePosUidsFromUser($this->request->getParam('user_id'));
+        $this->userPosList = $this->posHelper->getUserAssignedPosUids($this->request->getParam('user_id'));
     }
 }
