@@ -372,6 +372,7 @@
                     <label>Estado del módulo</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+            </group>
         </section>
     </system>
 </config>
