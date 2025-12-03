@@ -2,18 +2,20 @@
 <div id="mbbx-container"></div>
 
 <!-- ko foreach: availablePOS -->
-<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == uid}">
+<div class="payment-method" data-bind="css: {'_active': $parent.selectedOption() == uid && $parent.isActive()}">
     <div class="payment-method-title field choice">
-        <input type="radio" name="payment[method]" data-bind="
-            attr: {id: 'payment_method_' + _id},
-            checked: $parent.selectedOption,
-            checkedValue: uid
-            " />
-        <label data-bind="attr: {for: _id}">
-            <span data-bind="text: 'Mobbex ' + name"></span>
+        <input type="radio" 
+            name="payment[method]"
+            attr="id: 'payment_method_' + uid"
+            click="$parent.selectPaymentMethod.bind($parent)"
+            ko-value="uid"
+            ko-checked="$parent.selectedOption"
+            />
+        <label data-bind="attr: {for: 'payment_method_' + uid}">
+            <span data-bind="text: name"></span>
         </label>
     </div>
-    <!-- ko if: $parent.selectedOption() === uid -->
+    <!-- ko if: $parent.selectedOption() === uid && $parent.isActive() -->
     <div class="payment-method-content">
         <!-- ko foreach: $parents[1].getRegion('messages') -->
         <!-- ko template: getTemplate() --><!-- /ko -->
@@ -31,7 +33,7 @@
         <div class="actions-toolbar">
             <div class="primary">
                 <button type="submit" class="action primary checkout"
-                    data-bind="click: $parent.placeOrder.bind($parent), enable: $parent.isPlaceOrderActionAllowed()">
+                    data-bind="click: $parent.processPayment.bind($parent), enable: $parent.isPlaceOrderActionAllowed()">
                     <span data-bind="i18n: 'Place Order'"></span>
                 </button>
             </div>

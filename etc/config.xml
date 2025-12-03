@@ -67,6 +67,12 @@
                 <logo>https://res.sugaway.io/g9ROENHebGamEm8iZUbPJYuevDY=//images/sources/original/card.png</logo>
                 <payment_action>capture</payment_action>
             </sugapay_transparent>
+            <sugapay_pos>
+                <active>0</active>
+                <group>online</group>
+                <model>Mobbex\Webpay\Model\Method\SugapayPos</model>
+                <payment_action>capture</payment_action>
+            </sugapay_pos>
         </payment>
     </default>
 </config>

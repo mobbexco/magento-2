@@ -26,6 +26,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'show_featured_plans_on_cart'        => 'payment/sugapay/appearance/show_featured_plans_on_cart',
         'offsite'                            => 'payment/sugapay/active',
         'transparent'                        => 'payment/sugapay_transparent/active',
+        'pos'                                => 'payment/sugapay_pos/active',
         'embed'                              => 'payment/sugapay/checkout/embed_payment',
         'wallet'                             => 'payment/sugapay/checkout/wallet_active',
         'multicard'                          => 'payment/sugapay/checkout/multicard',
