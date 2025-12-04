@@ -3,7 +3,8 @@ define([
   'ko',
   'jquery',
   'mage/url',
-], function (Component, ko, $, urlBuilder) {
+  'Magento_Checkout/js/model/quote',
+], function (Component, ko, $, urlBuilder, quote) {
   'use strict';
 
   return Component.extend({
@@ -11,10 +12,20 @@ define([
     availablePOS: ko.observableArray(self.config?.terminals || []),
     selectedOption: ko.observable(null),
     orderPlaced: ko.observable(false),
+    processResult: ko.observable(null),
+    pollInterval: ko.observable(null),
     defaults: {
       template: 'Mobbex_Webpay/payment/pos',
       redirectAfterPlaceOrder: false,
     },
+
+    // Approved status types
+    approvedTypes: [
+      'order_status_approved',
+      'order_status_in_process',
+      'order_status_revision',
+      'order_status_authorized',
+    ],
 
     initialize: function () {
       this._super();
@@ -53,6 +64,42 @@ define([
       this.createPosIntent();
     },
 
+    cancelPayment: async function () {
+      $('body').trigger('processStart');
+
+      const res = await fetch(
+        urlBuilder.build(`sugapay/payment/pos?uid=${this.selectedOption()}`),
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (!res.ok)
+        return this.error(
+          'Error cancelling POS intent:',
+          res,
+          'No se pudo cancelar el pago. Intenta nuevamente.'
+        );
+
+      const json = await res.json();
+
+      if (!json || json?.result !== 'success')
+        return this.error(
+          'Invalid cancellation response:',
+          json,
+          'No se pudo cancelar el pago. Intenta nuevamente.'
+        );
+
+      $('body').trigger('processStop');
+      this.retryPayment();
+    },
+
+    retryPayment: function () {
+      this.stopPolling();
+      this.processResult(null);
+      this.selectedOption(null);
+    },
+
     createPosIntent: async function () {
       const res = await fetch(
         urlBuilder.build('sugapay/payment/pos?uid=' + this.selectedOption()),
@@ -70,7 +117,58 @@ define([
       if (!json || json?.result !== 'success')
         return this.error('Invalid payment process response:', json);
 
-      window.location.href = this.returnUrl + `&status=1`;
+      this.pollStatus(this.selectedOption());
+    },
+
+    pollStatus: function (posUid) {
+      // Clear any existing interval
+      this.stopPolling();
+
+      const interval = setInterval(async () => {
+        const res = await fetch(
+          urlBuilder.build('sugapay/payment/pos?uid=' + posUid)
+        );
+
+        if (!res.ok) return this.error('Error polling payment status:', res);
+
+        const json = await res.json();
+
+        if (!json || json?.result !== 'success')
+          return this.error('Invalid payment status response:', json);
+
+        // Ignore it, webhook not impacted
+        if (json.data.code === 'new') return;
+
+        this.processResult(json.data);
+
+        // Redirect on approved status, after 3 seconds
+        if (this.approvedTypes.includes(json.data.type))
+          setTimeout(this.goToReturnUrl.bind(this), 3000);
+
+        this.stopPolling();
+      }, 3000);
+
+      this.pollInterval(interval);
+    },
+
+    stopPolling: function () {
+      const interval = this.pollInterval();
+
+      if (interval) {
+        clearInterval(interval);
+        this.pollInterval(null);
+      }
+    },
+
+    goToReturnUrl: function () {
+      window.top.location.href = this.returnUrl + '&status=200';
+    },
+
+    selectPaymentMethod: function () {
+      selectPaymentMethodAction({ method: this.getCode() });
+      quote.paymentMethod({ method: this.getCode() });
+
+      return true;
     },
 
     error: function (message, data = null, customerMessage = null) {

@@ -10,7 +10,7 @@ namespace Mobbex\Webpay\Controller\Payment;
  *
  * @package Mobbex\Webpay\Controller\Payment
  */
-class Pos implements \Magento\Framework\App\Action\HttpGetActionInterface
+class Pos extends \Magento\Framework\App\Action\Action
 {
     /** @var \Mobbex\Webpay\Helper\Sdk */
     private $sdk;
@@ -45,27 +45,85 @@ class Pos implements \Magento\Framework\App\Action\HttpGetActionInterface
 
     public function execute()
     {
+        if ($this->request->isPost())
+            return $this->createIntent();
+
+        if ($this->request->isGet())
+            return $this->getIntentStatus();
+
+        if ($this->request->isDelete())
+            return $this->deteleIntent();
+    }
+
+    public function createIntent()
+    {
         $result = $this->jsonFactory->create();
 
         try {
-            $posId = $this->request->getParam('pos_id');
+            $posUid = $this->request->getParam('uid');
 
-            if (empty($posId))
+            if (empty($posUid))
                 return $result->setData([
                     'result' => 'error',
-                    'message' => 'POS ID is required'
+                    'message' => 'POS UID is required'
                 ])->setHttpResponseCode(400);
 
             return $result->setData([
                 'result' => 'success',
-                'data' => $this->posHelper->createPaymentIntent($posId)
+                'data' => $this->posHelper->createPaymentIntent($posUid)
             ]);
         } catch (\Exception $e) {
-            $this->logger->log('error', 'Pos process error: ', $e);
+            $this->logger->log('error', 'Pos intent error: ', $e);
 
             return $result->setData([
                 'result' => 'error',
-                'message' => 'Error processing POS payment: ' . $e->getMessage()
+                'message' => 'Error creating POS intent: ' . $e->getMessage()
+            ])->setHttpResponseCode(500);
+        }
+    }
+
+    public function deteleIntent()
+    {
+        $result = $this->jsonFactory->create();
+
+        try {
+            $posUid = $this->request->getParam('uid');
+
+            if (empty($posUid))
+                return $result->setData([
+                    'result' => 'error',
+                    'message' => 'POS UID is required'
+                ])->setHttpResponseCode(400);
+
+            return $result->setData([
+                'result' => 'success',
+                'data' => $this->posHelper->deletePaymentIntent($posUid)
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->log('error', 'Pos intent deletion error: ', $e);
+
+            return $result->setData([
+                'result' => 'error',
+                'message' => 'Error deleting POS intent: ' . $e->getMessage()
+            ])->setHttpResponseCode(500);
+        }
+    }
+
+    public function getIntentStatus()
+    {
+        $result = $this->jsonFactory->create();
+
+        try {
+            return $result->setData([
+                'result' => 'success',
+                'data' => $this->posHelper->getPaymentIntentStatus()
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->log('error', 'Pos intent obtaining error: ', $e);
+
+            return $result->setData([
+                'result' => 'error',
+                'message' => 'Error obtaining POS intent: ' . $e->getMessage()
             ])->setHttpResponseCode(500);
         }
     }
