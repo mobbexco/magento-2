@@ -31,9 +31,12 @@ class Pos extends \Magento\Framework\App\Action\Action
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Pos $helper,
         \Mobbex\Webpay\Helper\Logger $logger,
+        \Magento\Framework\App\Action\Context $context,
         \Magento\Framework\App\RequestInterface $request,
         \Magento\Framework\Controller\Result\JsonFactory $jsonFactory
     ) {
+        parent::__construct($context);
+
         $this->sdk = $sdk;
         $this->posHelper = $helper;
         $this->logger = $logger;

@@ -178,13 +178,13 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         foreach ($products as $product) {
             // Merge product plans
             $advanced_plans = array_merge($advanced_plans,
-                $this->getCatalogSetting($product->getId(), 'advanced_plans')
+                $this->getCatalogSetting($product->getId(), 'advanced_plans') ?: []
             );
 
             // Merge categories plans
             foreach ($product->getCategoryIds() as $categoryId)
                 $advanced_plans = array_merge($advanced_plans,
-                    $this->getCatalogSetting($categoryId, 'advanced_plans', 'category')
+                    $this->getCatalogSetting($categoryId, 'advanced_plans', 'category') ?: []
                 );
         }
 
@@ -257,7 +257,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $id = $product->getId();
         // gets product settings
-        $productFieldValue = $this->getCatalogSetting($id, $fieldName, 'product');
+        $productFieldValue = $this->getCatalogSetting($id, $fieldName, 'product') ?: [];
 
         // gets categories settings
         // merge in array value case
@@ -273,7 +273,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
                 $productFieldValue  = array_merge(
                     $productFieldValue, 
-                    $categoryFieldValue
+                    $categoryFieldValue ?: []
                 );
             }
 

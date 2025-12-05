@@ -4,12 +4,13 @@ define([
   'jquery',
   'mage/url',
   'Magento_Checkout/js/model/quote',
-], function (Component, ko, $, urlBuilder, quote) {
+  'Magento_Checkout/js/action/select-payment-method',
+], function (Component, ko, $, urlBuilder, quote, selectPaymentMethodAction) {
   'use strict';
 
   return Component.extend({
     config: window.checkoutConfig.payment.sugapay,
-    availablePOS: ko.observableArray(self.config?.terminals || []),
+    availablePOS: ko.observableArray([]),
     selectedOption: ko.observable(null),
     orderPlaced: ko.observable(false),
     processResult: ko.observable(null),
@@ -30,6 +31,9 @@ define([
     initialize: function () {
       this._super();
 
+      // Load available POS options
+      this.availablePOS(Object.values(this.config?.terminals || {}));
+
       // Set returnUrl to use later
       this.returnUrl = urlBuilder.build(
         `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}`
@@ -42,6 +46,10 @@ define([
 
     getCode: function () {
       return 'sugapay_pos';
+    },
+
+    getBillingAddressFormName: function () {
+      return 'billing-address-form-sugapay';
     },
 
     processPayment: function () {
@@ -77,7 +85,7 @@ define([
       if (!res.ok)
         return this.error(
           'Error cancelling POS intent:',
-          res,
+          [res, await res.text()],
           'No se pudo cancelar el pago. Intenta nuevamente.'
         );
 
@@ -110,7 +118,7 @@ define([
 
       $('body').trigger('processStop');
 
-      if (!res.ok) return this.error('Error creating POS intent:', res);
+      if (!res.ok) return this.error('Error creating POS intent:', [res, await res.text()]);
 
       const json = await res.json();
 
@@ -129,7 +137,7 @@ define([
           urlBuilder.build('sugapay/payment/pos?uid=' + posUid)
         );
 
-        if (!res.ok) return this.error('Error polling payment status:', res);
+        if (!res.ok) return this.error('Error polling payment status:', [res, await res.text()]);
 
         const json = await res.json();
 

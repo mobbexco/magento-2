@@ -42,30 +42,35 @@ class Pos
      */
     public function createPaymentIntent($posUid)
     {
-        $order = $this->checkoutSession->getLastRealOrder();
-
         // Build intent using order data (same as checkout)
+        $order = $this->checkoutSession->getLastRealOrder();
         $checkoutData = $this->orderHelper->buildCheckoutData($order);
-        $intent = new \Mobbex\Modules\Pos(
-            $checkoutData['id'],
-            $posUid,
-            $checkoutData['total'],
-            $checkoutData['webhook'],
-            [],
-            $checkoutData['installments'],
-            $checkoutData['customer'],
-            'mobbexPosOperationRequest',
-            $checkoutData['description'],
-            $checkoutData['reference']
-        );
 
-        $this->logger->log(
-            'debug',
-            "Mobbex\Webpay\Helper\Pos::createPaymentIntent | POS Payment Intent Response: ",
-            $intent->response
-        );
+        // Get POS reference
+        $terminal = $this->getSmartposTerminal($posUid);
 
-        return $intent->response;
+        if (empty($terminal['reference']))
+            throw new \Mobbex\Exception("No smartpos found for the POS UID $posUid");
+
+        $res = \Mobbex\Api::request([
+            'uri'    => "pos/{$terminal['reference']}/operation",
+            'method' => 'POST',
+            'body'   => \Mobbex\Platform::hook('mobbexPosOperationRequest', true, [
+                'reference'    => $checkoutData['reference'] ?: \Mobbex\Modules\Checkout::generateReference($checkoutData['id']),
+                'intent'       => \Mobbex\Platform::$settings['payment_mode'],
+                'total'        => $checkoutData['total'],
+                'currency'     => 'ARS', //$checkoutData['currency'] ?: 'ARS',
+                'description'  => $checkoutData['description'] ?: "Pedido #" . $checkoutData['id'],
+                'test'         => (bool) \Mobbex\Platform::$settings['test'],
+                'webhook'      => $checkoutData['webhook'],
+                'customer'     => $checkoutData['customer'],
+                'installments' => $checkoutData['installments'],
+                'sources'      => [],
+                'timeout'      => (int) \Mobbex\Platform::$settings['timeout'],
+            ], $checkoutData['id'])
+        ]);
+
+        return $res;
     }
 
     /**
@@ -194,6 +199,10 @@ class Pos
         $result = \Mobbex\Api::request([
             'method' => 'GET',
             'uri'    => "pos",
+            'params' => [
+                'noPaginate' => 1,
+                'noShowDisabled' => 1,
+            ],
         ]);
 
         if (empty($result['docs']) || !is_array($result['docs'])) {
