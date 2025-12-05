@@ -1,0 +1,88 @@
+<div class="pos-list">
+    <h2 class="checkbox-title">Asignar puntos de venta (POS)</h2>
+    <p>Seleccione los puntos de venta que desea asignar a este usuario. Los mismos estarán disponibles al momento de procesar el pago mediante <em>Login as Customer</em>.</p>
+    <div class="checkbox-list">
+        <?php foreach ($this->entityPosList as $pos): ?>
+            <div class="checkbox-item">
+                <div class="pos-input">
+                    <input 
+                        type="checkbox" 
+                        id="<?= $pos['reference'] ?>" 
+                        name="mobbex_pos[]" value="<?= $pos['uid'] ?>" 
+                        <?= in_array($pos['uid'], $this->userPosList) ? 'checked' : '' ?>
+                    >
+                    <label for="<?= $pos['reference'] ?>"><?= $pos['name'] ?></label>
+                </div>
+                <p class="checkbox-description"> <?= $pos['description'] ?></p>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+<style>
+    .pos-list {
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+        max-width: 800px;
+    }
+
+    .checkbox-title {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .checkbox-list {
+        margin-top: 20px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        height: 58px;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        margin-right: 10px;
+        cursor: pointer;
+    }
+
+    .pos-input {
+        display: flex;
+    }
+
+    .checkbox-item label {
+        font-size: 1.2rem;
+        color: #333;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .checkbox-description {
+        font-size: 0.9rem;
+        color: #666;
+        margin-left: 25px;
+    }
+
+    .checkbox-item:hover {
+        background-color: #f0f0f0;
+    }
+
+    .checkbox-item:hover label {
+        color: #007BFF;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked+label {
+        color: #007BFF;
+        text-decoration: underline;
+    }
+</style>

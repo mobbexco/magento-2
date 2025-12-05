@@ -14,7 +14,10 @@
     <event name="order_cancel_after">
         <observer name="mobbex_order_cancel_after" instance="Mobbex\Webpay\Observer\CancelOrderObserver" />
     </event>
-        <event name="sales_order_place_after">
+    <event name="sales_order_place_after">
         <observer name="mobbex_order_place_after" instance="Mobbex\Webpay\Observer\OrderPlaceAfter"/>
+    </event>
+    <event name="admin_user_save_before">
+        <observer name="mobbex_save_user_settings" instance="Mobbex\Webpay\Observer\SaveUserSettings"/>
     </event>
 </config>

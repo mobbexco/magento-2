@@ -29,6 +29,15 @@ define(
             );
         }
 
+        if (config.pos) {
+            rendererList.push(
+                {
+                    type: 'sugapay_pos',
+                    component: 'Mobbex_Webpay/js/view/payment/method-renderer/pos'
+                }
+            );
+        }
+
         return Component.extend({});
     }
 );

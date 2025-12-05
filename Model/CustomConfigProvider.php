@@ -9,35 +9,36 @@ namespace Mobbex\Webpay\Model;
 class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInterface
 {
     /** @var \Mobbex\Webpay\Helper\Sdk */
-    public $sdk;
+    private $sdk;
 
     /** @var \Mobbex\Webpay\Helper\Config */
-    public $config;
-
-    /** @var \Mobbex\Webpay\Helper\Quote */
-    public $quoteHelper;
+    private $config;
 
     /** @var \Mobbex\Webpay\Helper\Logger */
-    public $logger;
+    private $logger;
+
+    /** @var \Mobbex\Webpay\Helper\Quote */
+    private $quoteHelper;
+
+    /** @var \Mobbex\Webpay\Helper\Pos */
+    private $posHelper;
 
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Quote $quoteHelper,
-        \Mobbex\Webpay\Helper\Logger $logger
+        \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Helper\Pos $posHelper
     ) {
-        $this->sdk    = $sdk;
-        $this->config = $config;
+        $this->sdk         = $sdk;
+        $this->config      = $config;
+        $this->logger      = $logger;
         $this->quoteHelper = $quoteHelper;
-        $this->logger = $logger;
+        $this->posHelper   = $posHelper;
 
-        //Init mobbex php plugins sdk
         $this->sdk->init();
     }
 
-    /**
-     * @return array
-     */
     public function getConfig()
     {
         $defaultMethod = [
@@ -55,6 +56,15 @@ class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInte
             }
         }
 
+        if ($this->config->get('pos')) {
+            try {
+                $admin_user = $this->posHelper->getLacAdminUserId();
+                $terminals = $this->posHelper->getUserAssignedPosList($this->posHelper->getLacAdminUserId());
+            } catch (\Exception $e) {
+                $this->logger->log('error', 'CustomConfigProvider. Error getting POS information ' . $e->getMessage(), isset($e->data) ? $e->data : []);
+            }
+        }
+
         $config = [
             'payment' => [
                 'sugapay' => [
@@ -66,16 +76,18 @@ class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInte
                     'embed'             => $this->config->get('embed'),
                     'offsite'           => $this->config->get('offsite') === '1', 
                     'transparent'       => $this->config->get('transparent') === '1',
+                    'pos'               => $this->config->get('pos') === '1',
                     'banner'            => $this->config->get('checkout_banner'),
                     'color'             => $this->config->get('color'),
                     'background'        => $this->config->get('background'),
                     'show_method_icons' => $this->config->get('show_method_icons'),
                     'method_icon'       => $this->config->get('method_icon'),
+                    'admin_user'        => isset($admin_user) ? $admin_user : null,
+                    'terminals'         => isset($terminals) ? $terminals : [],
                 ],
             ],
         ];
 
-        //Log data in debug mode
         $this->logger->log('debug', 'CustomConfigProvider > getConfig', $config);
 
         return $config;

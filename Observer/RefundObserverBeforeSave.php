@@ -19,7 +19,7 @@ class RefundObserverBeforeSave implements ObserverInterface
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
-    /** @var \Mobbex\Webpay\Helper\Mobbex */
+    /** @var \Mobbex\Webpay\Helper\Order */
     public $helper;
 
     /** @var \Mobbex\Webpay\Helper\Logger */
@@ -32,7 +32,7 @@ class RefundObserverBeforeSave implements ObserverInterface
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Logger $logger,
-        \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Mobbex\Webpay\Helper\Order $helper,
         \Mobbex\Webpay\Model\TransactionFactory $mobbexTransactionFactory
     )
     {

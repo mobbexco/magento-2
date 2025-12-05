@@ -363,6 +363,16 @@
                     <comment>URL de la imagen que se mostrará en la opción de pago del checkout</comment>
                 </field>
             </group>
+            <group id="sugapay_pos" translate="label" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Mobbex POS</label>
+                <comment>Permite realizar pagos presenciales mediante puntos de venta (POS).</comment>
+
+                <field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Estado del módulo</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
         </section>
     </system>
 </config>
