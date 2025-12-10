@@ -28,6 +28,7 @@ define([
     availableMethods: ko.observableArray([]),
     availableCards: ko.observableArray([]),
     selectedOption: ko.observable(null),
+    orderPlaced: ko.observable(false),
     selectedOptionData: null,
     returnUrl: '',
 
@@ -71,14 +72,6 @@ define([
       selectPaymentMethodAction({ method: this.getCode() });
       quote.paymentMethod({ method: this.getCode() });
 
-      this.selectedOptionData =
-        this.availableMethods().find(
-          (m) => m.subgroup === this.selectedOption()
-        ) ||
-        this.availableCards().find(
-          (c) => c.card.card_number === this.selectedOption()
-        );
-
       return true;
     },
 
@@ -90,8 +83,28 @@ define([
         return this.getCode() === this.isChecked();
     },
 
-    afterPlaceOrder: function () {
+    getSelectedOptionData: function () {
+      return this.availableMethods().find(
+        (m) => m.subgroup === this.selectedOption()
+      ) || this.availableCards().find(
+        (c) => c.card.card_number === this.selectedOption()
+      );
+    },
+
+    processPayment: function () {
       $('body').trigger('processStart');
+
+      if (!this.orderPlaced()) {
+        const orderRes = this.placeOrder();
+
+        if (!orderRes) {
+          $('body').trigger('processStop');
+          this.messageContainer.addErrorMessage({ message: 'Error al procesar el pedido. Revise los datos ingresados e intente nuevamente.' });
+          return;
+        }
+
+        this.orderPlaced(true);
+      }
 
       this.createCheckout(
         urlBuilder.build('sugapay/payment/checkout/'),
@@ -104,6 +117,8 @@ define([
               'Error al obtener la información del pedido.',
               this.returnUrl + '&status=500'
             );
+
+          this.selectedOptionData = this.getSelectedOptionData();
 
           if (this.selectedOptionData?.installments) {
             this.executeWallet(res);

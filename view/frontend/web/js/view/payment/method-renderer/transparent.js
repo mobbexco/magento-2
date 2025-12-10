@@ -30,6 +30,7 @@ define([
 
         // Loader observable
         isLoading: ko.observable(false),
+        orderPlaced: ko.observable(false),
 
         // Form initialization
         initFormElement: function() {
@@ -255,12 +256,25 @@ define([
                 return false;
             }
             this.isLoading(true);
-            this.placeOrder();
+
+            if (!this.orderPlaced()) {
+                const placeOrderResult = this.placeOrder();
+
+                if (!placeOrderResult) {
+                    this.isLoading(false);
+                    return false;
+                }
+
+                this.orderPlaced(true);
+            }
+
+            this.processPayment();
+
             return true;
         },
 
         // Procesar pago
-        afterPlaceOrder: async function() {
+        processPayment: async function() {
             this.isLoading(true);
 
             const res = await fetch(urlBuilder.build('sugapay/payment/process'), {
@@ -276,27 +290,24 @@ define([
                 })
             });
 
-            if (!res.ok) {
+            try {
+                if (!res.ok)
+                    throw new Error('Network response was not ok' + res.statusText + await res.text());
+
+                const json = await res.json();
+
+                if (!json || json?.result !== 'success')
+                    throw new Error('Error parsing response: ' + JSON.stringify(json));
+
+                window.top.location.href = urlBuilder.build(
+                    `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}&status=${json?.code}`
+                );
+            } catch (e) {
                 this.isLoading(false);
                 this.messageContainer.addErrorMessage({ message: 'Error en el procesamiento del pago. Intenta nuevamente.' });
-                console.error('Error processing payment:', res, await res.text());
+                console.error('Error processing payment:', e);
                 return false;
             }
-
-            const json = await res.json();
-            this.isLoading(false);
-
-            if (!json || json?.result !== 'success') {
-                this.messageContainer.addErrorMessage({ message: 'Error en el procesamiento del pago. Intenta nuevamente.' });
-                console.error('Invalid payment process response:', json);
-                return;
-            }
-
-            // Redirigir a la URL de retorno con estado de éxito
-            window.top.location.href = urlBuilder.build(
-                `sugapay/payment/paymentreturn/?quote_id=${this.config.quoteId}&status=${json?.code}`
-            );
-            return;
         }
     });
 });
