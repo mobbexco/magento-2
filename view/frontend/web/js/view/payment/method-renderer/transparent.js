@@ -30,6 +30,7 @@ define([
 
         // Loader observable
         isLoading: ko.observable(false),
+        isInstallmentLoading: ko.observable(false),
         orderPlaced: ko.observable(false),
 
         // Form initialization
@@ -125,45 +126,49 @@ define([
             );
         },
 
-        fetchInstallments: async function() {
-            // Obtener el número de tarjeta sin espacios
-            const cardNumber = this.cardNumber().replace(/\s/g, '');
-            if (cardNumber.length < 6) {
-                // No hay suficientes dígitos para identificar la tarjeta
-                this.selectedCardType('');
-                this.cardListInstallments([{ value: 1, label: "1 cuota" }]);
-                this.cardInstallment(1);
-                return;
+        fetchInstallments: async function() {            
+            try {
+                // Get card number without spaces
+                const cardNumber = this.cardNumber().replace(/\s/g, '');
+
+                if (cardNumber.length < 6)
+                    return this.resetInstallments();
+
+                this.isInstallmentLoading(true);
+    
+                const res = await fetch(urlBuilder.build('sugapay/payment/detect'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bin: cardNumber.slice(0, 8),
+                        token: this.config.intentToken
+                    })
+                });
+
+                if (!res.ok)
+                    throw new Error(`Network response was not ok: ${res.statusText} - ${await res.text()}`);
+
+                const data = await res.json();
+
+                if (!data || typeof data !== 'object')
+                    throw new Error('Empty response data' + JSON.stringify(data));
+
+                this.isInstallmentLoading(false);
+
+                this.selectedCardType(data?.source?.reference || '');
+                this.cardListInstallments(data?.installments || [{ reference: 1, name: "1 pago" }]);
+                this.cardInstallment(data?.installments?.[0]?.reference || 1);
+            } catch (e) {
+                console.error('Error fetching installments:', e);
+                this.resetInstallments();
             }
+        },
 
-            const bin = cardNumber.slice(0, 6); // Primeros 6 dígitos
-            
-            this.isLoading(true);
-
-            const res = await fetch(urlBuilder.build('sugapay/payment/detect'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    bin: bin,
-                    token: this.config.intentToken
-                })
-            });
-
-            if (!res.ok) {
-                console.error('Error fetching installment options:', res);
-                this.isLoading(false);
-                return;
-            }
-
-            const data = await res.json();
-
-            if (!data)
-                console.error('Invalid data format for installments:', data);
-            
-            this.isLoading(false);
-            this.selectedCardType(data?.source?.reference || '');
-            this.cardListInstallments(data?.installments || [{ reference: 1, name: "1 pago" }]);
-            this.cardInstallment(data?.installments?.[0]?.reference || 1);
+        resetInstallments: function() {
+            this.isInstallmentLoading(false);
+            this.selectedCardType('');
+            this.cardListInstallments([{ reference: 1, name: "1 pago" }]);
+            this.cardInstallment(1);
         },
 
 
