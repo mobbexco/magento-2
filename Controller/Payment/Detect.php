@@ -62,7 +62,16 @@ class Detect extends \Magento\Framework\App\Action\Action
 
             die(json_encode($card));
         } catch (\Exception $e) {
-            return $this->logger->createJsonResponse('error', 'Transparent detection error: ' . $e->getMessage());
+            $data = $e instanceof \Mobbex\Exception ? $e->data : [];
+
+            if (isset($checkout['intent']['token']))
+                $data['it'] = $checkout['intent']['token'];
+
+            return $this->logger->createJsonResponse(
+                'error',
+                'Transparent detection error: ' . $e->getMessage(),
+                $data
+            );
         }
     }
 
