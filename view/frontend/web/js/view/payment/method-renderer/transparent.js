@@ -224,6 +224,14 @@ define([
                 }
             });
 
+            this.cardHolderDocument.subscribe(function(newValue) {
+                // Elimina cualquier caracter no numérico y limita a 9 dígitos
+                var strValue = (newValue || '').toString();
+                var cleanValue = strValue.replace(/\D/g, '').slice(0, 9);
+
+                if (strValue !== cleanValue) self.cardHolderDocument(cleanValue);
+            });
+
             return this;
         },
 
@@ -241,7 +249,10 @@ define([
             if (!this.cardExpiration() || this.cardExpiration().length > 7) {
                 isValid = false;
             }
-            if (!this.cardHolderDocument() || this.cardHolderDocument().toString().length > 9) {
+
+            var document = this?.cardHolderDocument()?.toString() || '';
+
+            if (!document || document.length > 9 || !/^\d+$/.test(document)) {
                 isValid = false;
             }
             if (!this.cardHolderName() || this.cardHolderName().toString().length > 26) {
