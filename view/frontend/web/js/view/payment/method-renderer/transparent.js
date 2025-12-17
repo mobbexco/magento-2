@@ -282,15 +282,14 @@ define([
                 }
 
                 this.orderPlaced(true);
+            } else {
+                this.afterPlaceOrder();
             }
-
-            this.processPayment();
 
             return true;
         },
 
-        // Procesar pago
-        processPayment: async function() {
+        afterPlaceOrder: async function() {
             this.isLoading(true);
 
             const res = await fetch(urlBuilder.build('sugapay/payment/process'), {

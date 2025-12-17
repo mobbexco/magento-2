@@ -104,8 +104,12 @@ define([
         }
 
         this.orderPlaced(true);
+      } else {
+        this.afterPlaceOrder();
       }
+    },
 
+    afterPlaceOrder: function () {
       this.createCheckout(
         urlBuilder.build('sugapay/payment/checkout/'),
         (res) => {
