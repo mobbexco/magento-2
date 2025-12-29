@@ -292,20 +292,20 @@ define([
         afterPlaceOrder: async function() {
             this.isLoading(true);
 
-            const res = await fetch(urlBuilder.build('sugapay/payment/process'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    number: this.cardNumber().replace(/\s/g, ''),
-                    expiry: this.cardExpiration().replace(/\s/g, ''),
-                    cvv: String(this.cardCvv()),
-                    name: this.cardHolderName(),
-                    identification: String(this.cardHolderDocument()),
-                    installments: String(this.cardInstallment())
-                })
-            });
-
             try {
+                const res = await fetch(urlBuilder.build('sugapay/payment/process'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        number: this.cardNumber().replace(/\s/g, ''),
+                        expiry: this.cardExpiration().replace(/\s/g, ''),
+                        cvv: String(this.cardCvv()),
+                        name: this.cardHolderName(),
+                        identification: String(this.cardHolderDocument()),
+                        installments: String(this.cardInstallment())
+                    })
+                });
+
                 if (!res.ok)
                     throw new Error('Network response was not ok' + res.statusText + await res.text());
 

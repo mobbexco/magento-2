@@ -119,8 +119,8 @@ class Process extends \Magento\Framework\App\Action\Action
             throw new \Exception('All fields must be strings.');
 
         // Card number
-        if (strlen($number) < 16 || strlen($number) > 19)
-            throw new \Exception('Number must be at least 16 and not more than 19 characters long.');
+        if (strlen($number) < 15 || strlen($number) > 19)
+            throw new \Exception('Number must be at least 15 and not more than 19 characters long.');
 
         if (!preg_match('/^[0-9]+$/', $number))
             throw new \Exception('Number must contain only numbers.');
