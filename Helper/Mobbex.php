@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '4.2.1';
+    const VERSION = '5.0.0';
 
     /** @var Image */
     protected $imageHelper;
@@ -208,6 +208,9 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getDni($order)
     {
+        if (!$order->getBillingAddress())
+            return '';
+
         $address   = $order->getBillingAddress()->getData();
         $dniColumn = $this->config->get('dni_column');
 

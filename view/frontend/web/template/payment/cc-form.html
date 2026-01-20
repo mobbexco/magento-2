@@ -143,7 +143,7 @@
                         </label>
                     </div>
                 </div>
-                <div class="field mobbex-input-group installments" data-bind="attr: {id: getCode() + '_type_installments_div'}">
+                <div class="field mobbex-input-group installments" data-bind="blockLoader: isInstallmentLoading, attr: {id: getCode() + '_type_installments_div'}">
                     <div class="control">
                         <label data-bind="attr: {for: getCode() + '_installments'}" class="label">
                             <span><!-- ko i18n: 'Cantidad de cuotas' --><!-- /ko --></span>

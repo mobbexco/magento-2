@@ -10,6 +10,11 @@
                visible="isRadioButtonVisible()"
         />
         <label attr="for: getCode()" class="label">
+            <!-- ko if: config.transparent_logo -->
+            <span class="payment-method-label-icon">
+                <img attr="src: config.transparent_logo">
+            </span>
+            <!-- /ko -->
             <span translate="getTitle()"></span>
         </label>
     </div>

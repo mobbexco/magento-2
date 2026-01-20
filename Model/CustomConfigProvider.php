@@ -66,6 +66,7 @@ class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInte
                     'embed'             => $this->config->get('embed'),
                     'offsite'           => $this->config->get('offsite') === '1', 
                     'transparent'       => $this->config->get('transparent') === '1',
+                    'transparent_logo'  => $this->config->get('transparent_logo'),
                     'banner'            => $this->config->get('checkout_banner'),
                     'color'             => $this->config->get('color'),
                     'background'        => $this->config->get('background'),
