@@ -24,6 +24,8 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         'show_method_icons'                  => 'payment/sugapay/appearance/show_method_icons',
         'sources_priority'                   => 'payment/sugapay/appearance/sources_priority',
         'show_featured_plans_on_cart'        => 'payment/sugapay/appearance/show_featured_plans_on_cart',
+        'show_tag_on_products_catalog'       => 'payment/sugapay/appearance/show_tag_on_products_catalog',
+        'show_banner_on_products_catalog'    => 'payment/sugapay/appearance/show_banner_on_products_catalog',
         'offsite'                            => 'payment/sugapay/active',
         'transparent'                        => 'payment/sugapay_transparent/active',
         'transparent_logo'                   => 'payment/sugapay_transparent/logo',
@@ -246,14 +248,14 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Get specific field values from product categories
+     * Get specific field values from product and their categories
      * 
      * @param object     $product
      * @param string     $fieldName
      * 
      * @return string|bool
      */
-    private function getAllPlansConfiguratorSettings($product, $fieldName) 
+    public function getAllPlansConfiguratorSettings($product, $fieldName) 
     {
         $id = $product->getId();
         // gets product settings
@@ -272,7 +274,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
                     : [];
 
                 $productFieldValue  = array_merge(
-                    $productFieldValue, 
+                    $productFieldValue,
                     $categoryFieldValue
                 );
             }
