@@ -66,8 +66,9 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
 
         \Mobbex\Platform::loadModels($this->cache, $this->db);
 
-        \Mobbex\Integrity\Attestation::init('magento-2', __DIR__, null, function () {
-            return $this->_urlBuilder->getUrl('*/*/*', ['_current' => true]);
+        \Mobbex\Integrity\Attestation::init('magento-2', dirname(__DIR__), null, function () {
+            // only for checkout page, to avoid issues with other pages that use the SDK
+            return $this->_urlBuilder->getUrl('checkout', ['_secure' => true]);
         });
 
         // Init api conector
