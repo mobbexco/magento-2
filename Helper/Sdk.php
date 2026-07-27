@@ -66,6 +66,10 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
 
         \Mobbex\Platform::loadModels($this->cache, $this->db);
 
+        \Mobbex\Integrity\Attestation::init('magento-2', __DIR__, null, function () {
+            return $this->_urlBuilder->getUrl('*/*/*', ['_current' => true]);
+        });
+
         // Init api conector
         \Mobbex\Api::init();
     }
