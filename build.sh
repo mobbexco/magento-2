@@ -1,5 +1,5 @@
 #!/bin/sh
-ver="5.0.0"
+ver="5.0.1"
 
 # Remove installed packages
 rm -rf vendor composer.lock

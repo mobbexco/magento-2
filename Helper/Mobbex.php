@@ -8,7 +8,7 @@ namespace Mobbex\Webpay\Helper;
  */
 class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const VERSION = '5.0.0';
+    const VERSION = '5.0.1';
 
     /** @var Image */
     protected $imageHelper;
