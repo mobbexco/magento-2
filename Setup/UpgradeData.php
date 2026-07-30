@@ -70,7 +70,7 @@ class UpgradeData implements \Magento\Framework\Setup\UpgradeDataInterface
         $this->eavSetup = $this->eavSetupFactory->create(['setup' => $this->setup]);
         $currentVersion = (string) $context->getVersion();
 
-        if (version_compare($currentVersion, '5.0.0', '<')) {
+        if (version_compare($currentVersion, '5.0.2', '<')) {
             // Update timeout default value from 5 to 60 minutes
             if (intval($this->config->get('timeout')) === 5)
                 $this->config->save('timeout', 60);
