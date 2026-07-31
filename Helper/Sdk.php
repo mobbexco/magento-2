@@ -57,7 +57,7 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
         \Mobbex\Platform::init('magento_2', $this->moduleResource->getDbVersion('Mobbex_Webpay'), $this->_urlBuilder->getUrl('/'),
             [
                 'platform' => $this->productMetadata->getVersion(),
-                'sdk'      => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getVersion('mobbexco/php-plugins-sdk') : '',
+                'sdk'      => class_exists('\Composer\InstalledVersions') ? \Composer\InstalledVersions::getPrettyVersion('mobbexco/php-plugins-sdk') : '',
             ], 
             $this->config->getAll(), 
             [$this->eventManager, 'dispatch'],
@@ -66,7 +66,7 @@ class Sdk extends \Magento\Framework\App\Helper\AbstractHelper
 
         \Mobbex\Platform::loadModels($this->cache, $this->db);
 
-        \Mobbex\Integrity\Attestation::init('magento-2', dirname(__DIR__), null, function () {
+        \Mobbex\Integrity\Attestation::init('magento-2', dirname(__DIR__, 2), null, function () {
             // only for checkout page, to avoid issues with other pages that use the SDK
             return $this->_urlBuilder->getUrl('checkout', ['_secure' => true]);
         });
