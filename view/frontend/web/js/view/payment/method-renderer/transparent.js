@@ -141,7 +141,8 @@ define([
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         bin: cardNumber.slice(0, 8),
-                        token: this.config.intentToken
+                        token: this.config.intentToken,
+                        mbbx_token: this.config.transparentToken
                     })
                 });
 
@@ -302,7 +303,8 @@ define([
                         cvv: String(this.cardCvv()),
                         name: this.cardHolderName(),
                         identification: String(this.cardHolderDocument()),
-                        installments: String(this.cardInstallment())
+                        installments: String(this.cardInstallment()),
+                        mbbx_token: this.config.transparentToken
                     })
                 });
 

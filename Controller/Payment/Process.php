@@ -17,20 +17,30 @@ class Process extends \Magento\Framework\App\Action\Action
     /** @var \Mobbex\Webpay\Helper\Logger */
     public $logger;
 
+    /** @var \Mobbex\Webpay\Helper\Config */
+    public $config;
+
     /** @var \Mobbex\Webpay\Helper\Mobbex */
     public $helper;
+
+    /** @var \Magento\Checkout\Model\Session */
+    public $checkoutSession;
 
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Logger $logger,
+        \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Helper\Mobbex $helper,
+        \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\Action\Context $context
     ) {
         parent::__construct($context);
 
         $this->sdk = $sdk;
         $this->logger = $logger;
+        $this->config = $config;
         $this->helper = $helper;
+        $this->checkoutSession = $checkoutSession;
         
 
         $this->sdk->init();
@@ -39,7 +49,26 @@ class Process extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
+            if (!$this->getRequest()->isPost())
+                throw new \Exception('Invalid request method.');
+
+            $contentType = $this->getRequest()->getHeader('Content-Type');
+            if (empty($contentType) || stripos($contentType, 'application/json') === false)
+                throw new \Exception('Invalid content type.');
+
             $postData = json_decode(file_get_contents('php://input'), true);
+
+            if (empty($postData) || !is_array($postData))
+                throw new \Exception('Invalid request body.');
+
+            if ($this->config->get('transparent') !== '1')
+                throw new \Exception('Transparent payment is disabled.');
+
+            $mbbxToken = isset($postData['mbbx_token']) ? $postData['mbbx_token'] : null;
+            $sessionToken = $this->checkoutSession->getMobbexTransparentToken();
+
+            if (empty($mbbxToken) || !is_string($mbbxToken) || empty($sessionToken) || $mbbxToken !== $sessionToken)
+                throw new \Exception('Invalid token.');
 
             // Validate body
             $this->validateBody($postData);

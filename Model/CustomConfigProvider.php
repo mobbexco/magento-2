@@ -61,6 +61,7 @@ class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInte
                     'quoteId'           => $this->quoteHelper->checkoutSession->getQuote()->getId(),
                     'checkoutId'        => isset($checkoutData['id']) ? $checkoutData['id'] : null,
                     'intentToken'       => isset($checkoutData['intent']['token']) ? $checkoutData['intent']['token'] : null,
+                    'transparentToken'  => $this->getTransparentToken(),
                     'wallet'            => isset($checkoutData['wallet']) ? $checkoutData['wallet'] : [],
                     'paymentMethods'    => isset($checkoutData['paymentMethods']) ? $checkoutData['paymentMethods'] : [$defaultMethod],
                     'embed'             => $this->config->get('embed'),
@@ -80,5 +81,23 @@ class CustomConfigProvider implements \Magento\Checkout\Model\ConfigProviderInte
         $this->logger->log('debug', 'CustomConfigProvider > getConfig', $config);
 
         return $config;
+    }
+
+    /**
+     * Get or create a anti-CSRF per-session token for transparent requests.
+     *
+     * @return string
+     */
+    private function getTransparentToken()
+    {
+        $session = $this->quoteHelper->checkoutSession;
+        $token = $session->getMobbexTransparentToken();
+
+        if (empty($token)) {
+            $token = bin2hex(random_bytes(16));
+            $session->setMobbexTransparentToken($token);
+        }
+
+        return $token;
     }
 }

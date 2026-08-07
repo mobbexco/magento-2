@@ -20,10 +20,14 @@ class Detect extends \Magento\Framework\App\Action\Action
     /** @var \Mobbex\Webpay\Helper\Config */
     public $config;
 
+    /** @var \Magento\Checkout\Model\Session */
+    public $checkoutSession;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Sdk $sdk,
         \Mobbex\Webpay\Helper\Logger $logger,
         \Mobbex\Webpay\Helper\Config $config,
+        \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\App\Action\Context $context
     ) {
         parent::__construct($context);
@@ -31,6 +35,7 @@ class Detect extends \Magento\Framework\App\Action\Action
         $this->sdk = $sdk;
         $this->logger = $logger;
         $this->config = $config;
+        $this->checkoutSession = $checkoutSession;
 
         $this->sdk->init();
     }
@@ -38,16 +43,35 @@ class Detect extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         try {
+            if (!$this->getRequest()->isPost())
+                throw new \Exception('Invalid request method.');
+
+            $contentType = $this->getRequest()->getHeader('Content-Type');
+            if (empty($contentType) || stripos($contentType, 'application/json') === false)
+                throw new \Exception('Invalid content type.');
+
             $postData = json_decode(file_get_contents('php://input'), true);
+
+            if (empty($postData) || !is_array($postData))
+                throw new \Exception('Invalid request body.');
+
+            if ($this->config->get('transparent') !== '1')
+                throw new \Exception('Transparent payment is disabled.');
 
             $bin = isset($postData['bin']) ? $postData['bin'] : null;
             $token = isset($postData['token']) ? $postData['token'] : null;
+            $mbbxToken = isset($postData['mbbx_token']) ? $postData['mbbx_token'] : null;
 
-            if (!$bin || !$token)
+            if (!$bin || !$token || !$mbbxToken)
                 throw new \Exception('Missing bin or token.');
 
-            if (!is_string($bin) || !is_string($token))
+            if (!is_string($bin) || !is_string($token) || !is_string($mbbxToken))
                 throw new \Exception('Bin and token must be strings.');
+
+            $sessionToken = $this->checkoutSession->getMobbexTransparentToken();
+
+            if (empty($sessionToken) || $mbbxToken !== $sessionToken)
+                throw new \Exception('Invalid token.');
 
             if (strlen($bin) < 4 || strlen($bin) > 8)
                 throw new \Exception('Bin must be at least 4 and not more than 8 characters long.');
