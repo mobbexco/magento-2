@@ -297,4 +297,77 @@ class Mobbex extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $string;
     }
+
+    /**
+     * filterFeaturedPlans get the featured plans configured for a product
+     * 
+     * @param array $sources
+     * @param array $featured_plans
+     * 
+     * @return string best plan
+     */
+    public function filterFeaturedPlans($sources, $featured_plans)
+    {
+        $featuredPlans = [];
+
+        foreach ($sources as $source) {
+            if (empty($source['installments']) || empty($source['installments']['enabled'])) {
+                continue;
+            }
+
+            $installment_list = isset($source['installments']['list']) && is_array($source['installments']['list'])
+                ? $source['installments']['list']
+                : [];
+
+            foreach ($installment_list as $i) {
+                if (empty($i['uid'])) {
+                    continue;
+                }
+
+                if (in_array($i['uid'], $featured_plans, true) || in_array($i['reference'], $featured_plans, true)) {
+                    $featuredPlans[] = [
+                        'count'      => isset($i['totals']['installment']['count']) ? $i['totals']['installment']['count'] : null,
+                        'amount'     => isset($i['totals']['installment']['amount']) ? $i['totals']['installment']['amount'] : null,
+                        'source'     => isset($source['source']['name']) ? $source['source']['name'] : 'Unknown',
+                        'percentage' => isset($i['totals']['financial']['percentage']) ? $i['totals']['financial']['percentage'] : 0,
+                    ];
+                }
+            }
+        }
+
+        if (empty($featuredPlans))
+            return null;
+
+        return $this->setBestPlan($featuredPlans);
+    }
+
+
+    /**
+     * setBestPlan evaluates between featured installments to get the best one
+     * 
+     * @param array $featuredPlans
+     * 
+     * @return string $bestPlan
+     */
+    private function setBestPlan($featuredPlans = [])
+    {
+        $bestPlan = null;
+
+        foreach ($featuredPlans as $plan) {
+            if ($bestPlan === null) {
+                $bestPlan = $plan;
+                continue;
+            }
+
+            $currentDiscount = isset($plan['percentage']) ? $plan['percentage'] : 0;
+            $bestDiscount    = isset($bestPlan['percentage']) ? $bestPlan['percentage'] : 0;
+
+            if ($currentDiscount < $bestDiscount)
+                $bestPlan = $plan;
+            elseif ($currentDiscount == $bestDiscount && $plan['count'] > $bestPlan['count'])
+                $bestPlan = $plan;
+        }
+
+        return json_encode($bestPlan);
+    }
 }

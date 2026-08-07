@@ -45,6 +45,8 @@
                     <primary_color>#6f00ff</primary_color>
                     <show_method_icons>1</show_method_icons>
                     <show_featured_plans_on_cart>1</show_featured_plans_on_cart>
+                    <show_tag_on_products_catalog>1</show_tag_on_products_catalog>
+                    <show_banner_on_products_catalog>1</show_banner_on_products_catalog>
                 </appearance>
                 <advanced>
                     <advanced_plans_exclusivity>1</advanced_plans_exclusivity>
