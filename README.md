@@ -1,8 +1,8 @@
 # Mobbex for Magento 2
 
 ## Requisitos
-* PHP >= 7.0
-* Magento >= 2.1.0
+* PHP >= 7.0 -> 8.4
+* Magento >= 2.1.0 -> 2.4.9
 * Composer >= 1
 
 ## Instalación
