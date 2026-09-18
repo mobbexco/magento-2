@@ -102,7 +102,7 @@ class SugapayTransparent extends \Magento\Payment\Model\Method\AbstractMethod
      * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return bool|mixed
      */
-    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
+    public function isAvailable(?\Magento\Quote\Api\Data\CartInterface $quote = null)
     {
         return true;
         if (!$this->isActive($quote ? $quote->getStoreId() : null)) {
