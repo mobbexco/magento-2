@@ -73,6 +73,9 @@ class OrderUpdate
     /** @var \Magento\CatalogInventory\Model\Indexer\Stock\Processor */
     protected $stockIndexerProcessor;
 
+    /** @var \Magento\Framework\DB\TransactionFactory */
+    protected $dbTransactionFactory;
+
     public function __construct(
         \Mobbex\Webpay\Helper\Config $config,
         \Mobbex\Webpay\Model\EventManager $eventManager,
@@ -91,7 +94,8 @@ class OrderUpdate
         \Magento\Framework\ObjectManagerInterface $_objectManager,
         \Magento\Sales\Api\OrderManagementInterface $orderManagement,
         \Magento\CatalogInventory\Api\StockManagementInterface $stockManagement,
-        \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
+        \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor,
+        \Magento\Framework\DB\TransactionFactory $dbTransactionFactory
     ) {
         $this->config                = $config;
         $this->eventManager          = $eventManager;
@@ -111,6 +115,7 @@ class OrderUpdate
         $this->orderManagement       = $orderManagement;
         $this->stockManagement       = $stockManagement;
         $this->stockIndexerProcessor = $stockIndexerProcessor;
+        $this->dbTransactionFactory  = $dbTransactionFactory;
     }
 
     /**
@@ -124,8 +129,13 @@ class OrderUpdate
         $statusName  = $this->getStatusConfigName($data['status_code']);
         $orderStatus = $this->config->get($statusName);
 
-        if ($orderStatus == $order->getStatus())
+        if ($orderStatus == $order->getStatus()) {
+            // Recover approved orders left without invoice by a previously interrupted webhook
+            if ($statusName == 'order_status_approved' && $this->generateInvoice($order, $data['status_message']))
+                $order->save();
+
             return;
+        }
 
         // Uncancel the order first if it was cancelled & new status isnt a cancel status 
         if (in_array($order->getStatus(), $this->cancelStatuses) && !in_array($orderStatus, $this->cancelStatuses))
@@ -217,6 +227,8 @@ class OrderUpdate
      * 
      * @param OrderInterface $order
      * @param string $message
+     *
+     * @return bool True if the invoice was generated.
      */
     public function generateInvoice($order, $message)
     {
@@ -231,14 +243,38 @@ class OrderUpdate
         if ($payment->getMethodInstance()->canCapture())
             $invoice->capture();
 
-        $order->addRelatedObject($invoice);
         $invoice->addComment($message, true, true);
 
-        if (!$invoice->getEmailSent() && $this->config->get('create_invoice_email')) {
-            $this->invoiceSender->send($invoice);
-        }
+        // Save invoice and order together before notifying, so a mail failure can't leave the order without invoice
+        $this->dbTransactionFactory->create()
+            ->addObject($invoice)
+            ->addObject($invoice->getOrder())
+            ->save();
 
-        $invoice->save();
+        if (!$invoice->getEmailSent() && $this->config->get('create_invoice_email'))
+            $this->sendInvoiceEmail($order, $invoice);
+
+        return true;
+    }
+
+    /**
+     * Send the invoice email to customer catching any errors.
+     *
+     * @param OrderInterface $order
+     * @param \Magento\Sales\Model\Order\Invoice $invoice
+     *
+     * @return bool
+     */
+    public function sendInvoiceEmail($order, $invoice)
+    {
+        try {
+            return $this->invoiceSender->send($invoice);
+        } catch (\Throwable $e) {
+            $this->logger->log('error', 'Order Update > sendInvoiceEmail | ' . $e->getMessage(), ['order_id' => $order->getIncrementId()]);
+            $order->addCommentToStatusHistory('No se pudo enviar el email de la factura: ' . $e->getMessage());
+
+            return false;
+        }
     }
 
     /**
@@ -257,12 +293,18 @@ class OrderUpdate
         $canSendCreation = $this->config->get('create_order_email');
         $canSendUpdate   = $this->config->get('update_order_email');
 
-        if (!$emailSent) {
-            if ($canSendCreation) {
-                return $this->orderSender->send($order);
+        try {
+            if (!$emailSent) {
+                if ($canSendCreation) {
+                    return $this->orderSender->send($order);
+                }
+            } else if ($canSendUpdate) {
+                return $this->orderCommentSender->send($order, '1', str_replace("<br/>", "", $message));
             }
-        } else if ($canSendUpdate) {
-            return $this->orderCommentSender->send($order, '1', str_replace("<br/>", "", $message));
+        } catch (\Throwable $e) {
+            $this->logger->log('error', 'Order Update > sendOrderEmail | ' . $e->getMessage(), ['order_id' => $order->getIncrementId()]);
+
+            return false;
         }
     }
 
